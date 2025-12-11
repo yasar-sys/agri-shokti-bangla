@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { Send, Mic, MicOff, Sparkles, Bot } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Send, Mic, MicOff, Bot } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { ChatBubble } from "@/components/ui/ChatBubble";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Message {
   id: string;
@@ -27,10 +29,20 @@ export default function ChatPage() {
   ]);
   const [inputText, setInputText] = useState("");
   const [isRecording, setIsRecording] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  const { toast } = useToast();
 
-  const handleSend = () => {
-    if (!inputText.trim()) return;
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
+
+  const handleSend = async () => {
+    if (!inputText.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -40,20 +52,60 @@ export default function ChatPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
+    const currentInput = inputText;
     setInputText("");
-    setIsTyping(true);
+    setIsLoading(true);
 
-    // Simulate AI response - would be POST /api/ai/chat
-    setTimeout(() => {
+    try {
+      // Build message history for context
+      const messageHistory = messages
+        .filter(m => m.id !== "1") // Exclude initial greeting
+        .map(m => ({
+          role: m.sender === "ai" ? "assistant" : "user",
+          content: m.content
+        }));
+      
+      messageHistory.push({ role: "user", content: currentInput });
+
+      const { data, error } = await supabase.functions.invoke('chat', {
+        body: { messages: messageHistory }
+      });
+
+      if (error) throw error;
+
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "আপনার প্রশ্নের জন্য ধন্যবাদ! ধানের পাতা হলুদ হওয়ার বিভিন্ন কারণ থাকতে পারে - নাইট্রোজেনের অভাব, পানির সমস্যা, বা রোগ। আপনার জমির ছবি পাঠালে আরও ভালো পরামর্শ দিতে পারব।",
+        content: data.response || "দুঃখিত, উত্তর দিতে পারছি না।",
         sender: "ai",
         timestamp: "এইমাত্র",
       };
+      
       setMessages((prev) => [...prev, aiMessage]);
-      setIsTyping(false);
-    }, 1500);
+
+      // Save to database
+      await supabase.from('chat_messages').insert([
+        { content: currentInput, sender: 'user' },
+        { content: aiMessage.content, sender: 'ai' }
+      ]);
+
+    } catch (error) {
+      console.error('Chat error:', error);
+      toast({
+        variant: "destructive",
+        title: "ত্রুটি",
+        description: "উত্তর পেতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+      });
+      
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        content: "দুঃখিত, সাময়িক সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+        sender: "ai",
+        timestamp: "এইমাত্র",
+      };
+      setMessages((prev) => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSuggestionClick = (question: string) => {
@@ -62,64 +114,82 @@ export default function ChatPage() {
 
   const toggleRecording = () => {
     setIsRecording(!isRecording);
-    // Voice-to-Text API would be called here
+    toast({
+      title: isRecording ? "রেকর্ডিং বন্ধ" : "রেকর্ডিং শুরু",
+      description: isRecording ? "ভয়েস রেকর্ডিং বন্ধ হয়েছে" : "কথা বলুন...",
+    });
   };
 
   return (
-    <div className="mobile-container min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="px-4 pt-12 pb-4 border-b border-border">
+      <header className="px-4 pt-8 pb-4 border-b border-border">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center">
-            <Bot className="w-6 h-6 text-secondary" />
+          <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center">
+            <Bot className="w-5 h-5 text-secondary" />
           </div>
           <div>
-            <h1 className="text-xl font-bold text-foreground">AI কৃষি সহকারী</h1>
+            <h1 className="text-lg font-bold text-foreground">AI কৃষি সহকারী</h1>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span className="text-xs text-muted-foreground">অনলাইন • POST /api/ai/chat</span>
+              <span className="text-xs text-muted-foreground">অনলাইন</span>
             </div>
           </div>
         </div>
       </header>
 
       {/* Chat Messages */}
-      <section className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-40">
+      <section className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-48">
         {messages.map((message) => (
-          <ChatBubble
+          <div
             key={message.id}
-            message={message.content}
-            sender={message.sender}
-            timestamp={message.timestamp}
-          />
+            className={cn(
+              "flex",
+              message.sender === "user" ? "justify-end" : "justify-start"
+            )}
+          >
+            <div
+              className={cn(
+                "max-w-[85%] px-4 py-3 rounded-2xl",
+                message.sender === "user"
+                  ? "bg-primary/20 text-foreground rounded-br-md"
+                  : "bg-card border border-border text-foreground rounded-bl-md"
+              )}
+            >
+              <p className="text-sm leading-relaxed">{message.content}</p>
+              <p className="text-[10px] text-muted-foreground mt-1">{message.timestamp}</p>
+            </div>
+          </div>
         ))}
 
-        {/* Typing indicator */}
-        {isTyping && (
-          <div className="flex items-center gap-2 text-muted-foreground">
-            <div className="flex gap-1">
-              {[0, 1, 2].map((i) => (
-                <div
-                  key={i}
-                  className="w-2 h-2 rounded-full bg-secondary animate-bounce"
-                  style={{ animationDelay: `${i * 0.1}s` }}
-                />
-              ))}
+        {/* Loading indicator */}
+        {isLoading && (
+          <div className="flex justify-start">
+            <div className="bg-card border border-border px-4 py-3 rounded-2xl rounded-bl-md">
+              <div className="flex gap-1">
+                {[0, 1, 2].map((i) => (
+                  <div
+                    key={i}
+                    className="w-2 h-2 rounded-full bg-secondary animate-bounce"
+                    style={{ animationDelay: `${i * 0.15}s` }}
+                  />
+                ))}
+              </div>
             </div>
-            <span className="text-sm">AI টাইপ করছে...</span>
           </div>
         )}
+        <div ref={messagesEndRef} />
       </section>
 
       {/* Suggestions */}
-      <section className="px-4 py-3 border-t border-border bg-background/95 backdrop-blur">
+      <section className="px-4 py-3 border-t border-border bg-background">
         <p className="text-xs text-muted-foreground mb-2">প্রস্তাবিত প্রশ্ন:</p>
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {suggestedQuestions.map((question, index) => (
             <button
               key={index}
               onClick={() => handleSuggestionClick(question)}
-              className="px-3 py-2 rounded-xl bg-card border border-border text-sm text-foreground whitespace-nowrap hover:bg-muted transition-colors"
+              className="px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground whitespace-nowrap hover:bg-muted transition-colors active:scale-95"
             >
               {question}
             </button>
@@ -133,11 +203,12 @@ export default function ChatPage() {
           {/* Voice Button */}
           <button
             onClick={toggleRecording}
-            className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all ${
+            className={cn(
+              "w-11 h-11 rounded-xl flex items-center justify-center transition-all",
               isRecording
-                ? "bg-destructive text-destructive-foreground glow-gold"
+                ? "bg-destructive text-destructive-foreground"
                 : "bg-card border border-border text-foreground hover:bg-muted"
-            }`}
+            )}
           >
             {isRecording ? (
               <MicOff className="w-5 h-5" />
@@ -147,22 +218,21 @@ export default function ChatPage() {
           </button>
 
           {/* Text Input */}
-          <div className="flex-1 relative">
-            <input
-              type="text"
-              value={inputText}
-              onChange={(e) => setInputText(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder="আপনার প্রশ্ন লিখুন..."
-              className="w-full h-12 px-4 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary"
-            />
-          </div>
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && handleSend()}
+            placeholder="আপনার প্রশ্ন লিখুন..."
+            disabled={isLoading}
+            className="flex-1 h-11 px-4 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary text-sm disabled:opacity-50"
+          />
 
           {/* Send Button */}
           <Button
             onClick={handleSend}
-            disabled={!inputText.trim()}
-            className="w-12 h-12 rounded-xl bg-primary text-primary-foreground hover:bg-primary/90"
+            disabled={!inputText.trim() || isLoading}
+            className="w-11 h-11 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/90 p-0"
           >
             <Send className="w-5 h-5" />
           </Button>

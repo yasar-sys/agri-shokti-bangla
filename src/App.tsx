@@ -23,7 +23,7 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const location = useLocation();
-  const hideNavRoutes = ["/", "/map"];
+  const hideNavRoutes = ["/"];
   const showNav = !hideNavRoutes.includes(location.pathname);
 
   return (

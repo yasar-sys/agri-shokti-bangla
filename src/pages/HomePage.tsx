@@ -1,147 +1,159 @@
 import { 
   Scan, 
-  Bug, 
-  Cloud, 
-  ShoppingCart, 
-  Droplets, 
-  MapPin,
-  Camera,
-  Sparkles
+  MessageSquare, 
+  TrendingUp, 
+  Cloud,
+  History,
+  Award,
+  Leaf,
+  BookOpen,
+  Users,
+  MapPin
 } from "lucide-react";
-import { WeatherWidget } from "@/components/ui/WeatherWidget";
-import { FeatureCard } from "@/components/ui/FeatureCard";
-import { ApiStatusIndicator } from "@/components/ui/ApiStatusIndicator";
-import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
+
+const stats = [
+  { value: "০৬", label: "স্ক্যান" },
+  { value: "৩ লেভেল", label: "র‍্যাংক" },
+  { value: "৩২°", label: "মেঘলা", icon: Cloud },
+];
+
+const services = [
+  { icon: Scan, label: "রোগ শনাক্তকরণ", to: "/camera", color: "text-secondary" },
+  { icon: MessageSquare, label: "AI সহায়ক", to: "/chat", color: "text-secondary" },
+  { icon: TrendingUp, label: "বাজার দর", to: "/market", color: "text-secondary" },
+  { icon: Cloud, label: "আবহাওয়া", to: "/weather", color: "text-secondary" },
+  { icon: History, label: "ফসল ইতিহাস", to: "/history", color: "text-secondary" },
+  { icon: Award, label: "পুরস্কার", to: "/gamification", color: "text-secondary" },
+  { icon: Leaf, label: "সার পরামর্শ", to: "/chat", color: "text-secondary" },
+  { icon: BookOpen, label: "কৃষি জ্ঞান", to: "/chat", color: "text-secondary" },
+  { icon: Users, label: "কমিউনিটি", to: "/chat", color: "text-secondary" },
+];
+
+const marketPrices = [
+  { emoji: "🌾", name: "ধান", price: "৳১,৮৫০", change: "+৩০", positive: true },
+  { emoji: "🥔", name: "আলু", price: "৳১,৫০০", change: "+২০", positive: true },
+  { emoji: "🧅", name: "পেঁয়াজ", price: "৳৪,৫০০", change: "-১০০", positive: false },
+];
 
 export default function HomePage() {
   return (
-    <div className="mobile-container min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="px-4 pt-12 pb-6">
-        <div className="flex items-center justify-between mb-6">
+      <header className="px-4 pt-8 pb-4">
+        <div className="flex items-start justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-foreground">
-              আসসালামু আলাইকুম,
+            <h1 className="text-xl font-bold text-foreground">
+              সুপ্রভাত, কৃষক ভাই🌾
             </h1>
-            <p className="text-lg text-primary font-medium">কৃষক ভাই! 🌾</p>
+            <p className="text-sm text-muted-foreground mt-1">
+              আজ আপনার ক্ষেতের সেবায় আমরা আছি
+            </p>
+            <div className="flex items-center gap-1 mt-2 text-xs text-muted-foreground">
+              <MapPin className="w-3 h-3 text-destructive" />
+              <span>ময়মনসিংহ, বাংলাদেশ</span>
+            </div>
           </div>
-          <div className="flex flex-col items-end gap-1">
-            <ApiStatusIndicator status="connected" label="API সংযুক্ত" />
-            <ApiStatusIndicator status="connected" label="LLM রেডি" />
-          </div>
+          <div className="text-4xl">👨‍🌾</div>
         </div>
-
-        {/* Weather Widget */}
-        <WeatherWidget className="animate-slide-up" />
       </header>
 
-      {/* Features Grid */}
-      <section className="px-4 mb-6">
-        <h2 className="text-lg font-semibold text-foreground mb-4">কী করতে চান?</h2>
-        <div className="grid grid-cols-2 gap-3">
-          <FeatureCard
-            icon={Scan}
-            title="ফসল চেনা"
-            description="ছবি তুলে ফসল শনাক্ত করুন"
-            to="/camera"
-            variant="gold"
-            delay={100}
-          />
-          <FeatureCard
-            icon={Bug}
-            title="রোগ নির্ণয়"
-            description="AI দিয়ে রোগ খুঁজে বের করুন"
-            to="/diagnosis"
-            variant="mint"
-            delay={200}
-          />
-          <FeatureCard
-            icon={Cloud}
-            title="আবহাওয়া"
-            description="আজকের আবহাওয়া দেখুন"
-            to="/weather"
-            delay={300}
-          />
-          <FeatureCard
-            icon={ShoppingCart}
-            title="বাজারদর"
-            description="লাইভ ফসলের দাম"
-            to="/market"
-            delay={400}
-          />
-          <FeatureCard
-            icon={Droplets}
-            title="সার ও সেচ"
-            description="পরামর্শ নিন AI থেকে"
-            to="/chat"
-            delay={500}
-          />
-          <FeatureCard
-            icon={MapPin}
-            title="জমির রিপোর্ট"
-            description="মানচিত্রে দেখুন"
-            to="/map"
-            delay={600}
-          />
+      {/* Stats Row */}
+      <section className="px-4 mb-4">
+        <div className="grid grid-cols-3 gap-2">
+          {stats.map((stat, index) => (
+            <div 
+              key={index}
+              className="bg-card border border-border rounded-xl p-3 text-center"
+            >
+              <div className="flex items-center justify-center gap-1">
+                {stat.icon && <stat.icon className="w-4 h-4 text-muted-foreground" />}
+                <span className="text-lg font-bold text-foreground">{stat.value}</span>
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="px-4">
-        <Link to="/camera">
-          <div className="relative overflow-hidden rounded-2xl p-6 gradient-gold glow-gold animate-slide-up" style={{ animationDelay: "700ms" }}>
-            {/* Decorative background */}
-            <div className="absolute top-0 right-0 w-32 h-32 opacity-20">
-              <Sparkles className="w-full h-full" />
+      {/* Today's Tip */}
+      <section className="px-4 mb-4">
+        <div className="bg-card border-2 border-primary/50 rounded-xl p-4">
+          <div className="flex items-start gap-2">
+            <span className="text-xl">💡</span>
+            <div>
+              <h3 className="font-semibold text-primary text-sm mb-1">আজকের কৃষি টিপস</h3>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দিন, বিকেলে কীটনাশক স্প্রে করবেন না। ধানের চারা রোপণের সেরা সময়।
+              </p>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <div className="relative z-10 flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-primary-foreground/20 flex items-center justify-center">
-                <Camera className="w-7 h-7 text-primary-foreground" />
-              </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-lg text-primary-foreground">
-                  ক্ষেতের ছবি তুলুন
-                </h3>
-                <p className="text-sm text-primary-foreground/80">
-                  AI দেখবে এবং পরামর্শ দেবে
-                </p>
-              </div>
-            </div>
-
-            <Button 
-              variant="secondary" 
-              className="w-full mt-4 bg-primary-foreground text-primary hover:bg-primary-foreground/90 font-semibold"
+      {/* Services Grid */}
+      <section className="px-4 mb-4">
+        <h2 className="text-base font-semibold text-foreground mb-3">সেবা সমূহ</h2>
+        <div className="grid grid-cols-3 gap-2">
+          {services.map((service, index) => (
+            <Link
+              key={index}
+              to={service.to}
+              className="bg-card border border-border rounded-xl p-4 flex flex-col items-center gap-2 hover:bg-card/80 hover:border-secondary/50 transition-all active:scale-95"
             >
-              স্ক্যান শুরু করুন
-            </Button>
+              <service.icon className={cn("w-6 h-6", service.color)} />
+              <span className="text-xs text-foreground text-center font-medium">{service.label}</span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Market Prices */}
+      <section className="px-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-foreground">আজকের বাজার দর</h2>
+          <Link to="/market" className="text-xs text-secondary">সব দেখুন →</Link>
+        </div>
+        <div className="space-y-2">
+          {marketPrices.map((item, index) => (
+            <div 
+              key={index}
+              className="flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
+            >
+              <div className="flex items-center gap-2">
+                <span className="text-lg">{item.emoji}</span>
+                <span className="text-sm text-foreground">{item.name}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-semibold text-foreground">{item.price}</span>
+                <span className={cn(
+                  "text-xs",
+                  item.positive ? "text-secondary" : "text-destructive"
+                )}>
+                  {item.change}
+                </span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* CTA Button */}
+      <section className="px-4 mb-4">
+        <Link to="/camera">
+          <div className="bg-secondary text-secondary-foreground rounded-xl p-4 text-center font-semibold hover:bg-secondary/90 transition-colors active:scale-98">
+            ক্ষেতের ছবি তুলুন, AI দেখবে
           </div>
         </Link>
       </section>
 
-      {/* API Status Footer */}
-      <section className="px-4 mt-6">
-        <div className="p-4 rounded-xl bg-card border border-border">
-          <h4 className="text-sm font-medium text-foreground mb-3">সক্রিয় API সার্ভিস</h4>
-          <div className="grid grid-cols-2 gap-2">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span>POST /api/ai/chat</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span>POST /api/vision/detect</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span>GET /api/weather</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-muted-foreground">
-              <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span>GET /api/market-prices</span>
-            </div>
-          </div>
+      {/* Community Banner */}
+      <section className="px-4">
+        <div className="bg-card border border-border rounded-xl p-3 text-center">
+          <p className="text-xs text-muted-foreground">
+            🤝 আপনার গ্রামে <span className="text-secondary font-semibold">১২৫ জন</span> কৃষক AgriBrain ব্যবহার করছেন!
+          </p>
         </div>
       </section>
     </div>
