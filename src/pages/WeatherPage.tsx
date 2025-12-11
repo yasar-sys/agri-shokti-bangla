@@ -1,18 +1,69 @@
-import { Cloud, Droplets, Wind, Sun, Thermometer, Gauge } from "lucide-react";
+import { useState } from "react";
+import { Cloud, Droplets, Wind, Sun, Thermometer, Gauge, MapPin, ChevronDown, Check } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
-export default function WeatherPage() {
-  // Mock data - would come from GET /api/weather and GET /api/soil
-  const weatherData = {
-    temp: 28,
-    humidity: 75,
-    wind: 12,
-    condition: "আংশিক মেঘলা",
+// বাংলাদেশের বিভাগ ও জেলা সমূহ
+const locations = [
+  { id: "dhaka", name: "ঢাকা", division: "ঢাকা বিভাগ" },
+  { id: "chittagong", name: "চট্টগ্রাম", division: "চট্টগ্রাম বিভাগ" },
+  { id: "rajshahi", name: "রাজশাহী", division: "রাজশাহী বিভাগ" },
+  { id: "khulna", name: "খুলনা", division: "খুলনা বিভাগ" },
+  { id: "sylhet", name: "সিলেট", division: "সিলেট বিভাগ" },
+  { id: "barisal", name: "বরিশাল", division: "বরিশাল বিভাগ" },
+  { id: "rangpur", name: "রংপুর", division: "রংপুর বিভাগ" },
+  { id: "mymensingh", name: "ময়মনসিংহ", division: "ময়মনসিংহ বিভাগ" },
+  { id: "comilla", name: "কুমিল্লা", division: "চট্টগ্রাম বিভাগ" },
+  { id: "gazipur", name: "গাজীপুর", division: "ঢাকা বিভাগ" },
+  { id: "narayanganj", name: "নারায়ণগঞ্জ", division: "ঢাকা বিভাগ" },
+  { id: "bogra", name: "বগুড়া", division: "রাজশাহী বিভাগ" },
+  { id: "dinajpur", name: "দিনাজপুর", division: "রংপুর বিভাগ" },
+  { id: "jessore", name: "যশোর", division: "খুলনা বিভাগ" },
+  { id: "coxsbazar", name: "কক্সবাজার", division: "চট্টগ্রাম বিভাগ" },
+];
+
+// Mock weather data based on location
+const getWeatherData = (locationId: string) => {
+  const baseData = {
+    dhaka: { temp: 32, humidity: 78, wind: 14, condition: "গরম ও আর্দ্র" },
+    chittagong: { temp: 30, humidity: 82, wind: 18, condition: "মেঘলা" },
+    rajshahi: { temp: 35, humidity: 55, wind: 10, condition: "রোদ ঝলমলে" },
+    khulna: { temp: 31, humidity: 80, wind: 12, condition: "আংশিক মেঘলা" },
+    sylhet: { temp: 28, humidity: 88, wind: 8, condition: "বৃষ্টির সম্ভাবনা" },
+    barisal: { temp: 30, humidity: 85, wind: 15, condition: "মেঘলা" },
+    rangpur: { temp: 29, humidity: 65, wind: 12, condition: "পরিষ্কার" },
+    mymensingh: { temp: 31, humidity: 75, wind: 10, condition: "আংশিক মেঘলা" },
+    comilla: { temp: 30, humidity: 80, wind: 11, condition: "মেঘলা" },
+    gazipur: { temp: 33, humidity: 76, wind: 13, condition: "গরম" },
+    narayanganj: { temp: 32, humidity: 79, wind: 12, condition: "আর্দ্র" },
+    bogra: { temp: 34, humidity: 58, wind: 9, condition: "রোদ" },
+    dinajpur: { temp: 28, humidity: 62, wind: 14, condition: "পরিষ্কার" },
+    jessore: { temp: 33, humidity: 68, wind: 11, condition: "গরম" },
+    coxsbazar: { temp: 29, humidity: 85, wind: 22, condition: "সামুদ্রিক বাতাস" },
+  };
+  
+  const data = baseData[locationId as keyof typeof baseData] || baseData.dhaka;
+  
+  return {
+    ...data,
     forecast: [
-      { day: "আজ", high: 32, low: 24, icon: "☀️" },
-      { day: "আগামীকাল", high: 30, low: 23, icon: "⛅" },
-      { day: "পরশু", high: 28, low: 22, icon: "🌧️" },
+      { day: "আজ", high: data.temp + 2, low: data.temp - 6, icon: "☀️" },
+      { day: "আগামীকাল", high: data.temp + 1, low: data.temp - 7, icon: "⛅" },
+      { day: "পরশু", high: data.temp - 1, low: data.temp - 8, icon: "🌧️" },
     ],
   };
+};
+
+export default function WeatherPage() {
+  const [selectedLocation, setSelectedLocation] = useState("dhaka");
+  
+  const currentLocation = locations.find(l => l.id === selectedLocation);
+  const weatherData = getWeatherData(selectedLocation);
 
   const soilData = {
     moisture: 65,
@@ -24,10 +75,47 @@ export default function WeatherPage() {
   return (
     <div className="mobile-container min-h-screen bg-background pb-24">
       {/* Header */}
-      <header className="px-4 pt-12 pb-6">
+      <header className="px-4 pt-12 pb-4">
         <h1 className="text-2xl font-bold text-foreground">আবহাওয়া ও মাটি</h1>
         <p className="text-muted-foreground">আজকের তথ্য</p>
       </header>
+
+      {/* Location Selector */}
+      <section className="px-4 mb-4">
+        <div className="p-4 rounded-2xl bg-card border border-border">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="w-5 h-5 text-primary" />
+            <span className="text-sm font-medium text-foreground">আপনার এলাকা নির্বাচন করুন</span>
+          </div>
+          
+          <Select value={selectedLocation} onValueChange={setSelectedLocation}>
+            <SelectTrigger className="w-full bg-muted/50 border-border">
+              <SelectValue placeholder="এলাকা নির্বাচন করুন" />
+            </SelectTrigger>
+            <SelectContent className="bg-card border-border max-h-64">
+              {locations.map((location) => (
+                <SelectItem 
+                  key={location.id} 
+                  value={location.id}
+                  className="focus:bg-muted"
+                >
+                  <div className="flex flex-col">
+                    <span className="font-medium">{location.name}</span>
+                    <span className="text-xs text-muted-foreground">{location.division}</span>
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          
+          {currentLocation && (
+            <div className="mt-3 flex items-center gap-2 text-sm text-secondary">
+              <Check className="w-4 h-4" />
+              <span>{currentLocation.name}, {currentLocation.division}</span>
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Current Weather */}
       <section className="px-4 mb-6">
