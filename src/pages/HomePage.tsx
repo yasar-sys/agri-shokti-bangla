@@ -9,7 +9,8 @@ import {
   GraduationCap,
   UsersRound,
   MapPin,
-  ScanSearch
+  ScanSearch,
+  Bug
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -23,6 +24,7 @@ const stats = [
 const services = [
   { icon: Scan, label: "রোগ শনাক্তকরণ", to: "/camera", color: "text-secondary" },
   { icon: ScanSearch, label: "সার স্ক্যান", to: "/fertilizer-scan", color: "text-destructive" },
+  { icon: Bug, label: "পোকার ম্যাপ", to: "/pest-map", color: "text-primary" },
   { icon: MessageSquare, label: "AI সহায়ক", to: "/chat", color: "text-secondary" },
   { icon: TrendingUp, label: "বাজার দর", to: "/market", color: "text-secondary" },
   { icon: Cloud, label: "আবহাওয়া", to: "/weather", color: "text-secondary" },

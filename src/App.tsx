@@ -21,6 +21,7 @@ import KnowledgePage from "./pages/KnowledgePage";
 import CommunityPage from "./pages/CommunityPage";
 import FertilizerPage from "./pages/FertilizerPage";
 import FertilizerScanPage from "./pages/FertilizerScanPage";
+import PestMapPage from "./pages/PestMapPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -48,6 +49,7 @@ function AppContent() {
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/fertilizer" element={<FertilizerPage />} />
         <Route path="/fertilizer-scan" element={<FertilizerScanPage />} />
+        <Route path="/pest-map" element={<PestMapPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {showNav && <BottomNav />}
