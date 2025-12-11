@@ -20,6 +20,7 @@ import SettingsPage from "./pages/SettingsPage";
 import KnowledgePage from "./pages/KnowledgePage";
 import CommunityPage from "./pages/CommunityPage";
 import FertilizerPage from "./pages/FertilizerPage";
+import FertilizerScanPage from "./pages/FertilizerScanPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ function AppContent() {
         <Route path="/knowledge" element={<KnowledgePage />} />
         <Route path="/community" element={<CommunityPage />} />
         <Route path="/fertilizer" element={<FertilizerPage />} />
+        <Route path="/fertilizer-scan" element={<FertilizerScanPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {showNav && <BottomNav />}
