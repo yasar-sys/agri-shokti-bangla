@@ -27,8 +27,8 @@ const services = [
   { icon: History, label: "ফসল ইতিহাস", to: "/history", color: "text-secondary" },
   { icon: Award, label: "পুরস্কার", to: "/gamification", color: "text-secondary" },
   { icon: Beaker, label: "সার পরামর্শ", to: "/chat", color: "text-primary" },
-  { icon: GraduationCap, label: "কৃষি জ্ঞান", to: "/chat", color: "text-accent-foreground" },
-  { icon: UsersRound, label: "কমিউনিটি", to: "/chat", color: "text-muted-foreground" },
+  { icon: GraduationCap, label: "কৃষি জ্ঞান", to: "/knowledge", color: "text-accent-foreground" },
+  { icon: UsersRound, label: "কমিউনিটি", to: "/community", color: "text-muted-foreground" },
 ];
 
 const marketPrices = [

@@ -17,6 +17,8 @@ import MapPage from "./pages/MapPage";
 import HistoryPage from "./pages/HistoryPage";
 import GamificationPage from "./pages/GamificationPage";
 import SettingsPage from "./pages/SettingsPage";
+import KnowledgePage from "./pages/KnowledgePage";
+import CommunityPage from "./pages/CommunityPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,6 +42,8 @@ function AppContent() {
         <Route path="/history" element={<HistoryPage />} />
         <Route path="/gamification" element={<GamificationPage />} />
         <Route path="/settings" element={<SettingsPage />} />
+        <Route path="/knowledge" element={<KnowledgePage />} />
+        <Route path="/community" element={<CommunityPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {showNav && <BottomNav />}
