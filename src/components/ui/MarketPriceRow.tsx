@@ -5,6 +5,7 @@ interface MarketPriceRowProps {
   crop: string;
   todayPrice: number;
   yesterdayPrice: number;
+  weeklyAvg?: number;
   unit?: string;
   className?: string;
 }
@@ -13,6 +14,7 @@ export function MarketPriceRow({
   crop,
   todayPrice,
   yesterdayPrice,
+  weeklyAvg,
   unit = "টাকা/কেজি",
   className,
 }: MarketPriceRowProps) {
@@ -53,16 +55,18 @@ export function MarketPriceRow({
       </div>
 
       {/* Today's price */}
-      <div className="text-right mr-6">
+      <div className="text-right mr-4">
         <p className="font-semibold text-foreground">৳{todayPrice}</p>
         <span className="text-xs text-muted-foreground">আজ</span>
       </div>
 
-      {/* Yesterday's price */}
-      <div className="text-right mr-6">
-        <p className="text-sm text-muted-foreground">৳{yesterdayPrice}</p>
-        <span className="text-xs text-muted-foreground">গতকাল</span>
-      </div>
+      {/* Weekly average */}
+      {weeklyAvg !== undefined && (
+        <div className="text-right mr-4">
+          <p className="text-sm text-primary">৳{weeklyAvg}</p>
+          <span className="text-xs text-muted-foreground">সা. গড়</span>
+        </div>
+      )}
 
       {/* Change */}
       <div

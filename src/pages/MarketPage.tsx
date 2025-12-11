@@ -3,14 +3,14 @@ import { MarketPriceRow } from "@/components/ui/MarketPriceRow";
 import { Button } from "@/components/ui/button";
 
 const marketData = [
-  { crop: "ধান (আমন)", today: 1250, yesterday: 1200 },
-  { crop: "ধান (বোরো)", today: 1180, yesterday: 1190 },
-  { crop: "গম", today: 1450, yesterday: 1420 },
-  { crop: "পাট", today: 2800, yesterday: 2750 },
-  { crop: "আলু", today: 25, yesterday: 28 },
-  { crop: "পেঁয়াজ", today: 45, yesterday: 42 },
-  { crop: "রসুন", today: 180, yesterday: 175 },
-  { crop: "মরিচ", today: 250, yesterday: 260 },
+  { crop: "ধান (আমন)", today: 1250, yesterday: 1200, weeklyAvg: 1220 },
+  { crop: "ধান (বোরো)", today: 1180, yesterday: 1190, weeklyAvg: 1175 },
+  { crop: "গম", today: 1450, yesterday: 1420, weeklyAvg: 1400 },
+  { crop: "পাট", today: 2800, yesterday: 2750, weeklyAvg: 2700 },
+  { crop: "আলু", today: 25, yesterday: 28, weeklyAvg: 27 },
+  { crop: "পেঁয়াজ", today: 45, yesterday: 42, weeklyAvg: 40 },
+  { crop: "রসুন", today: 180, yesterday: 175, weeklyAvg: 172 },
+  { crop: "মরিচ", today: 250, yesterday: 260, weeklyAvg: 255 },
 ];
 
 export default function MarketPage() {
@@ -54,9 +54,9 @@ export default function MarketPage() {
       <section className="px-4 mb-2">
         <div className="flex items-center justify-between text-xs text-muted-foreground px-4">
           <span>ফসল</span>
-          <div className="flex gap-6">
+          <div className="flex gap-4">
             <span>আজ</span>
-            <span>গতকাল</span>
+            <span>সা. গড়</span>
             <span>পরিবর্তন</span>
           </div>
         </div>
@@ -70,6 +70,7 @@ export default function MarketPage() {
             crop={item.crop}
             todayPrice={item.today}
             yesterdayPrice={item.yesterday}
+            weeklyAvg={item.weeklyAvg}
           />
         ))}
       </section>

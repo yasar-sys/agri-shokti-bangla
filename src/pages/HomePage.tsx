@@ -5,9 +5,9 @@ import {
   Cloud,
   History,
   Award,
-  Leaf,
-  BookOpen,
-  Users,
+  Beaker,
+  GraduationCap,
+  UsersRound,
   MapPin
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -26,15 +26,15 @@ const services = [
   { icon: Cloud, label: "আবহাওয়া", to: "/weather", color: "text-secondary" },
   { icon: History, label: "ফসল ইতিহাস", to: "/history", color: "text-secondary" },
   { icon: Award, label: "পুরস্কার", to: "/gamification", color: "text-secondary" },
-  { icon: Leaf, label: "সার পরামর্শ", to: "/chat", color: "text-secondary" },
-  { icon: BookOpen, label: "কৃষি জ্ঞান", to: "/chat", color: "text-secondary" },
-  { icon: Users, label: "কমিউনিটি", to: "/chat", color: "text-secondary" },
+  { icon: Beaker, label: "সার পরামর্শ", to: "/chat", color: "text-primary" },
+  { icon: GraduationCap, label: "কৃষি জ্ঞান", to: "/chat", color: "text-accent-foreground" },
+  { icon: UsersRound, label: "কমিউনিটি", to: "/chat", color: "text-muted-foreground" },
 ];
 
 const marketPrices = [
-  { emoji: "🌾", name: "ধান", price: "৳১,৮৫০", change: "+৩০", positive: true },
-  { emoji: "🥔", name: "আলু", price: "৳১,৫০০", change: "+২০", positive: true },
-  { emoji: "🧅", name: "পেঁয়াজ", price: "৳৪,৫০০", change: "-১০০", positive: false },
+  { emoji: "🌾", name: "ধান", price: "৳১,৮৫০", weeklyAvg: "৳১,৮২০", change: "+৩০", positive: true },
+  { emoji: "🥔", name: "আলু", price: "৳১,৫০০", weeklyAvg: "৳১,৪৮০", change: "+২০", positive: true },
+  { emoji: "🧅", name: "পেঁয়াজ", price: "৳৪,৫০০", weeklyAvg: "৳৪,৬৫০", change: "-১০০", positive: false },
 ];
 
 export default function HomePage() {
@@ -123,13 +123,16 @@ export default function HomePage() {
             >
               <div className="flex items-center gap-2">
                 <span className="text-lg">{item.emoji}</span>
-                <span className="text-sm text-foreground">{item.name}</span>
+                <div>
+                  <span className="text-sm text-foreground block">{item.name}</span>
+                  <span className="text-xs text-muted-foreground">সা. গড়: {item.weeklyAvg}</span>
+                </div>
               </div>
               <div className="flex items-center gap-2">
                 <span className="text-sm font-semibold text-foreground">{item.price}</span>
                 <span className={cn(
-                  "text-xs",
-                  item.positive ? "text-secondary" : "text-destructive"
+                  "text-xs px-1.5 py-0.5 rounded",
+                  item.positive ? "text-secondary bg-secondary/20" : "text-destructive bg-destructive/20"
                 )}>
                   {item.change}
                 </span>
