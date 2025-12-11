@@ -26,7 +26,7 @@ const services = [
   { icon: Cloud, label: "আবহাওয়া", to: "/weather", color: "text-secondary" },
   { icon: History, label: "ফসল ইতিহাস", to: "/history", color: "text-secondary" },
   { icon: Award, label: "পুরস্কার", to: "/gamification", color: "text-secondary" },
-  { icon: Beaker, label: "সার পরামর্শ", to: "/chat", color: "text-primary" },
+  { icon: Beaker, label: "সার পরামর্শ", to: "/fertilizer", color: "text-primary" },
   { icon: GraduationCap, label: "কৃষি জ্ঞান", to: "/knowledge", color: "text-accent-foreground" },
   { icon: UsersRound, label: "কমিউনিটি", to: "/community", color: "text-muted-foreground" },
 ];
