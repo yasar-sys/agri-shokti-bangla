@@ -14,7 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      chat_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          sender: string
+          session_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          sender: string
+          session_id?: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          sender?: string
+          session_id?: string
+        }
+        Relationships: []
+      }
+      scan_history: {
+        Row: {
+          created_at: string
+          disease_name: string | null
+          fertilizer_advice: string | null
+          health_score: number | null
+          id: string
+          image_url: string | null
+          session_id: string
+          symptoms: string[] | null
+          treatment: string | null
+        }
+        Insert: {
+          created_at?: string
+          disease_name?: string | null
+          fertilizer_advice?: string | null
+          health_score?: number | null
+          id?: string
+          image_url?: string | null
+          session_id?: string
+          symptoms?: string[] | null
+          treatment?: string | null
+        }
+        Update: {
+          created_at?: string
+          disease_name?: string | null
+          fertilizer_advice?: string | null
+          health_score?: number | null
+          id?: string
+          image_url?: string | null
+          session_id?: string
+          symptoms?: string[] | null
+          treatment?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

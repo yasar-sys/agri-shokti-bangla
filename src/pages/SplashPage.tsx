@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { AgriBrainLogo } from "@/components/ui/AgriBrainLogo";
+import { Leaf } from "lucide-react";
 
 export default function SplashPage() {
   const navigate = useNavigate();
@@ -10,44 +10,42 @@ export default function SplashPage() {
     const timer = setTimeout(() => {
       setFadeOut(true);
       setTimeout(() => navigate("/home"), 500);
-    }, 2500);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [navigate]);
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center gradient-hero transition-opacity duration-500 ${
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-background transition-opacity duration-500 ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
     >
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden">
-        {/* Gradient orbs */}
-        <div className="absolute top-1/4 -left-20 w-40 h-40 bg-secondary/10 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 -right-20 w-60 h-60 bg-primary/10 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-secondary/5 rounded-full blur-3xl" />
-      </div>
-
-      {/* Logo and branding */}
-      <div className="relative z-10 animate-scale-in">
-        <AgriBrainLogo size="xl" showTagline />
+      {/* Logo */}
+      <div className="flex flex-col items-center gap-4 animate-scale-in">
+        <div className="w-20 h-20 rounded-2xl bg-secondary/20 flex items-center justify-center">
+          <Leaf className="w-10 h-10 text-secondary" />
+        </div>
+        <div className="text-center">
+          <h1 className="text-3xl font-bold text-foreground">AgriBrain</h1>
+          <p className="text-sm text-primary mt-1">বাংলার কৃষকের AI সহকারী</p>
+        </div>
       </div>
 
       {/* Loading indicator */}
-      <div className="relative z-10 mt-12 flex gap-2">
+      <div className="mt-12 flex gap-2">
         {[0, 1, 2].map((i) => (
           <div
             key={i}
-            className="w-2 h-2 rounded-full bg-secondary animate-pulse"
-            style={{ animationDelay: `${i * 0.2}s` }}
+            className="w-2 h-2 rounded-full bg-secondary animate-bounce"
+            style={{ animationDelay: `${i * 0.15}s` }}
           />
         ))}
       </div>
 
       {/* Footer credit */}
-      <div className="absolute bottom-8 left-0 right-0 text-center">
-        <p className="text-xs text-muted-foreground animate-fade-in" style={{ animationDelay: "1s" }}>
+      <div className="absolute bottom-8 text-center">
+        <p className="text-xs text-muted-foreground">
           Designed by Samin Yasar Sunny
         </p>
       </div>
