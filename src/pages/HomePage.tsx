@@ -10,10 +10,19 @@ import {
   UsersRound,
   MapPin,
   ScanSearch,
-  Bug
+  Bug,
+  LogIn,
+  LogOut,
+  User
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useState, useEffect } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Session } from "@supabase/supabase-js";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const stats = [
   { value: "০৬", label: "স্ক্যান" },
@@ -42,8 +51,46 @@ const marketPrices = [
 ];
 
 export default function HomePage() {
+  const [session, setSession] = useState<Session | null>(null);
+
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setSession(session);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleLogout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      toast.error("লগআউট করতে সমস্যা হয়েছে");
+    } else {
+      toast.success("সফলভাবে লগআউট হয়েছে");
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24 relative">
+      {/* Background Image */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${villageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundRepeat: 'no-repeat',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/85 backdrop-blur-[2px]" />
+      </div>
+
       {/* Header */}
       <header className="px-4 pt-8 pb-4">
         <div className="flex items-start justify-between">
@@ -59,7 +106,33 @@ export default function HomePage() {
               <span>ময়মনসিংহ, বাংলাদেশ</span>
             </div>
           </div>
-          <div className="text-4xl">👨‍🌾</div>
+          
+          {/* Login/Logout & Farmer Icon */}
+          <div className="flex flex-col items-end gap-2">
+            <div className="text-4xl">👨‍🌾</div>
+            {session ? (
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleLogout}
+                className="text-xs gap-1 bg-card/80 border-border hover:bg-destructive/20 hover:text-destructive hover:border-destructive/50"
+              >
+                <LogOut className="w-3 h-3" />
+                লগআউট
+              </Button>
+            ) : (
+              <Link to="/auth">
+                <Button 
+                  variant="outline" 
+                  size="sm"
+                  className="text-xs gap-1 bg-card/80 border-border hover:bg-secondary/20 hover:text-secondary hover:border-secondary/50"
+                >
+                  <LogIn className="w-3 h-3" />
+                  লগইন
+                </Button>
+              </Link>
+            )}
+          </div>
         </div>
       </header>
 
