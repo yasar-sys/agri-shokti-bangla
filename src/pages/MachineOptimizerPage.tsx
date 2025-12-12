@@ -2,6 +2,7 @@ import { ArrowLeft, Tractor, Fuel, Gauge, Timer, AlertCircle, CheckCircle2 } fro
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const machines = [
   { id: 1, name: "ট্রাক্টর", emoji: "🚜", status: "ভালো", lastService: "১৫ দিন আগে" },
@@ -44,9 +45,21 @@ const optimizationTips = [
 
 export default function MachineOptimizerPage() {
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24 relative">
+      {/* Background */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${villageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+      </div>
+
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
+      <header className="bg-card/80 backdrop-blur-md border-b border-border px-4 py-4">
         <div className="flex items-center gap-3">
           <Link to="/home">
             <Button variant="ghost" size="icon" className="rounded-full">
@@ -68,7 +81,7 @@ export default function MachineOptimizerPage() {
         <h2 className="text-base font-semibold text-foreground mb-3">আমার যন্ত্রপাতি</h2>
         <div className="space-y-2">
           {machines.map((machine) => (
-            <div key={machine.id} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
+            <div key={machine.id} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3 flex items-center gap-3">
               <div className="text-3xl">{machine.emoji}</div>
               <div className="flex-1">
                 <p className="text-sm font-medium text-foreground">{machine.name}</p>
@@ -92,7 +105,7 @@ export default function MachineOptimizerPage() {
 
       {/* Quick Calculator */}
       <section className="px-4 mb-4">
-        <div className="bg-gradient-to-r from-chart-1/20 to-chart-2/20 border border-chart-1/30 rounded-xl p-4">
+        <div className="bg-gradient-to-r from-chart-1/20 to-chart-2/20 border border-chart-1/30 rounded-xl p-4 backdrop-blur-sm">
           <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
             <Fuel className="w-4 h-4 text-chart-2" />
             দ্রুত ডিজেল হিসাব
@@ -118,7 +131,7 @@ export default function MachineOptimizerPage() {
         <h2 className="text-base font-semibold text-foreground mb-3">AI অপ্টিমাইজেশন টিপস</h2>
         <div className="space-y-3">
           {optimizationTips.map((section, idx) => (
-            <div key={idx} className="bg-card border border-border rounded-xl p-4">
+            <div key={idx} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4">
               <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
                 <section.icon className={cn("w-4 h-4", section.color)} />
                 {section.title}
@@ -138,7 +151,7 @@ export default function MachineOptimizerPage() {
 
       {/* Soil Condition */}
       <section className="px-4">
-        <div className="bg-card border-2 border-primary/50 rounded-xl p-4">
+        <div className="bg-card/80 backdrop-blur-sm border-2 border-primary/50 rounded-xl p-4">
           <div className="flex items-start gap-2">
             <span className="text-xl">🌍</span>
             <div>

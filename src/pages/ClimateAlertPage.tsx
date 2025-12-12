@@ -2,6 +2,7 @@ import { ArrowLeft, CloudLightning, Thermometer, Droplets, Wind, AlertTriangle, 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const activeAlerts = [
   { 
@@ -38,9 +39,21 @@ const smartCrops = [
 
 export default function ClimateAlertPage() {
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24 relative">
+      {/* Background */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${villageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+      </div>
+
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
+      <header className="bg-card/80 backdrop-blur-md border-b border-border px-4 py-4">
         <div className="flex items-center gap-3">
           <Link to="/home">
             <Button variant="ghost" size="icon" className="rounded-full">
@@ -66,7 +79,7 @@ export default function ClimateAlertPage() {
         <div className="space-y-3">
           {activeAlerts.map((alert, idx) => (
             <div key={idx} className={cn(
-              "bg-card border-2 rounded-xl p-4",
+              "bg-card/80 backdrop-blur-sm border-2 rounded-xl p-4",
               alert.severity === "উচ্চ" ? "border-destructive/50" : "border-chart-2/50"
             )}>
               <div className="flex items-center gap-2 mb-2">
@@ -95,7 +108,7 @@ export default function ClimateAlertPage() {
         <h2 className="text-base font-semibold text-foreground mb-3">৫ দিনের পূর্বাভাস</h2>
         <div className="flex gap-2 overflow-x-auto pb-2">
           {forecast.map((day, idx) => (
-            <div key={idx} className="flex-shrink-0 w-20 bg-card border border-border rounded-xl p-3 text-center">
+            <div key={idx} className="flex-shrink-0 w-20 bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3 text-center">
               <p className="text-xs text-muted-foreground mb-1">{day.day}</p>
               <p className="text-lg font-bold text-foreground">{day.temp}</p>
               <div className="flex items-center justify-center gap-1 text-xs text-chart-3 mb-1">
@@ -123,7 +136,7 @@ export default function ClimateAlertPage() {
         </h2>
         <div className="space-y-2">
           {smartCrops.map((crop, idx) => (
-            <div key={idx} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
+            <div key={idx} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center">
                 <Shield className="w-5 h-5 text-secondary" />
               </div>
@@ -138,7 +151,7 @@ export default function ClimateAlertPage() {
 
       {/* Emergency Contacts */}
       <section className="px-4">
-        <div className="bg-card border border-border rounded-xl p-4">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4">
           <h3 className="text-sm font-semibold text-foreground mb-2">জরুরি যোগাযোগ</h3>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">

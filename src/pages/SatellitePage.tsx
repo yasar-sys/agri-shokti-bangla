@@ -1,7 +1,9 @@
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Satellite, Plane, MapPin, Leaf, Droplets, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const ndviZones = [
   { id: 1, name: "পূর্ব ব্লক", health: 0.85, status: "সুস্থ", color: "bg-secondary" },
@@ -17,10 +19,30 @@ const droneRoutes = [
 ];
 
 export default function SatellitePage() {
+  const mapContainerRef = useRef<HTMLDivElement>(null);
+  const [mapLoaded, setMapLoaded] = useState(false);
+
+  useEffect(() => {
+    // Simple map placeholder - in production would use Mapbox
+    setMapLoaded(true);
+  }, []);
+
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24 relative">
+      {/* Background */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${villageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+      </div>
+
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
+      <header className="bg-card/80 backdrop-blur-md border-b border-border px-4 py-4">
         <div className="flex items-center gap-3">
           <Link to="/home">
             <Button variant="ghost" size="icon" className="rounded-full">
@@ -37,25 +59,87 @@ export default function SatellitePage() {
         </div>
       </header>
 
-      {/* NDVI Map Placeholder */}
+      {/* Interactive Map */}
       <section className="px-4 py-4">
         <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div className="aspect-video bg-gradient-to-br from-secondary/30 via-chart-2/30 to-destructive/30 relative flex items-center justify-center">
-            <div className="absolute inset-0 opacity-20">
-              {/* Grid overlay */}
-              <div className="w-full h-full grid grid-cols-4 grid-rows-4">
-                {Array.from({ length: 16 }).map((_, i) => (
-                  <div key={i} className="border border-foreground/10" />
+          <div 
+            ref={mapContainerRef}
+            className="aspect-video relative"
+          >
+            {/* Satellite Map Visualization */}
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary/40 via-chart-2/30 to-destructive/20">
+              {/* Grid overlay showing field zones */}
+              <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-1 p-2">
+                {ndviZones.map((zone) => (
+                  <div 
+                    key={zone.id}
+                    className={cn(
+                      "rounded-lg flex items-center justify-center relative overflow-hidden transition-all hover:scale-[1.02]",
+                      zone.health >= 0.8 && "bg-secondary/50",
+                      zone.health >= 0.6 && zone.health < 0.8 && "bg-chart-2/50",
+                      zone.health < 0.6 && "bg-destructive/50"
+                    )}
+                  >
+                    {/* Vegetation texture pattern */}
+                    <div className="absolute inset-0 opacity-30">
+                      <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+                        {Array.from({ length: 20 }).map((_, i) => (
+                          <circle
+                            key={i}
+                            cx={Math.random() * 100}
+                            cy={Math.random() * 100}
+                            r={2 + Math.random() * 3}
+                            fill={zone.health >= 0.7 ? "#7BF2A0" : zone.health >= 0.5 ? "#F2C94C" : "#E76F51"}
+                            opacity={0.6 + Math.random() * 0.4}
+                          />
+                        ))}
+                      </svg>
+                    </div>
+                    <div className="text-center z-10 bg-background/60 backdrop-blur-sm rounded-lg px-2 py-1">
+                      <p className="text-xs font-medium text-foreground">{zone.name}</p>
+                      <p className="text-lg font-bold text-foreground">{(zone.health * 100).toFixed(0)}%</p>
+                    </div>
+                  </div>
                 ))}
               </div>
-            </div>
-            <div className="text-center z-10">
-              <Satellite className="w-12 h-12 text-chart-4 mx-auto mb-2" />
-              <p className="text-sm text-foreground font-medium">স্যাটেলাইট NDVI ম্যাপ</p>
-              <p className="text-xs text-muted-foreground">আপনার ক্ষেতের স্বাস্থ্য দেখুন</p>
+              
+              {/* Drone path animation */}
+              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 100 100" preserveAspectRatio="none">
+                <path
+                  d="M10 20 Q 50 10 90 30 Q 50 50 10 70 Q 50 90 90 80"
+                  stroke="#F2C94C"
+                  strokeWidth="0.5"
+                  strokeDasharray="2,2"
+                  fill="none"
+                  opacity="0.6"
+                >
+                  <animate
+                    attributeName="stroke-dashoffset"
+                    from="0"
+                    to="20"
+                    dur="2s"
+                    repeatCount="indefinite"
+                  />
+                </path>
+                {/* Drone icon */}
+                <circle cx="50" cy="50" r="2" fill="#F2C94C">
+                  <animate
+                    attributeName="cx"
+                    values="10;90;10;90;10"
+                    dur="8s"
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="cy"
+                    values="20;30;70;80;20"
+                    dur="8s"
+                    repeatCount="indefinite"
+                  />
+                </circle>
+              </svg>
             </div>
           </div>
-          <div className="p-3 border-t border-border flex items-center justify-between">
+          <div className="p-3 border-t border-border flex items-center justify-between bg-card/80">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-destructive" />
               <span className="text-sm text-foreground">ময়মনসিংহ, বাংলাদেশ</span>
@@ -67,7 +151,7 @@ export default function SatellitePage() {
 
       {/* NDVI Legend */}
       <section className="px-4 mb-4">
-        <div className="bg-card border border-border rounded-xl p-3">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3">
           <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
             <Leaf className="w-4 h-4 text-secondary" />
             NDVI স্বাস্থ্য সূচক
@@ -88,7 +172,7 @@ export default function SatellitePage() {
         <h2 className="text-base font-semibold text-foreground mb-3">ক্ষেতের জোনভিত্তিক স্বাস্থ্য</h2>
         <div className="grid grid-cols-2 gap-2">
           {ndviZones.map((zone) => (
-            <div key={zone.id} className="bg-card border border-border rounded-xl p-3">
+            <div key={zone.id} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm font-medium text-foreground">{zone.name}</span>
                 <div className={cn("w-3 h-3 rounded-full", zone.color)} />
@@ -115,7 +199,7 @@ export default function SatellitePage() {
         </h2>
         <div className="space-y-2">
           {droneRoutes.map((route) => (
-            <div key={route.id} className="bg-card border border-border rounded-xl p-3">
+            <div key={route.id} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-sm font-medium text-foreground">{route.task}</p>
@@ -140,7 +224,7 @@ export default function SatellitePage() {
 
       {/* AI Recommendation */}
       <section className="px-4">
-        <div className="bg-card border-2 border-chart-4/50 rounded-xl p-4">
+        <div className="bg-card/80 backdrop-blur-sm border-2 border-chart-4/50 rounded-xl p-4">
           <div className="flex items-start gap-2">
             <span className="text-xl">🤖</span>
             <div>

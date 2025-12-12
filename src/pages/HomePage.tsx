@@ -20,7 +20,6 @@ import {
   Tractor,
   Calculator,
   CloudLightning,
-  Leaf,
   ChevronDown
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -31,6 +30,7 @@ import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import agriBrainLogo from "@/assets/agri-brain-logo.png";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -126,12 +126,11 @@ export default function HomePage() {
             {/* Left Side - Logo & Greeting */}
             <div className="flex items-center gap-3">
               <div className="relative">
-                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center shadow-lg shadow-secondary/20">
-                  <Leaf className="w-6 h-6 text-secondary-foreground" />
-                </div>
-                <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-primary rounded-full border-2 border-card flex items-center justify-center">
-                  <span className="text-[8px]">AI</span>
-                </div>
+                <img 
+                  src={agriBrainLogo} 
+                  alt="AgriBrain Logo" 
+                  className="w-12 h-12 object-contain rounded-xl"
+                />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-foreground flex items-center gap-1">
