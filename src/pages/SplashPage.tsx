@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Leaf } from "lucide-react";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import agriLogo from "@/assets/agri-brain-logo.png";
 
 export default function SplashPage() {
   const navigate = useNavigate();
@@ -17,17 +18,22 @@ export default function SplashPage() {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center bg-background transition-opacity duration-500 ${
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-500 ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.85), rgba(10, 31, 23, 0.95)), url(${villageBg})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      }}
     >
       {/* Logo */}
       <div className="flex flex-col items-center gap-4 animate-scale-in">
-        <div className="w-20 h-20 rounded-2xl bg-secondary/20 flex items-center justify-center">
-          <Leaf className="w-10 h-10 text-secondary" />
+        <div className="w-24 h-24 rounded-2xl overflow-hidden shadow-2xl">
+          <img src={agriLogo} alt="agriশক্তি Logo" className="w-full h-full object-cover" />
         </div>
         <div className="text-center">
-          <h1 className="text-3xl font-bold text-foreground">AgriBrain</h1>
+          <h1 className="text-3xl font-bold text-foreground">agriশক্তি</h1>
           <p className="text-sm text-primary mt-1">বাংলার কৃষকের AI সহকারী</p>
         </div>
       </div>

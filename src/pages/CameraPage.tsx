@@ -45,7 +45,15 @@ export default function CameraPage() {
   };
 
   return (
-    <div className="mobile-container min-h-screen bg-background pb-24">
+    <div 
+      className="mobile-container min-h-screen pb-24"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(/src/assets/bangladesh-village-bg.jpg)`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
       {/* Header */}
       <header className="px-4 pt-12 pb-6">
         <h1 className="text-2xl font-bold text-foreground">ফসল স্ক্যান</h1>

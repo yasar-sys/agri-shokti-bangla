@@ -189,7 +189,15 @@ export default function PestMapPage() {
   const totalReports = districtPestData.reduce((sum, d) => sum + d.reports, 0);
 
   return (
-    <div className="mobile-container min-h-screen bg-background pb-24">
+    <div 
+      className="mobile-container min-h-screen pb-24"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(/src/assets/bangladesh-village-bg.jpg)`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
       {/* Header */}
       <header className="px-4 pt-12 pb-4">
         <div className="flex items-center gap-3">

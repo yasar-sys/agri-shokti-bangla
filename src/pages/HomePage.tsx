@@ -128,17 +128,17 @@ export default function HomePage() {
               <div className="relative">
                 <img 
                   src={agriBrainLogo} 
-                  alt="AgriBrain Logo" 
+                  alt="agriশক্তি Logo" 
                   className="w-12 h-12 object-contain rounded-xl"
                 />
               </div>
               <div>
                 <h1 className="text-lg font-bold text-foreground flex items-center gap-1">
-                  AgriBrain
+                  agriশক্তি
                   <span className="text-xs font-normal bg-secondary/20 text-secondary px-1.5 py-0.5 rounded-full ml-1">বেটা</span>
                 </h1>
                 <p className="text-xs text-muted-foreground">
-                  বাংলার কৃষকের AI সহকারী
+                  "মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি"
                 </p>
               </div>
             </div>
@@ -328,7 +328,7 @@ export default function HomePage() {
       <section className="px-4">
         <div className="bg-card border border-border rounded-xl p-3 text-center">
           <p className="text-xs text-muted-foreground">
-            🤝 আপনার গ্রামে <span className="text-secondary font-semibold">১২৫ জন</span> কৃষক AgriBrain ব্যবহার করছেন!
+            🤝 আপনার গ্রামে <span className="text-secondary font-semibold">১২৫ জন</span> কৃষক agriশক্তি ব্যবহার করছেন!
           </p>
         </div>
       </section>
