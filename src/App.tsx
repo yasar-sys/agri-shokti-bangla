@@ -23,6 +23,11 @@ import CommunityPage from "./pages/CommunityPage";
 import FertilizerPage from "./pages/FertilizerPage";
 import FertilizerScanPage from "./pages/FertilizerScanPage";
 import PestMapPage from "./pages/PestMapPage";
+import SatellitePage from "./pages/SatellitePage";
+import FarmingCalendarPage from "./pages/FarmingCalendarPage";
+import MachineOptimizerPage from "./pages/MachineOptimizerPage";
+import NPKCalculatorPage from "./pages/NPKCalculatorPage";
+import ClimateAlertPage from "./pages/ClimateAlertPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -52,6 +57,11 @@ function AppContent() {
         <Route path="/fertilizer" element={<FertilizerPage />} />
         <Route path="/fertilizer-scan" element={<FertilizerScanPage />} />
         <Route path="/pest-map" element={<PestMapPage />} />
+        <Route path="/satellite" element={<SatellitePage />} />
+        <Route path="/calendar" element={<FarmingCalendarPage />} />
+        <Route path="/machine" element={<MachineOptimizerPage />} />
+        <Route path="/npk-calculator" element={<NPKCalculatorPage />} />
+        <Route path="/climate-alert" element={<ClimateAlertPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {showNav && <BottomNav />}
