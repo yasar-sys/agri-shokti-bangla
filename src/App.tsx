@@ -8,6 +8,7 @@ import { BottomNav } from "@/components/ui/BottomNav";
 // Pages
 import SplashPage from "./pages/SplashPage";
 import HomePage from "./pages/HomePage";
+import AuthPage from "./pages/AuthPage";
 import CameraPage from "./pages/CameraPage";
 import DiagnosisPage from "./pages/DiagnosisPage";
 import ChatPage from "./pages/ChatPage";
@@ -28,13 +29,14 @@ const queryClient = new QueryClient();
 
 function AppContent() {
   const location = useLocation();
-  const hideNavRoutes = ["/"];
+  const hideNavRoutes = ["/", "/auth"];
   const showNav = !hideNavRoutes.includes(location.pathname);
 
   return (
     <div className="font-bengali">
       <Routes>
         <Route path="/" element={<SplashPage />} />
+        <Route path="/auth" element={<AuthPage />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/camera" element={<CameraPage />} />
         <Route path="/diagnosis" element={<DiagnosisPage />} />
