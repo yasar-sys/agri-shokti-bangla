@@ -23,7 +23,15 @@ export default function MapPage() {
   const [selectedField, setSelectedField] = useState<Field | null>(null);
 
   return (
-    <div className="mobile-container min-h-screen bg-background">
+    <div 
+      className="mobile-container min-h-screen"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(/src/assets/bangladesh-village-bg.jpg)`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
       {/* Header */}
       <header className="absolute top-0 left-0 right-0 z-20 px-4 pt-12 pb-4">
         <div className="flex items-center justify-between">

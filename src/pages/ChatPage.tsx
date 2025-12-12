@@ -22,7 +22,7 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content: "আসসালামু আলাইকুম! আমি AgriBrain AI। আপনার কৃষি সমস্যায় সাহায্য করতে প্রস্তুত। কী জানতে চান?",
+      content: "আসসালামু আলাইকুম! আমি agriশক্তি AI। আপনার কৃষি সমস্যায় সাহায্য করতে প্রস্তুত। কী জানতে চান?",
       sender: "ai",
       timestamp: "এইমাত্র",
     },
@@ -121,15 +121,23 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div 
+      className="min-h-screen flex flex-col"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(/src/assets/bangladesh-village-bg.jpg)`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
       {/* Header */}
-      <header className="px-4 pt-8 pb-4 border-b border-border">
+      <header className="px-4 pt-8 pb-4 border-b border-border bg-background/50 backdrop-blur-sm">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center">
             <Bot className="w-5 h-5 text-secondary" />
           </div>
           <div>
-            <h1 className="text-lg font-bold text-foreground">AI কৃষি সহকারী</h1>
+            <h1 className="text-lg font-bold text-foreground">agriশক্তি AI সহকারী</h1>
             <div className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
               <span className="text-xs text-muted-foreground">অনলাইন</span>

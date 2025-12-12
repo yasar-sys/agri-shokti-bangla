@@ -43,7 +43,7 @@ const posts = [
     location: "বগুড়া",
     avatar: "👨",
     time: "২ দিন আগে",
-    content: "AgriBrain অ্যাপ দিয়ে ধানের রোগ ধরতে পারলাম! সময়মতো স্প্রে করে ফসল বাঁচালাম। অনেক ধন্যবাদ এই অ্যাপকে।",
+    content: "agriশক্তি অ্যাপ দিয়ে ধানের রোগ ধরতে পারলাম! সময়মতো স্প্রে করে ফসল বাঁচালাম। অনেক ধন্যবাদ এই অ্যাপকে।",
     likes: 89,
     comments: 21,
     image: "📱",
@@ -68,7 +68,15 @@ export default function CommunityPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div 
+      className="min-h-screen pb-24"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(/src/assets/bangladesh-village-bg.jpg)`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundAttachment: "fixed",
+      }}
+    >
       {/* Header */}
       <header className="px-4 pt-8 pb-4">
         <div className="flex items-center gap-3">

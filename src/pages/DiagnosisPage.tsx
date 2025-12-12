@@ -3,9 +3,9 @@ import { Button } from "@/components/ui/button";
 import { DiseaseCard } from "@/components/ui/DiseaseCard";
 import { Link } from "react-router-dom";
 
-export default function DiagnosisPage() {
-  // Mock disease data - would come from POST /api/vision/detect-disease
-  const diseaseData = {
+// All possible diseases database
+const allDiseases = [
+  {
     name: "ধানের পাতা ঝলসা রোগ (Leaf Blast)",
     confidence: 87,
     symptoms: [
@@ -17,7 +17,104 @@ export default function DiagnosisPage() {
     treatment: "ট্রাইসাইক্লাজোল বা আইসোপ্রোথিওলেন জাতীয় ছত্রাকনাশক প্রয়োগ করুন। প্রতি লিটার পানিতে ১ গ্রাম মিশিয়ে স্প্রে করুন।",
     fertilizer: "ইউরিয়া সার কমিয়ে দিন। পটাশ সার বাড়ান।",
     irrigation: "জমিতে পানি ধরে রাখুন ২-৩ ইঞ্চি।",
-  };
+  },
+  {
+    name: "ধানের বাদামী দাগ রোগ (Brown Spot)",
+    confidence: 82,
+    symptoms: [
+      "পাতায় গোলাকার বাদামী দাগ",
+      "দাগের মধ্যখানে হালকা রঙ",
+      "পাতা হলুদ হয়ে যাওয়া",
+      "দানা অপুষ্ট হওয়া",
+    ],
+    treatment: "ম্যানকোজেব বা কার্বেন্ডাজিম স্প্রে করুন। প্রতি লিটার পানিতে ২ গ্রাম মিশিয়ে দিন।",
+    fertilizer: "জৈব সার ও পটাশ বাড়ান।",
+    irrigation: "মাটিতে আর্দ্রতা ঠিক রাখুন।",
+  },
+  {
+    name: "ধানের শিস ঝলসা রোগ (Neck Blast)",
+    confidence: 79,
+    symptoms: [
+      "শিসের গোড়ায় কালো দাগ",
+      "শিস ভেঙে পড়া",
+      "দানা চিটা হয়ে যাওয়া",
+      "ফলন মারাত্মকভাবে কমে যাওয়া",
+    ],
+    treatment: "ট্রাইসাইক্লাজোল বা কাসুগামাইসিন স্প্রে করুন।",
+    fertilizer: "অতিরিক্ত ইউরিয়া পরিহার করুন।",
+    irrigation: "জমিতে পানি রাখুন কিন্তু অতিরিক্ত নয়।",
+  },
+  {
+    name: "টমেটোর আগাম ধসা রোগ (Early Blight)",
+    confidence: 85,
+    symptoms: [
+      "পাতায় বৃত্তাকার বাদামী দাগ",
+      "দাগে রিং আকৃতি",
+      "পাতা নিচ থেকে উপরে শুকিয়ে যাওয়া",
+      "ফল পাকার আগেই ঝরে পড়া",
+    ],
+    treatment: "ম্যানকোজেব বা ক্লোরোথ্যালোনিল স্প্রে করুন।",
+    fertilizer: "সুষম সার ব্যবহার করুন।",
+    irrigation: "ড্রিপ সেচ ব্যবহার করুন।",
+  },
+  {
+    name: "আলুর লেট ব্লাইট (Late Blight)",
+    confidence: 91,
+    symptoms: [
+      "পাতায় জলীয় দাগ",
+      "দাগ দ্রুত কালো হয়ে যাওয়া",
+      "পাতার নিচে সাদা ছত্রাক",
+      "আলু পচে যাওয়া",
+    ],
+    treatment: "মেটালাক্সিল বা সিমোক্সানিল স্প্রে করুন।",
+    fertilizer: "পটাশ সার বাড়ান।",
+    irrigation: "অতিরিক্ত পানি এড়িয়ে চলুন।",
+  },
+  {
+    name: "বেগুনের ঢলে পড়া রোগ (Bacterial Wilt)",
+    confidence: 88,
+    symptoms: [
+      "গাছ হঠাৎ ঢলে পড়া",
+      "পাতা সবুজ থাকা অবস্থায় শুকানো",
+      "কাণ্ড কাটলে বাদামী রস বের হওয়া",
+      "গাছ মারা যাওয়া",
+    ],
+    treatment: "আক্রান্ত গাছ তুলে পুড়িয়ে ফেলুন। মাটিতে ব্লিচিং পাউডার দিন।",
+    fertilizer: "জৈব সার বাড়ান।",
+    irrigation: "জমিতে পানি জমতে দেবেন না।",
+  },
+  {
+    name: "পেঁয়াজের পার্পেল ব্লচ (Purple Blotch)",
+    confidence: 84,
+    symptoms: [
+      "পাতায় বেগুনি দাগ",
+      "দাগ ধীরে ধীরে বড় হওয়া",
+      "পাতা শুকিয়ে যাওয়া",
+      "কন্দ ছোট হয়ে যাওয়া",
+    ],
+    treatment: "ম্যানকোজেব বা ক্লোরোথ্যালোনিল স্প্রে করুন।",
+    fertilizer: "পটাশ ও বোরন সার দিন।",
+    irrigation: "সন্ধ্যায় সেচ দেবেন না।",
+  },
+  {
+    name: "গমের পাতা ঝলসা রোগ (Wheat Leaf Blight)",
+    confidence: 80,
+    symptoms: [
+      "পাতায় হলুদ থেকে বাদামী দাগ",
+      "দাগ লম্বা আকারের",
+      "পাতা শুকিয়ে যাওয়া",
+      "দানা অপুষ্ট হওয়া",
+    ],
+    treatment: "প্রোপিকোনাজোল বা টেবুকোনাজোল স্প্রে করুন।",
+    fertilizer: "সুষম সার ব্যবহার করুন।",
+    irrigation: "সময়মতো সেচ দিন।",
+  },
+];
+
+export default function DiagnosisPage() {
+  // Randomly select a disease for demonstration
+  const randomIndex = Math.floor(Math.random() * allDiseases.length);
+  const diseaseData = allDiseases[randomIndex];
 
   return (
     <div className="mobile-container min-h-screen bg-background pb-24">

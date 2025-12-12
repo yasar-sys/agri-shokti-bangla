@@ -89,7 +89,7 @@ export function AgriBrainLogo({ className, size = "md", showTagline = false }: A
 
       {/* App Name */}
       <h1 className={cn("font-bold text-primary tracking-tight", text)}>
-        AgriBrain
+        agriশক্তি
       </h1>
 
       {/* Tagline */}
