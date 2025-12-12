@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const crops = [
   { id: "rice", name: "ধান", emoji: "🌾" },
@@ -37,9 +38,21 @@ export default function NPKCalculatorPage() {
   const [selectedCrop, setSelectedCrop] = useState("rice");
 
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24 relative">
+      {/* Background */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${villageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+      </div>
+
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
+      <header className="bg-card/80 backdrop-blur-md border-b border-border px-4 py-4">
         <div className="flex items-center gap-3">
           <Link to="/home">
             <Button variant="ghost" size="icon" className="rounded-full">
@@ -65,10 +78,10 @@ export default function NPKCalculatorPage() {
               key={crop.id}
               onClick={() => setSelectedCrop(crop.id)}
               className={cn(
-                "flex-shrink-0 px-4 py-2 rounded-xl border flex items-center gap-2 transition-all",
+                "flex-shrink-0 px-4 py-2 rounded-xl border flex items-center gap-2 transition-all backdrop-blur-sm",
                 selectedCrop === crop.id 
                   ? "bg-secondary/20 border-secondary text-secondary" 
-                  : "bg-card border-border text-foreground"
+                  : "bg-card/80 border-border text-foreground"
               )}
             >
               <span>{crop.emoji}</span>
@@ -80,7 +93,7 @@ export default function NPKCalculatorPage() {
 
       {/* Land Size Input */}
       <section className="px-4 mb-4">
-        <div className="bg-card border border-border rounded-xl p-4">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4">
           <h3 className="text-sm font-semibold text-foreground mb-2">জমির পরিমাণ</h3>
           <div className="flex items-center gap-2">
             <div className="flex-1 bg-muted rounded-lg px-4 py-3 text-center">
@@ -100,7 +113,7 @@ export default function NPKCalculatorPage() {
         </h2>
         <div className="grid grid-cols-2 gap-2">
           {fertilizers.map((fert, idx) => (
-            <div key={idx} className="bg-card border border-border rounded-xl p-3">
+            <div key={idx} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3">
               <div className="flex items-center gap-2 mb-2">
                 <div className={cn("w-3 h-3 rounded-full", fert.color)} />
                 <span className="text-sm font-medium text-foreground">{fert.name}</span>
@@ -117,7 +130,7 @@ export default function NPKCalculatorPage() {
         <h2 className="text-base font-semibold text-foreground mb-3">প্রয়োগের সময়সূচি</h2>
         <div className="space-y-2">
           {schedule.map((item, idx) => (
-            <div key={idx} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
+            <div key={idx} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center text-secondary font-bold text-sm">
                 {idx + 1}
               </div>
@@ -133,7 +146,7 @@ export default function NPKCalculatorPage() {
 
       {/* Warnings */}
       <section className="px-4 mb-4">
-        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4">
+        <div className="bg-destructive/10 border border-destructive/30 rounded-xl p-4 backdrop-blur-sm">
           <h3 className="text-sm font-semibold text-destructive mb-2 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4" />
             সতর্কতা
@@ -151,7 +164,7 @@ export default function NPKCalculatorPage() {
 
       {/* Government Source */}
       <section className="px-4">
-        <div className="bg-card border border-border rounded-xl p-3 flex items-center gap-2">
+        <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3 flex items-center gap-2">
           <Info className="w-4 h-4 text-muted-foreground" />
           <p className="text-xs text-muted-foreground">
             তথ্যসূত্র: বাংলাদেশ কৃষি গবেষণা ইনস্টিটিউট (BARI) ও DAE

@@ -2,6 +2,7 @@ import { ArrowLeft, Calendar, Droplets, Leaf, Bug, Scissors, Sprout, Sun } from 
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const currentMonth = [
   { day: "০১", task: "বীজ বপন", icon: Sprout, color: "text-secondary", done: true },
@@ -34,9 +35,21 @@ const upcomingTasks = [
 
 export default function FarmingCalendarPage() {
   return (
-    <div className="min-h-screen bg-background pb-24">
+    <div className="min-h-screen pb-24 relative">
+      {/* Background */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${villageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+      </div>
+
       {/* Header */}
-      <header className="bg-card border-b border-border px-4 py-4">
+      <header className="bg-card/80 backdrop-blur-md border-b border-border px-4 py-4">
         <div className="flex items-center gap-3">
           <Link to="/home">
             <Button variant="ghost" size="icon" className="rounded-full">
@@ -55,7 +68,7 @@ export default function FarmingCalendarPage() {
 
       {/* Current Crop */}
       <section className="px-4 py-4">
-        <div className="bg-gradient-to-r from-secondary/20 to-primary/20 border border-secondary/30 rounded-xl p-4">
+        <div className="bg-gradient-to-r from-secondary/20 to-primary/20 border border-secondary/30 rounded-xl p-4 backdrop-blur-sm">
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">বর্তমান ফসল</p>
@@ -87,7 +100,7 @@ export default function FarmingCalendarPage() {
             <div 
               key={index}
               className={cn(
-                "bg-card border rounded-xl p-3 flex items-center gap-3",
+                "bg-card/80 backdrop-blur-sm border rounded-xl p-3 flex items-center gap-3",
                 item.done ? "border-secondary/50 opacity-70" : "border-border"
               )}
             >
@@ -119,7 +132,7 @@ export default function FarmingCalendarPage() {
             <h3 className="text-sm font-medium text-primary mb-2">{month.month}</h3>
             <div className="space-y-2">
               {month.tasks.map((task, taskIdx) => (
-                <div key={taskIdx} className="bg-card border border-border rounded-xl p-3 flex items-center justify-between">
+                <div key={taskIdx} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3 flex items-center justify-between">
                   <div>
                     <p className="text-sm font-medium text-foreground">{task.name}</p>
                     <p className="text-xs text-muted-foreground">{task.date}</p>
