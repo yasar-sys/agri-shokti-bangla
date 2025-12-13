@@ -1,6 +1,8 @@
-import { GraduationCap, BookOpen, Sprout, Bug, Droplets, Sun, ChevronRight } from "lucide-react";
+import { GraduationCap, BookOpen, Sprout, Bug, Droplets, Sun, ChevronRight, ArrowLeft } from "lucide-react";
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const categories = [
   { id: "crops", icon: Sprout, label: "ফসল চাষ", color: "text-secondary" },
@@ -72,25 +74,33 @@ export default function KnowledgePage() {
   const [activeCategory, setActiveCategory] = useState("crops");
 
   return (
-    <div 
-      className="min-h-screen pb-24"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(/src/assets/bangladesh-village-bg.jpg)`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <div className="min-h-screen pb-24 relative">
+      {/* Background */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${villageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+      </div>
+
       {/* Header */}
-      <header className="px-4 pt-8 pb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-primary/20 flex items-center justify-center">
-            <GraduationCap className="w-6 h-6 text-primary" />
-          </div>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">কৃষি জ্ঞান</h1>
-            <p className="text-sm text-muted-foreground">কৃষি শিক্ষা ও তথ্য ভান্ডার</p>
-          </div>
+      <header className="px-4 pt-6 pb-4 flex items-center gap-3">
+        <Link
+          to="/home"
+          className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
+        >
+          <ArrowLeft className="w-5 h-5 text-foreground" />
+        </Link>
+        <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+          <GraduationCap className="w-5 h-5 text-primary" />
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-foreground">কৃষি জ্ঞান</h1>
+          <p className="text-xs text-muted-foreground">কৃষি শিক্ষা ও তথ্য ভান্ডার</p>
         </div>
       </header>
 

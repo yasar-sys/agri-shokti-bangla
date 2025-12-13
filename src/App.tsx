@@ -28,6 +28,7 @@ import FarmingCalendarPage from "./pages/FarmingCalendarPage";
 import MachineOptimizerPage from "./pages/MachineOptimizerPage";
 import NPKCalculatorPage from "./pages/NPKCalculatorPage";
 import ClimateAlertPage from "./pages/ClimateAlertPage";
+import GovServicesPage from "./pages/GovServicesPage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -62,6 +63,7 @@ function AppContent() {
         <Route path="/machine" element={<MachineOptimizerPage />} />
         <Route path="/npk-calculator" element={<NPKCalculatorPage />} />
         <Route path="/climate-alert" element={<ClimateAlertPage />} />
+        <Route path="/gov-services" element={<GovServicesPage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {showNav && <BottomNav />}
