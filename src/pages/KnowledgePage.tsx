@@ -200,6 +200,7 @@ export default function KnowledgePage() {
                 <div>
                   <p className="text-sm text-muted-foreground">টিম লিড</p>
                   <h3 className="font-semibold text-foreground">Samin Yasar</h3>
+                  <span className="text-xs text-muted-foreground">Mymensingh Engineering College</span>
                 </div>
               </div>
             </div>
@@ -212,7 +213,10 @@ export default function KnowledgePage() {
                   <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
                     <span className="text-secondary text-xs font-bold">RJ</span>
                   </div>
-                  <span className="font-medium text-foreground">Rahiatul Jannat</span>
+                  <div>
+                    <span className="font-medium text-foreground block">Rahiatul Jannat</span>
+                    <span className="text-xs text-muted-foreground">Mymensingh Engineering College</span>
+                  </div>
                 </div>
               </div>
               <div className="bg-card/50 rounded-xl p-3 border border-border">
@@ -220,7 +224,10 @@ export default function KnowledgePage() {
                   <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
                     <span className="text-secondary text-xs font-bold">MO</span>
                   </div>
-                  <span className="font-medium text-foreground">Maisha Osman Umama</span>
+                  <div>
+                    <span className="font-medium text-foreground block">Maisha Osman Umama</span>
+                    <span className="text-xs text-muted-foreground">Mymensingh Engineering College</span>
+                  </div>
                 </div>
               </div>
               <div className="bg-card/50 rounded-xl p-3 border border-border">
@@ -233,19 +240,6 @@ export default function KnowledgePage() {
                     <span className="text-xs text-muted-foreground">Gazipur Agriculture University</span>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Institution */}
-          <div className="bg-card border border-border rounded-xl p-4">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                <School className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="text-xs text-muted-foreground">প্রতিষ্ঠান</p>
-                <h3 className="font-semibold text-foreground">Mymensingh Engineering College</h3>
               </div>
             </div>
           </div>
