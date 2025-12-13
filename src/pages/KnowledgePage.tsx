@@ -237,7 +237,7 @@ export default function KnowledgePage() {
                   </div>
                   <div>
                     <span className="font-medium text-foreground block">Neshat Sultana Keya</span>
-                    <span className="text-xs text-muted-foreground">Gazipur Agriculture University</span>
+                    <span className="text-xs text-muted-foreground">Gazipur Agricultural University</span>
                   </div>
                 </div>
               </div>
