@@ -223,6 +223,17 @@ export default function KnowledgePage() {
                   <span className="font-medium text-foreground">Maisha Osman Umama</span>
                 </div>
               </div>
+              <div className="bg-card/50 rounded-xl p-3 border border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+                    <span className="text-secondary text-xs font-bold">NS</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-foreground block">Neshat Sultana Keya</span>
+                    <span className="text-xs text-muted-foreground">Gazipur Agriculture University</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
