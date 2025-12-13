@@ -1,5 +1,7 @@
-import { Award, Star, Target, Trophy, Leaf } from "lucide-react";
+import { Award, Star, Target, Trophy, Leaf, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import { GamificationBadge } from "@/components/ui/GamificationBadge";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const userStats = {
   totalScans: 5,
@@ -23,19 +25,31 @@ export default function GamificationPage() {
   const progressPercent = (userStats.xp / userStats.nextLevelXp) * 100;
 
   return (
-    <div 
-      className="mobile-container min-h-screen pb-24"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(/src/assets/bangladesh-village-bg.jpg)`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <div className="min-h-screen pb-24 relative">
+      {/* Background */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${villageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+      </div>
+
       {/* Header */}
-      <header className="px-4 pt-12 pb-6">
-        <h1 className="text-2xl font-bold text-foreground">আপনার অগ্রগতি</h1>
-        <p className="text-muted-foreground">ব্যাজ সংগ্রহ করুন এবং লেভেল আপ করুন!</p>
+      <header className="px-4 pt-6 pb-4 flex items-center gap-3">
+        <Link
+          to="/home"
+          className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
+        >
+          <ArrowLeft className="w-5 h-5 text-foreground" />
+        </Link>
+        <div>
+          <h1 className="text-xl font-bold text-foreground">আপনার অগ্রগতি</h1>
+          <p className="text-xs text-muted-foreground">ব্যাজ সংগ্রহ করুন এবং লেভেল আপ করুন!</p>
+        </div>
       </header>
 
       {/* Stats Card */}

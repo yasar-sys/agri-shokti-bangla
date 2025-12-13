@@ -1,6 +1,8 @@
-import { RefreshCw, TrendingUp } from "lucide-react";
+import { RefreshCw, TrendingUp, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import { MarketPriceRow } from "@/components/ui/MarketPriceRow";
 import { Button } from "@/components/ui/button";
+import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const marketData = [
   { crop: "ধান (আমন)", today: 1250, yesterday: 1200, weeklyAvg: 1220 },
@@ -15,21 +17,31 @@ const marketData = [
 
 export default function MarketPage() {
   return (
-    <div 
-      className="mobile-container min-h-screen pb-24"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(/src/assets/bangladesh-village-bg.jpg)`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <div className="min-h-screen pb-24 relative">
+      {/* Background */}
+      <div 
+        className="fixed inset-0 -z-10"
+        style={{
+          backgroundImage: `url(${villageBg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+      </div>
+
       {/* Header */}
-      <header className="px-4 pt-12 pb-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">বাজারদর</h1>
-            <p className="text-muted-foreground text-sm">লাইভ ফসলের দাম</p>
+      <header className="px-4 pt-6 pb-4">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/home"
+            className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-foreground">বাজারদর</h1>
+            <p className="text-xs text-muted-foreground">লাইভ ফসলের দাম</p>
           </div>
           <Button variant="outline" size="icon" className="border-border">
             <RefreshCw className="w-5 h-5" />

@@ -20,7 +20,9 @@ import {
   Tractor,
   Calculator,
   CloudLightning,
-  ChevronDown
+  ChevronDown,
+  Landmark,
+  Loader2
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -31,6 +33,8 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import agriBrainLogo from "@/assets/agri-brain-logo.png";
+import { useLocation } from "@/hooks/useLocation";
+import { useWeather } from "@/hooks/useWeather";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -38,12 +42,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const stats = [
-  { value: "০৬", label: "স্ক্যান" },
-  { value: "৩ লেভেল", label: "র‍্যাংক" },
-  { value: "৩২°", label: "মেঘলা", icon: Cloud },
-];
 
 const services = [
   { icon: Scan, label: "রোগ শনাক্তকরণ", to: "/camera", color: "text-secondary", description: "ফসলের রোগ চিনুন" },
@@ -57,6 +55,7 @@ const services = [
   { icon: Tractor, label: "যন্ত্র অপ্টিমাইজার", to: "/machine", color: "text-chart-1", description: "ট্রাক্টর/টিলার গাইড" },
   { icon: Calculator, label: "সার ক্যালকুলেটর", to: "/npk-calculator", color: "text-primary", description: "NPK ডোজ হিসাব" },
   { icon: CloudLightning, label: "জলবায়ু সতর্কতা", to: "/climate-alert", color: "text-destructive", description: "দুর্যোগ সতর্কতা" },
+  { icon: Landmark, label: "সরকারি সেবা", to: "/gov-services", color: "text-chart-3", description: "ভর্তুকি ও ঋণ" },
   { icon: History, label: "ফসল ইতিহাস", to: "/history", color: "text-muted-foreground", description: "আগের স্ক্যান দেখুন" },
   { icon: Award, label: "পুরস্কার", to: "/gamification", color: "text-primary", description: "ব্যাজ ও পয়েন্ট" },
   { icon: Beaker, label: "সার পরামর্শ", to: "/fertilizer", color: "text-secondary", description: "সার সুপারিশ" },
@@ -72,6 +71,8 @@ const marketPrices = [
 
 export default function HomePage() {
   const [session, setSession] = useState<Session | null>(null);
+  const location = useLocation();
+  const weather = useWeather(location.latitude, location.longitude);
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -95,7 +96,6 @@ export default function HomePage() {
       toast.success("সফলভাবে লগআউট হয়েছে");
     }
   };
-
   return (
     <div className="min-h-screen pb-24 relative">
       {/* Background Image */}
@@ -213,13 +213,25 @@ export default function HomePage() {
           {/* Location & Weather Bar */}
           <div className="mt-4 flex items-center justify-between bg-card/50 rounded-xl px-3 py-2 border border-border/50">
             <div className="flex items-center gap-2">
-              <MapPin className="w-4 h-4 text-destructive" />
-              <span className="text-sm text-foreground">ময়মনসিংহ, বাংলাদেশ</span>
+              {location.loading ? (
+                <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+              ) : (
+                <MapPin className="w-4 h-4 text-destructive" />
+              )}
+              <span className="text-sm text-foreground">
+                {location.loading ? 'লোকেশন খুঁজছি...' : `${location.city}, ${location.country}`}
+              </span>
             </div>
             <div className="flex items-center gap-1 text-sm">
-              <Cloud className="w-4 h-4 text-chart-3" />
-              <span className="text-foreground font-medium">৩২°C</span>
-              <span className="text-muted-foreground text-xs">মেঘলা</span>
+              {weather.loading ? (
+                <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+              ) : (
+                <>
+                  <span className="text-base">{weather.icon}</span>
+                  <span className="text-foreground font-medium">{weather.temp}°C</span>
+                  <span className="text-muted-foreground text-xs">{weather.conditionBn}</span>
+                </>
+              )}
             </div>
           </div>
         </div>
@@ -228,18 +240,21 @@ export default function HomePage() {
       {/* Stats Row */}
       <section className="px-4 mb-4">
         <div className="grid grid-cols-3 gap-2">
-          {stats.map((stat, index) => (
-            <div 
-              key={index}
-              className="bg-card border border-border rounded-xl p-3 text-center"
-            >
-              <div className="flex items-center justify-center gap-1">
-                {stat.icon && <stat.icon className="w-4 h-4 text-muted-foreground" />}
-                <span className="text-lg font-bold text-foreground">{stat.value}</span>
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">{stat.label}</p>
+          <div className="bg-card border border-border rounded-xl p-3 text-center">
+            <span className="text-lg font-bold text-foreground">০৬</span>
+            <p className="text-xs text-muted-foreground mt-1">স্ক্যান</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-3 text-center">
+            <span className="text-lg font-bold text-foreground">৩ লেভেল</span>
+            <p className="text-xs text-muted-foreground mt-1">র‍্যাংক</p>
+          </div>
+          <div className="bg-card border border-border rounded-xl p-3 text-center">
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-base">{weather.icon}</span>
+              <span className="text-lg font-bold text-foreground">{weather.temp}°</span>
             </div>
-          ))}
+            <p className="text-xs text-muted-foreground mt-1">{weather.conditionBn}</p>
+          </div>
         </div>
       </section>
 
