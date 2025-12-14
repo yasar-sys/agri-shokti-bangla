@@ -1,73 +1,97 @@
-# Welcome to your Lovable project
+# 🌾 AgriShokti AI
 
-## Project info
+**মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি**  
 
-**URL**: https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID
+[![Live Demo](https://img.shields.io/badge/Live-Demo-blue)](https://agri-shokti-ai.vercel.app)  
+[![React](https://img.shields.io/badge/React-18.2-blue?logo=react)](https://reactjs.org/)  
+[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.3-blue?logo=tailwind-css)](https://tailwindcss.com/)  
+[![Supabase](https://img.shields.io/badge/Supabase-Edge%20DB-green?logo=supabase)](https://supabase.com/)  
+[![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini-orange)](https://developers.google.com/)
 
-## How can I edit this code?
+---
 
-There are several ways of editing your application.
+## 📸 Screenshots / Demo
 
-**Use Lovable**
+> **Screenshot placeholders – update with your images**
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and start prompting.
+![Landing Page](./assets/screenshots/landing.png)  
+![AI Disease Detection](./assets/screenshots/disease-detect.png)  
+![Farming Map](./assets/screenshots/map.png)
 
-Changes made via Lovable will be committed automatically to this repo.
+> Optional: Add GIF showing AI in action  
+`./assets/gif/agri-action.gif`
 
-**Use your preferred IDE**
+---
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## 🏆 পরিচিতি
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+**AgriShokti AI** হলো বাংলাদেশের কৃষকদের জন্য একটি **AI-চালিত স্মার্ট কৃষি সহায়তা অ্যাপ্লিকেশন।**  
 
-Follow these steps:
+**Team Newbies:**
+| নাম | প্রতিষ্ঠান | ভূমিকা |
+|---|---|---|
+| Samin Yasar | Mymensingh Engineering College | টিম লিড |
+| Mahmud Niloy | Mymensingh Engineering College | টিম মেম্বার |
+| Rahiatul Jannat | Mymensingh Engineering College | টিম মেম্বার |
+| Maisha Osman Umama | Mymensingh Engineering College | টিম মেম্বার |
+| Neshat Sultana Keya | Gazipur Agricultural University | টিম মেম্বার |
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+---
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+## 💡 মূল ফিচারসমূহ
 
-# Step 3: Install the necessary dependencies.
-npm i
+- 📸 **AI রোগ শনাক্তকরণ**  
+- 🔍 **সার স্ক্যানার (Anti-Fake Fertilizer)**  
+- 🗺️ **পোকার হিটম্যাপ**  
+- 💬 **AI চ্যাট সহায়ক (Bangla Voice & Text)**  
+- 🌤️ **রিয়েল-টাইম আবহাওয়া**  
+- 📈 **বাজার দর আপডেট**  
+- 🛰️ **স্যাটেলাইট ভিশন (NDVI)**  
+- 📅 **ফার্মিং ক্যালেন্ডার**  
+- 🧮 **NPK ক্যালকুলেটর**  
+- ⚠️ **জলবায়ু সতর্কতা**  
+- 🏛️ **সরকারি সেবা**
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+---
+
+## 🗄️ ডেটা সোর্স
+
+| সোর্স | ব্যবহার |
+|---|---|
+| Open-Meteo | আবহাওয়া ডেটা |
+| OpenStreetMap | জিওলোকেশন ও ঠিকানা |
+| SoilGrids | মাটির গুণাগুণ |
+| BRRI & BARI | ফসল গবেষণা |
+| DAE | কৃষি সম্প্রসারণ তথ্য |
+| BMD | আবহাওয়া পূর্বাভাস |
+| PlantVillage Dataset | রোগ শনাক্তকরণ AI মডেল |
+| FAO | আন্তর্জাতিক কৃষি তথ্য |
+| Sentinel / Landsat | স্যাটেলাইট ইমেজারি ও NDVI |
+
+---
+
+## 🛠️ প্রযুক্তি স্ট্যাক
+
+- **Frontend:** React, TypeScript, Tailwind CSS  
+- **Backend:** Supabase (Database, Auth, Edge Functions)  
+- **AI:** Google Gemini (Vision + Chat)  
+- **Font:** Noto Sans Bengali  
+
+---
+
+## 🚀 Quick Start (Local Development)
+
+```bash
+# Clone repository
+git clone https://github.com/yourusername/agri-shokti-ai.git
+cd agri-shokti-ai
+
+# Install dependencies
+npm install
+
+# Run development server
 npm run dev
-```
 
-**Edit a file directly in GitHub**
+# Visit in browser
+http://localhost:5173
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/REPLACE_WITH_PROJECT_ID) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
