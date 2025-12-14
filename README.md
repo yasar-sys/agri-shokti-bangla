@@ -9,17 +9,8 @@
 [![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini-orange)](https://developers.google.com/)
 
 ---
-
-## 📸 Screenshots / Demo
-
-> **Screenshot placeholders – update with your images**
-
-![Landing Page](./assets/screenshots/landing.png)  
-![AI Disease Detection](./assets/screenshots/disease-detect.png)  
-![Farming Map](./assets/screenshots/map.png)
-
-> Optional: Add GIF showing AI in action  
-`./assets/gif/agri-action.gif`
+## 🌱 Hero Animation
+![Farm Animation](https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif)
 
 ---
 
