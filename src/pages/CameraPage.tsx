@@ -1,7 +1,9 @@
 import { useState, useRef } from "react";
-import { Camera, Upload, Image, X, Loader2, Sparkles } from "lucide-react";
+import { Camera, Upload, X, Loader2, Sparkles, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export default function CameraPage() {
   const navigate = useNavigate();
@@ -9,10 +11,17 @@ export default function CameraPage() {
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
+  const [statusText, setStatusText] = useState("");
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Check file size (max 4MB for base64)
+      if (file.size > 4 * 1024 * 1024) {
+        toast.error("ছবির সাইজ ৪MB এর বেশি হতে পারবে না");
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e) => {
         setCapturedImage(e.target?.result as string);
@@ -21,27 +30,70 @@ export default function CameraPage() {
     }
   };
 
-  const handleAnalyze = () => {
+  const handleAnalyze = async () => {
+    if (!capturedImage) return;
+    
     setIsAnalyzing(true);
     setProgress(0);
+    setStatusText("ছবি প্রক্রিয়াকরণ হচ্ছে...");
 
-    // Simulate API call progress: POST /api/vision/detect-disease
-    const interval = setInterval(() => {
+    // Simulate progress while API call is happening
+    const progressInterval = setInterval(() => {
       setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(() => navigate("/diagnosis"), 500);
-          return 100;
-        }
+        if (prev >= 90) return prev;
         return prev + 10;
       });
-    }, 200);
+    }, 300);
+
+    try {
+      setStatusText("AI বিশ্লেষণ করছে...");
+      
+      const { data, error } = await supabase.functions.invoke('detect-disease', {
+        body: { imageBase64: capturedImage }
+      });
+
+      clearInterval(progressInterval);
+
+      if (error) {
+        console.error('Disease detection error:', error);
+        toast.error("বিশ্লেষণ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+        setIsAnalyzing(false);
+        setProgress(0);
+        return;
+      }
+
+      if (data?.error) {
+        toast.error(data.error);
+        setIsAnalyzing(false);
+        setProgress(0);
+        return;
+      }
+
+      setProgress(100);
+      setStatusText("বিশ্লেষণ সম্পন্ন!");
+
+      // Store result in sessionStorage and navigate
+      sessionStorage.setItem('diseaseResult', JSON.stringify(data.result));
+      sessionStorage.setItem('scannedImage', capturedImage);
+      
+      setTimeout(() => {
+        navigate("/diagnosis");
+      }, 500);
+
+    } catch (err) {
+      console.error('Analysis error:', err);
+      clearInterval(progressInterval);
+      toast.error("সার্ভারে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।");
+      setIsAnalyzing(false);
+      setProgress(0);
+    }
   };
 
   const clearImage = () => {
     setCapturedImage(null);
     setIsAnalyzing(false);
     setProgress(0);
+    setStatusText("");
   };
 
   return (
@@ -55,9 +107,17 @@ export default function CameraPage() {
       }}
     >
       {/* Header */}
-      <header className="px-4 pt-12 pb-6">
-        <h1 className="text-2xl font-bold text-foreground">ফসল স্ক্যান</h1>
-        <p className="text-muted-foreground mt-1">ছবি তুলুন বা আপলোড করুন</p>
+      <header className="px-4 pt-12 pb-6 flex items-center gap-3">
+        <Link
+          to="/home"
+          className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
+        >
+          <ArrowLeft className="w-5 h-5 text-foreground" />
+        </Link>
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">ফসল স্ক্যান</h1>
+          <p className="text-muted-foreground mt-1">ছবি তুলুন বা আপলোড করুন</p>
+        </div>
       </header>
 
       {/* Camera/Upload Area */}
@@ -93,7 +153,8 @@ export default function CameraPage() {
             {/* Clear button */}
             <button
               onClick={clearImage}
-              className="absolute top-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur flex items-center justify-center"
+              disabled={isAnalyzing}
+              className="absolute top-3 right-3 w-10 h-10 rounded-full bg-background/80 backdrop-blur flex items-center justify-center disabled:opacity-50"
             >
               <X className="w-5 h-5 text-foreground" />
             </button>
@@ -102,7 +163,7 @@ export default function CameraPage() {
             {isAnalyzing && (
               <div className="absolute inset-0 bg-background/80 backdrop-blur flex flex-col items-center justify-center">
                 <Loader2 className="w-12 h-12 text-secondary animate-spin mb-4" />
-                <p className="text-foreground font-medium mb-2">AI বিশ্লেষণ করছে...</p>
+                <p className="text-foreground font-medium mb-2">{statusText}</p>
                 <div className="w-48 h-2 bg-muted rounded-full overflow-hidden">
                   <div
                     className="h-full bg-secondary transition-all duration-200"
@@ -110,7 +171,7 @@ export default function CameraPage() {
                   />
                 </div>
                 <p className="text-xs text-muted-foreground mt-2">
-                  POST /api/vision/detect-disease
+                  Gemini Vision AI
                 </p>
               </div>
             )}
