@@ -9,10 +9,7 @@
 [![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini-orange)](https://developers.google.com/)
 
 ---
-## 🌱 Hero Animation
-![Farm Animation](https://media.giphy.com/media/3oriO0OEd9QIDdllqo/giphy.gif)
 
----
 
 ## 🏆 পরিচিতি
 
