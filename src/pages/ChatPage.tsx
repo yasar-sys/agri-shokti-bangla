@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, Bot } from "lucide-react";
+import { Send, Mic, MicOff, Bot, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -133,6 +134,12 @@ export default function ChatPage() {
       {/* Header */}
       <header className="px-4 pt-8 pb-4 border-b border-border bg-background/50 backdrop-blur-sm">
         <div className="flex items-center gap-3">
+          <Link
+            to="/home"
+            className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
           <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center">
             <Bot className="w-5 h-5 text-secondary" />
           </div>

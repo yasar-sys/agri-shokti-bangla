@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import { ArrowLeft, Satellite, Plane, MapPin, Leaf, Droplets, AlertTriangle } from "lucide-react";
+import { ArrowLeft, Satellite, Plane, MapPin, Leaf, AlertTriangle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import { useLocation } from "@/hooks/useLocation";
 
 const ndviZones = [
   { id: 1, name: "পূর্ব ব্লক", health: 0.85, status: "সুস্থ", color: "bg-secondary" },
@@ -21,6 +22,7 @@ const droneRoutes = [
 export default function SatellitePage() {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     // Simple map placeholder - in production would use Mapbox
@@ -142,7 +144,9 @@ export default function SatellitePage() {
           <div className="p-3 border-t border-border flex items-center justify-between bg-card/80">
             <div className="flex items-center gap-2">
               <MapPin className="w-4 h-4 text-destructive" />
-              <span className="text-sm text-foreground">ময়মনসিংহ, বাংলাদেশ</span>
+              <span className="text-sm text-foreground">
+                {location.loading ? "লোকেশন খোঁজা হচ্ছে..." : `${location.city}, ${location.country}`}
+              </span>
             </div>
             <span className="text-xs text-muted-foreground">আপডেট: ২ ঘণ্টা আগে</span>
           </div>

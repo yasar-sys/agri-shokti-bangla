@@ -1,4 +1,5 @@
-import { UsersRound, MessageCircle, Heart, Share2, ThumbsUp, Send } from "lucide-react";
+import { UsersRound, MessageCircle, Heart, Share2, ThumbsUp, Send, ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -80,6 +81,12 @@ export default function CommunityPage() {
       {/* Header */}
       <header className="px-4 pt-8 pb-4">
         <div className="flex items-center gap-3">
+          <Link
+            to="/home"
+            className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
           <div className="w-12 h-12 rounded-xl bg-secondary/20 flex items-center justify-center">
             <UsersRound className="w-6 h-6 text-secondary" />
           </div>

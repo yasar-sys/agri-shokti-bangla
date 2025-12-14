@@ -1,39 +1,105 @@
-import { ArrowLeft, Calendar, Droplets, Leaf, Bug, Scissors, Sprout, Sun } from "lucide-react";
+import { ArrowLeft, Calendar, Droplets, Leaf, Bug, Scissors, Sprout, Sun, Plus } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { useToast } from "@/hooks/use-toast";
 
-const currentMonth = [
-  { day: "০১", task: "বীজ বপন", icon: Sprout, color: "text-secondary", done: true },
-  { day: "০৫", task: "প্রথম সেচ", icon: Droplets, color: "text-chart-3", done: true },
-  { day: "১০", task: "ইউরিয়া প্রয়োগ", icon: Leaf, color: "text-primary", done: true },
-  { day: "১৫", task: "আগাছা পরিষ্কার", icon: Scissors, color: "text-chart-2", done: false },
-  { day: "২০", task: "পোকা চেক", icon: Bug, color: "text-destructive", done: false },
-  { day: "২৫", task: "দ্বিতীয় সেচ", icon: Droplets, color: "text-chart-3", done: false },
-  { day: "৩০", task: "TSP প্রয়োগ", icon: Leaf, color: "text-primary", done: false },
+const cropOptions = [
+  { id: "aman", name: "আমন ধান", emoji: "🌾", duration: 120 },
+  { id: "boro", name: "বোরো ধান", emoji: "🌾", duration: 150 },
+  { id: "wheat", name: "গম", emoji: "🌿", duration: 110 },
+  { id: "potato", name: "আলু", emoji: "🥔", duration: 90 },
+  { id: "tomato", name: "টমেটো", emoji: "🍅", duration: 100 },
+  { id: "onion", name: "পেঁয়াজ", emoji: "🧅", duration: 120 },
+  { id: "corn", name: "ভুট্টা", emoji: "🌽", duration: 100 },
 ];
 
-const upcomingTasks = [
-  { 
-    month: "কার্তিক", 
-    tasks: [
-      { name: "তৃতীয় সেচ", date: "০৫ কার্তিক", type: "সেচ" },
-      { name: "পটাশ প্রয়োগ", date: "১০ কার্তিক", type: "সার" },
-      { name: "ফুল আসার সময়", date: "১৫ কার্তিক", type: "পর্যবেক্ষণ" },
-    ]
-  },
-  { 
-    month: "অগ্রহায়ণ", 
-    tasks: [
-      { name: "শেষ সেচ", date: "০১ অগ্রহায়ণ", type: "সেচ" },
-      { name: "ফসল কাটার প্রস্তুতি", date: "১৫ অগ্রহায়ণ", type: "ফসল" },
-      { name: "ফসল কাটা", date: "২৫ অগ্রহায়ণ", type: "ফসল" },
-    ]
-  },
-];
+const generateCalendar = (crop: typeof cropOptions[0]) => {
+  return [
+    { day: "০১", task: "বীজ বপন/রোপণ", icon: Sprout, color: "text-secondary", done: false },
+    { day: "০৫", task: "প্রথম সেচ", icon: Droplets, color: "text-chart-3", done: false },
+    { day: "১০", task: "ইউরিয়া প্রয়োগ (১ম কিস্তি)", icon: Leaf, color: "text-primary", done: false },
+    { day: "১৫", task: "আগাছা পরিষ্কার", icon: Scissors, color: "text-chart-2", done: false },
+    { day: "২০", task: "পোকা চেক", icon: Bug, color: "text-destructive", done: false },
+    { day: "২৫", task: "দ্বিতীয় সেচ", icon: Droplets, color: "text-chart-3", done: false },
+    { day: "৩০", task: "ইউরিয়া প্রয়োগ (২য় কিস্তি)", icon: Leaf, color: "text-primary", done: false },
+  ];
+};
 
 export default function FarmingCalendarPage() {
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [selectedCrop, setSelectedCrop] = useState("");
+  const [landSize, setLandSize] = useState("");
+  const [currentCrop, setCurrentCrop] = useState({
+    name: "আমন ধান",
+    emoji: "🌾",
+    age: 45,
+    remaining: 60,
+    progress: 42,
+  });
+  const [tasks, setTasks] = useState([
+    { day: "০১", task: "বীজ বপন", icon: Sprout, color: "text-secondary", done: true },
+    { day: "০৫", task: "প্রথম সেচ", icon: Droplets, color: "text-chart-3", done: true },
+    { day: "১০", task: "ইউরিয়া প্রয়োগ", icon: Leaf, color: "text-primary", done: true },
+    { day: "১৫", task: "আগাছা পরিষ্কার", icon: Scissors, color: "text-chart-2", done: false },
+    { day: "২০", task: "পোকা চেক", icon: Bug, color: "text-destructive", done: false },
+    { day: "২৫", task: "দ্বিতীয় সেচ", icon: Droplets, color: "text-chart-3", done: false },
+    { day: "৩০", task: "TSP প্রয়োগ", icon: Leaf, color: "text-primary", done: false },
+  ]);
+  const { toast } = useToast();
+
+  const [upcomingTasks, setUpcomingTasks] = useState([
+    { 
+      month: "কার্তিক", 
+      tasks: [
+        { name: "তৃতীয় সেচ", date: "০৫ কার্তিক", type: "সেচ" },
+        { name: "পটাশ প্রয়োগ", date: "১০ কার্তিক", type: "সার" },
+        { name: "ফুল আসার সময়", date: "১৫ কার্তিক", type: "পর্যবেক্ষণ" },
+      ]
+    },
+    { 
+      month: "অগ্রহায়ণ", 
+      tasks: [
+        { name: "শেষ সেচ", date: "০১ অগ্রহায়ণ", type: "সেচ" },
+        { name: "ফসল কাটার প্রস্তুতি", date: "১৫ অগ্রহায়ণ", type: "ফসল" },
+        { name: "ফসল কাটা", date: "২৫ অগ্রহায়ণ", type: "ফসল" },
+      ]
+    },
+  ]);
+
+  const handleCreateCalendar = () => {
+    if (!selectedCrop || !landSize) {
+      toast({
+        variant: "destructive",
+        title: "ত্রুটি",
+        description: "অনুগ্রহ করে ফসল ও জমির পরিমাণ নির্বাচন করুন।",
+      });
+      return;
+    }
+
+    const crop = cropOptions.find(c => c.id === selectedCrop);
+    if (crop) {
+      setCurrentCrop({
+        name: crop.name,
+        emoji: crop.emoji,
+        age: 0,
+        remaining: crop.duration,
+        progress: 0,
+      });
+      setTasks(generateCalendar(crop));
+      setIsDialogOpen(false);
+      toast({
+        title: "সফল!",
+        description: `${crop.name} এর জন্য নতুন ক্যালেন্ডার তৈরি হয়েছে।`,
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen pb-24 relative">
       {/* Background */}
@@ -72,18 +138,18 @@ export default function FarmingCalendarPage() {
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-muted-foreground">বর্তমান ফসল</p>
-              <h2 className="text-xl font-bold text-foreground">আমন ধান</h2>
-              <p className="text-sm text-secondary">বয়স: ৪৫ দিন | আরো ৬০ দিন বাকি</p>
+              <h2 className="text-xl font-bold text-foreground">{currentCrop.name}</h2>
+              <p className="text-sm text-secondary">বয়স: {currentCrop.age} দিন | আরো {currentCrop.remaining} দিন বাকি</p>
             </div>
-            <div className="text-4xl">🌾</div>
+            <div className="text-4xl">{currentCrop.emoji}</div>
           </div>
           <div className="mt-3 bg-card/50 rounded-lg p-2">
             <div className="flex justify-between text-xs mb-1">
               <span className="text-muted-foreground">অগ্রগতি</span>
-              <span className="text-foreground font-medium">৪২%</span>
+              <span className="text-foreground font-medium">{currentCrop.progress}%</span>
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
-              <div className="h-full bg-secondary rounded-full" style={{ width: '42%' }} />
+              <div className="h-full bg-secondary rounded-full" style={{ width: `${currentCrop.progress}%` }} />
             </div>
           </div>
         </div>
@@ -96,7 +162,7 @@ export default function FarmingCalendarPage() {
           এই মাসের কাজ (আশ্বিন)
         </h2>
         <div className="space-y-2">
-          {currentMonth.map((item, index) => (
+          {tasks.map((item, index) => (
             <div 
               key={index}
               className={cn(
@@ -155,10 +221,54 @@ export default function FarmingCalendarPage() {
 
       {/* Generate New Calendar */}
       <section className="px-4">
-        <Button className="w-full bg-gradient-to-r from-chart-5 to-chart-5/80 text-chart-5-foreground">
-          <Calendar className="w-4 h-4 mr-2" />
-          নতুন ফসলের ক্যালেন্ডার তৈরি করুন
-        </Button>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button className="w-full bg-gradient-to-r from-chart-5 to-chart-5/80 text-chart-5-foreground">
+              <Plus className="w-4 h-4 mr-2" />
+              নতুন ফসলের ক্যালেন্ডার তৈরি করুন
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-sm">
+            <DialogHeader>
+              <DialogTitle className="text-foreground">নতুন ক্যালেন্ডার তৈরি</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">ফসল নির্বাচন করুন</label>
+                <Select value={selectedCrop} onValueChange={setSelectedCrop}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="ফসল বেছে নিন" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {cropOptions.map((crop) => (
+                      <SelectItem key={crop.id} value={crop.id}>
+                        {crop.emoji} {crop.name} ({crop.duration} দিন)
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-foreground mb-2 block">জমির পরিমাণ (একর)</label>
+                <Input
+                  type="number"
+                  value={landSize}
+                  onChange={(e) => setLandSize(e.target.value)}
+                  placeholder="যেমন: ২.৫"
+                  min="0.1"
+                  step="0.1"
+                />
+              </div>
+              <Button 
+                onClick={handleCreateCalendar}
+                className="w-full bg-secondary text-secondary-foreground"
+              >
+                <Calendar className="w-4 h-4 mr-2" />
+                ক্যালেন্ডার তৈরি করুন
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </section>
     </div>
   );
