@@ -2,7 +2,9 @@ import { ArrowLeft, Tractor, Fuel, Gauge, Timer, AlertCircle, CheckCircle2 } fro
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useState } from "react";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import { Input } from "@/components/ui/input";
 
 const machines = [
   { id: 1, name: "ট্রাক্টর", emoji: "🚜", status: "ভালো", lastService: "১৫ দিন আগে" },
@@ -43,7 +45,22 @@ const optimizationTips = [
   },
 ];
 
+const DIESEL_PRICE = 107; // BDT per liter
+
 export default function MachineOptimizerPage() {
+  const [dieselLiters, setDieselLiters] = useState("");
+  const [calculatedCost, setCalculatedCost] = useState<number | null>(null);
+  const [calculatedArea, setCalculatedArea] = useState<number | null>(null);
+
+  const handleCalculate = () => {
+    const liters = parseFloat(dieselLiters);
+    if (!isNaN(liters) && liters > 0) {
+      setCalculatedCost(liters * DIESEL_PRICE);
+      // Approximately 3.2 liters per acre for standard tractor
+      setCalculatedArea(liters / 3.2);
+    }
+  };
+
   return (
     <div className="min-h-screen pb-24 relative">
       {/* Background */}
@@ -110,18 +127,58 @@ export default function MachineOptimizerPage() {
             <Fuel className="w-4 h-4 text-chart-2" />
             দ্রুত ডিজেল হিসাব
           </h3>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="bg-card/50 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-foreground">৮ লিটার</p>
-              <p className="text-xs text-muted-foreground">২.৫ একর জমির জন্য</p>
-            </div>
-            <div className="bg-card/50 rounded-lg p-3 text-center">
-              <p className="text-2xl font-bold text-foreground">৳৮৫৬</p>
-              <p className="text-xs text-muted-foreground">আনুমানিক খরচ</p>
+          
+          {/* Input for liters */}
+          <div className="mb-3">
+            <label className="text-xs text-muted-foreground mb-1 block">ডিজেলের পরিমাণ (লিটার)</label>
+            <div className="flex gap-2">
+              <Input
+                type="number"
+                value={dieselLiters}
+                onChange={(e) => setDieselLiters(e.target.value)}
+                placeholder="যেমন: ৮"
+                className="flex-1"
+                min="0.1"
+                step="0.1"
+              />
+              <Button 
+                onClick={handleCalculate}
+                className="bg-secondary text-secondary-foreground"
+              >
+                হিসাব করুন
+              </Button>
             </div>
           </div>
+
+          {/* Results */}
+          {calculatedCost !== null && calculatedArea !== null && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-card/50 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-foreground">৳{calculatedCost.toFixed(0)}</p>
+                <p className="text-xs text-muted-foreground">মোট খরচ</p>
+              </div>
+              <div className="bg-card/50 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-foreground">{calculatedArea.toFixed(1)} একর</p>
+                <p className="text-xs text-muted-foreground">আনুমানিক জমি</p>
+              </div>
+            </div>
+          )}
+
+          {calculatedCost === null && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-card/50 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-foreground">৮ লিটার</p>
+                <p className="text-xs text-muted-foreground">২.৫ একর জমির জন্য</p>
+              </div>
+              <div className="bg-card/50 rounded-lg p-3 text-center">
+                <p className="text-2xl font-bold text-foreground">৳{(8 * DIESEL_PRICE).toFixed(0)}</p>
+                <p className="text-xs text-muted-foreground">আনুমানিক খরচ</p>
+              </div>
+            </div>
+          )}
+          
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            * নরম মাটি ও সকালের কাজের ভিত্তিতে
+            * বর্তমান ডিজেলের দাম: ৳{DIESEL_PRICE}/লিটার
           </p>
         </div>
       </section>

@@ -233,6 +233,17 @@ export default function KnowledgePage() {
               <div className="bg-card/50 rounded-xl p-3 border border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
+                    <span className="text-secondary text-xs font-bold">MN</span>
+                  </div>
+                  <div>
+                    <span className="font-medium text-foreground block">Mahmud Niloy</span>
+                    <span className="text-xs text-muted-foreground">Mymensingh Engineering College</span>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-card/50 rounded-xl p-3 border border-border">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
                     <span className="text-secondary text-xs font-bold">NS</span>
                   </div>
                   <div>

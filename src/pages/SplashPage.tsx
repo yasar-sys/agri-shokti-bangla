@@ -52,7 +52,7 @@ export default function SplashPage() {
       {/* Footer credit */}
       <div className="absolute bottom-8 text-center">
         <p className="text-xs text-muted-foreground">
-          Designed by Samin Yasar Sunny
+          Created by TEAM_NEWBIES
         </p>
       </div>
     </div>

@@ -1,4 +1,6 @@
 import { TimelineCard } from "@/components/ui/TimelineCard";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const historyData = [
   {
@@ -40,10 +42,20 @@ export default function HistoryPage() {
     >
       {/* Header */}
       <header className="px-4 pt-12 pb-6">
-        <h1 className="text-2xl font-bold text-foreground">স্ক্যান ইতিহাস</h1>
-        <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
-          <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-          <span>GET /api/history</span>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/home"
+            className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">স্ক্যান ইতিহাস</h1>
+            <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
+              <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+              <span>GET /api/history</span>
+            </div>
+          </div>
         </div>
       </header>
 

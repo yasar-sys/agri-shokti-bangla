@@ -1,9 +1,10 @@
-import { ArrowLeft, Calculator, Leaf, AlertTriangle, CheckCircle2, Info } from "lucide-react";
+import { ArrowLeft, Calculator, Leaf, AlertTriangle, Info } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import { Input } from "@/components/ui/input";
 
 const crops = [
   { id: "rice", name: "ধান", emoji: "🌾" },
@@ -14,19 +15,44 @@ const crops = [
   { id: "corn", name: "ভুট্টা", emoji: "🌽" },
 ];
 
-const fertilizers = [
-  { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", dose: "৮০ কেজি/একর" },
-  { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", dose: "৪০ কেজি/একর" },
-  { name: "MOP", npk: "০-০-৬০", color: "bg-primary", dose: "৩০ কেজি/একর" },
-  { name: "DAP", npk: "১৮-৪৬-০", color: "bg-chart-4", dose: "২৫ কেজি/একর" },
-];
-
-const schedule = [
-  { stage: "বীজ বপনের সময়", day: "০ দিন", fertilizer: "TSP + MOP সম্পূর্ণ", amount: "৪০+৩০ কেজি" },
-  { stage: "প্রথম কিস্তি", day: "১৫-২০ দিন", fertilizer: "ইউরিয়া ১/৩", amount: "২৭ কেজি" },
-  { stage: "দ্বিতীয় কিস্তি", day: "৩০-৩৫ দিন", fertilizer: "ইউরিয়া ১/৩", amount: "২৭ কেজি" },
-  { stage: "তৃতীয় কিস্তি", day: "৪৫-৫০ দিন", fertilizer: "ইউরিয়া ১/৩", amount: "২৬ কেজি" },
-];
+// Base fertilizer per acre
+const baseFertilizers: Record<string, { name: string; npk: string; color: string; baseAmount: number }[]> = {
+  rice: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 80 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 40 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 30 },
+    { name: "DAP", npk: "১৮-৪৬-০", color: "bg-chart-4", baseAmount: 25 },
+  ],
+  wheat: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 70 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 56 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 22 },
+  ],
+  potato: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 140 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 90 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 120 },
+    { name: "জিপসাম", npk: "০-০-০-১৮", color: "bg-chart-5", baseAmount: 48 },
+  ],
+  onion: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 80 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 60 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 60 },
+    { name: "সালফার", npk: "০-০-০-০", color: "bg-chart-4", baseAmount: 8 },
+  ],
+  tomato: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 120 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 100 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 80 },
+    { name: "বোরন", npk: "০-০-০-০", color: "bg-chart-5", baseAmount: 4 },
+  ],
+  corn: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 200 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 100 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 80 },
+    { name: "জিংক সালফেট", npk: "০-০-০-০", color: "bg-chart-4", baseAmount: 4 },
+  ],
+};
 
 const warnings = [
   "ইউরিয়া + TSP একসাথে দেবেন না",
@@ -36,6 +62,29 @@ const warnings = [
 
 export default function NPKCalculatorPage() {
   const [selectedCrop, setSelectedCrop] = useState("rice");
+  const [landSize, setLandSize] = useState("2.5");
+  const [isEditing, setIsEditing] = useState(false);
+
+  const landSizeNum = parseFloat(landSize) || 0;
+  const currentFertilizers = baseFertilizers[selectedCrop] || baseFertilizers.rice;
+
+  const calculateAmount = (baseAmount: number) => {
+    const amount = baseAmount * landSizeNum;
+    return amount.toFixed(1);
+  };
+
+  const getSchedule = () => {
+    const totalUrea = (currentFertilizers.find(f => f.name === "ইউরিয়া")?.baseAmount || 80) * landSizeNum;
+    const tsp = (currentFertilizers.find(f => f.name === "TSP")?.baseAmount || 40) * landSizeNum;
+    const mop = (currentFertilizers.find(f => f.name === "MOP")?.baseAmount || 30) * landSizeNum;
+    
+    return [
+      { stage: "বীজ বপনের সময়", day: "০ দিন", fertilizer: "TSP + MOP সম্পূর্ণ", amount: `${tsp.toFixed(0)}+${mop.toFixed(0)} কেজি` },
+      { stage: "প্রথম কিস্তি", day: "১৫-২০ দিন", fertilizer: "ইউরিয়া ১/৩", amount: `${(totalUrea / 3).toFixed(0)} কেজি` },
+      { stage: "দ্বিতীয় কিস্তি", day: "৩০-৩৫ দিন", fertilizer: "ইউরিয়া ১/৩", amount: `${(totalUrea / 3).toFixed(0)} কেজি` },
+      { stage: "তৃতীয় কিস্তি", day: "৪৫-৫০ দিন", fertilizer: "ইউরিয়া ১/৩", amount: `${(totalUrea / 3).toFixed(0)} কেজি` },
+    ];
+  };
 
   return (
     <div className="min-h-screen pb-24 relative">
@@ -95,13 +144,39 @@ export default function NPKCalculatorPage() {
       <section className="px-4 mb-4">
         <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4">
           <h3 className="text-sm font-semibold text-foreground mb-2">জমির পরিমাণ</h3>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 bg-muted rounded-lg px-4 py-3 text-center">
-              <span className="text-2xl font-bold text-foreground">২.৫</span>
-              <span className="text-sm text-muted-foreground ml-1">একর</span>
+          {isEditing ? (
+            <div className="flex items-center gap-2">
+              <Input
+                type="number"
+                value={landSize}
+                onChange={(e) => setLandSize(e.target.value)}
+                className="flex-1 text-center text-xl font-bold"
+                min="0.1"
+                step="0.1"
+                autoFocus
+              />
+              <span className="text-sm text-muted-foreground">একর</span>
+              <Button 
+                onClick={() => setIsEditing(false)}
+                className="bg-secondary text-secondary-foreground"
+              >
+                হিসাব করুন
+              </Button>
             </div>
-            <Button variant="outline" size="sm">পরিবর্তন</Button>
-          </div>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="flex-1 bg-muted rounded-lg px-4 py-3 text-center">
+                <span className="text-2xl font-bold text-foreground">{landSize}</span>
+                <span className="text-sm text-muted-foreground ml-1">একর</span>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={() => setIsEditing(true)}
+              >
+                পরিবর্তন
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
@@ -109,16 +184,16 @@ export default function NPKCalculatorPage() {
       <section className="px-4 mb-4">
         <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
           <Leaf className="w-4 h-4 text-secondary" />
-          প্রয়োজনীয় সার (২.৫ একর)
+          প্রয়োজনীয় সার ({landSize} একর)
         </h2>
         <div className="grid grid-cols-2 gap-2">
-          {fertilizers.map((fert, idx) => (
+          {currentFertilizers.map((fert, idx) => (
             <div key={idx} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3">
               <div className="flex items-center gap-2 mb-2">
                 <div className={cn("w-3 h-3 rounded-full", fert.color)} />
                 <span className="text-sm font-medium text-foreground">{fert.name}</span>
               </div>
-              <p className="text-xl font-bold text-foreground">{fert.dose}</p>
+              <p className="text-xl font-bold text-foreground">{calculateAmount(fert.baseAmount)} কেজি</p>
               <p className="text-xs text-muted-foreground">NPK: {fert.npk}</p>
             </div>
           ))}
@@ -129,7 +204,7 @@ export default function NPKCalculatorPage() {
       <section className="px-4 mb-4">
         <h2 className="text-base font-semibold text-foreground mb-3">প্রয়োগের সময়সূচি</h2>
         <div className="space-y-2">
-          {schedule.map((item, idx) => (
+          {getSchedule().map((item, idx) => (
             <div key={idx} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3 flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center text-secondary font-bold text-sm">
                 {idx + 1}
