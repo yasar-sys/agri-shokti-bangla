@@ -67,22 +67,26 @@ export default function AuthPage() {
 
     setLoading(true);
     
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    setLoading(false);
-
-    if (error) {
-      if (error.message.includes("Invalid login credentials")) {
-        toast.error("ইমেইল বা পাসওয়ার্ড ভুল হয়েছে");
+      if (error) {
+        setLoading(false);
+        if (error.message.includes("Invalid login credentials")) {
+          toast.error("ইমেইল বা পাসওয়ার্ড ভুল হয়েছে");
+        } else {
+          toast.error(error.message);
+        }
       } else {
-        toast.error(error.message);
+        toast.success("সফলভাবে লগইন হয়েছে!");
+        // Navigation will happen via onAuthStateChange
       }
-    } else {
-      toast.success("সফলভাবে লগইন হয়েছে!");
-      navigate("/home");
+    } catch (err) {
+      setLoading(false);
+      toast.error("কিছু সমস্যা হয়েছে, আবার চেষ্টা করুন");
     }
   };
 
@@ -101,33 +105,41 @@ export default function AuthPage() {
 
     setLoading(true);
 
-    const redirectUrl = `${window.location.origin}/`;
+    try {
+      const redirectUrl = `${window.location.origin}/`;
 
-    const { error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        emailRedirectTo: redirectUrl,
-        data: {
-          full_name: fullName,
-          avatar_url: avatarUrl,
-          blood_group: bloodGroup,
-          nationality: nationality,
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: redirectUrl,
+          data: {
+            full_name: fullName,
+            avatar_url: avatarUrl,
+            blood_group: bloodGroup,
+            nationality: nationality,
+          },
         },
-      },
-    });
+      });
 
-    setLoading(false);
-
-    if (error) {
-      if (error.message.includes("already registered")) {
-        toast.error("এই ইমেইল দিয়ে আগে অ্যাকাউন্ট খোলা হয়েছে");
+      if (error) {
+        setLoading(false);
+        if (error.message.includes("already registered")) {
+          toast.error("এই ইমেইল দিয়ে আগে অ্যাকাউন্ট খোলা হয়েছে");
+        } else {
+          toast.error(error.message);
+        }
+      } else if (data.session) {
+        toast.success("সফলভাবে অ্যাকাউন্ট তৈরি হয়েছে!");
+        // Navigation will happen via onAuthStateChange
       } else {
-        toast.error(error.message);
+        setLoading(false);
+        toast.success("সফলভাবে অ্যাকাউন্ট তৈরি হয়েছে!");
+        navigate("/home");
       }
-    } else {
-      toast.success("সফলভাবে অ্যাকাউন্ট তৈরি হয়েছে!");
-      navigate("/home");
+    } catch (err) {
+      setLoading(false);
+      toast.error("কিছু সমস্যা হয়েছে, আবার চেষ্টা করুন");
     }
   };
 
