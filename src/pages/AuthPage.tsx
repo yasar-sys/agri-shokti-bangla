@@ -6,15 +6,24 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
-import { ArrowLeft, Mail, Lock, UserPlus, LogIn, Loader2 } from "lucide-react";
+import { ArrowLeft, Mail, Lock, UserPlus, LogIn, Loader2, User, Droplets, Globe, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
+
+const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
+const nationalities = ["বাংলাদেশী", "ভারতীয়", "অন্যান্য"];
 
 export default function AuthPage() {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fullName, setFullName] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
+  const [nationality, setNationality] = useState("বাংলাদেশী");
+  const [avatarUrl, setAvatarUrl] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -34,6 +43,19 @@ export default function AuthPage() {
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const result = reader.result as string;
+        setAvatarPreview(result);
+        setAvatarUrl(result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -67,8 +89,8 @@ export default function AuthPage() {
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!email || !password) {
-      toast.error("সব তথ্য পূরণ করুন");
+    if (!email || !password || !fullName) {
+      toast.error("নাম, ইমেইল এবং পাসওয়ার্ড পূরণ করুন");
       return;
     }
 
@@ -86,6 +108,12 @@ export default function AuthPage() {
       password,
       options: {
         emailRedirectTo: redirectUrl,
+        data: {
+          full_name: fullName,
+          avatar_url: avatarUrl,
+          blood_group: bloodGroup,
+          nationality: nationality,
+        },
       },
     });
 
@@ -128,7 +156,7 @@ export default function AuthPage() {
         {/* Logo */}
         <div className="text-center mb-6">
           <div className="text-6xl mb-2">👨‍🌾</div>
-          <h1 className="text-2xl font-bold text-primary">AgriBrain</h1>
+          <h1 className="text-2xl font-bold text-primary">agriশক্তি</h1>
           <p className="text-sm text-muted-foreground mt-1">বাংলার কৃষকের AI সহকারী</p>
         </div>
 
@@ -209,7 +237,43 @@ export default function AuthPage() {
                 <CardTitle className="text-lg mb-1">অ্যাকাউন্ট খুলুন</CardTitle>
                 <CardDescription className="mb-4">নতুন অ্যাকাউন্ট তৈরি করুন</CardDescription>
                 
-                <form onSubmit={handleSignup} className="space-y-4">
+                <form onSubmit={handleSignup} className="space-y-3">
+                  {/* Avatar Upload */}
+                  <div className="flex justify-center mb-4">
+                    <label className="cursor-pointer">
+                      <div className="w-20 h-20 rounded-full bg-muted border-2 border-dashed border-border flex items-center justify-center overflow-hidden hover:border-secondary transition-colors">
+                        {avatarPreview ? (
+                          <img src={avatarPreview} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <Camera className="w-8 h-8 text-muted-foreground" />
+                        )}
+                      </div>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                        className="hidden"
+                      />
+                      <p className="text-xs text-muted-foreground text-center mt-1">ছবি আপলোড</p>
+                    </label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="full-name" className="flex items-center gap-2 text-muted-foreground">
+                      <User className="w-4 h-4" />
+                      পূর্ণ নাম
+                    </Label>
+                    <Input
+                      id="full-name"
+                      type="text"
+                      placeholder="আপনার পূর্ণ নাম"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      disabled={loading}
+                      className="bg-background/50"
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="signup-email" className="flex items-center gap-2 text-muted-foreground">
                       <Mail className="w-4 h-4" />
@@ -225,6 +289,7 @@ export default function AuthPage() {
                       className="bg-background/50"
                     />
                   </div>
+
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className="flex items-center gap-2 text-muted-foreground">
                       <Lock className="w-4 h-4" />
@@ -240,6 +305,43 @@ export default function AuthPage() {
                       className="bg-background/50"
                     />
                   </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-muted-foreground">
+                        <Droplets className="w-4 h-4" />
+                        রক্তের গ্রুপ
+                      </Label>
+                      <Select value={bloodGroup} onValueChange={setBloodGroup}>
+                        <SelectTrigger className="bg-background/50">
+                          <SelectValue placeholder="নির্বাচন" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {bloodGroups.map((group) => (
+                            <SelectItem key={group} value={group}>{group}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label className="flex items-center gap-2 text-muted-foreground">
+                        <Globe className="w-4 h-4" />
+                        জাতীয়তা
+                      </Label>
+                      <Select value={nationality} onValueChange={setNationality}>
+                        <SelectTrigger className="bg-background/50">
+                          <SelectValue placeholder="নির্বাচন" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {nationalities.map((nat) => (
+                            <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
                   <Button 
                     type="submit" 
                     className="w-full bg-primary text-primary-foreground hover:bg-primary/90"
@@ -265,7 +367,7 @@ export default function AuthPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Designed by Samin Yasar Sunny
+          Created by TEAM_NEWBIES
         </p>
       </div>
     </div>

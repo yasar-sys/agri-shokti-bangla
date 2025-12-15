@@ -29,6 +29,8 @@ import MachineOptimizerPage from "./pages/MachineOptimizerPage";
 import NPKCalculatorPage from "./pages/NPKCalculatorPage";
 import ClimateAlertPage from "./pages/ClimateAlertPage";
 import GovServicesPage from "./pages/GovServicesPage";
+import SupportPage from "./pages/SupportPage";
+import ProfilePage from "./pages/ProfilePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -64,6 +66,8 @@ function AppContent() {
         <Route path="/npk-calculator" element={<NPKCalculatorPage />} />
         <Route path="/climate-alert" element={<ClimateAlertPage />} />
         <Route path="/gov-services" element={<GovServicesPage />} />
+        <Route path="/support" element={<SupportPage />} />
+        <Route path="/profile" element={<ProfilePage />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {showNav && <BottomNav />}
