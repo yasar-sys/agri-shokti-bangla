@@ -38,6 +38,57 @@ export type Database = {
         }
         Relationships: []
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          blood_group: string | null
+          created_at: string | null
+          days_active: number | null
+          diseases_detected: number | null
+          full_name: string | null
+          id: string
+          nationality: string | null
+          phone: string | null
+          rank: string | null
+          total_scans: number | null
+          updated_at: string | null
+          user_id: string
+          xp_points: number | null
+        }
+        Insert: {
+          avatar_url?: string | null
+          blood_group?: string | null
+          created_at?: string | null
+          days_active?: number | null
+          diseases_detected?: number | null
+          full_name?: string | null
+          id?: string
+          nationality?: string | null
+          phone?: string | null
+          rank?: string | null
+          total_scans?: number | null
+          updated_at?: string | null
+          user_id: string
+          xp_points?: number | null
+        }
+        Update: {
+          avatar_url?: string | null
+          blood_group?: string | null
+          created_at?: string | null
+          days_active?: number | null
+          diseases_detected?: number | null
+          full_name?: string | null
+          id?: string
+          nationality?: string | null
+          phone?: string | null
+          rank?: string | null
+          total_scans?: number | null
+          updated_at?: string | null
+          user_id?: string
+          xp_points?: number | null
+        }
+        Relationships: []
+      }
       scan_history: {
         Row: {
           created_at: string
@@ -49,6 +100,7 @@ export type Database = {
           session_id: string
           symptoms: string[] | null
           treatment: string | null
+          user_id: string | null
         }
         Insert: {
           created_at?: string
@@ -60,6 +112,7 @@ export type Database = {
           session_id?: string
           symptoms?: string[] | null
           treatment?: string | null
+          user_id?: string | null
         }
         Update: {
           created_at?: string
@@ -71,6 +124,70 @@ export type Database = {
           session_id?: string
           symptoms?: string[] | null
           treatment?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      user_calendars: {
+        Row: {
+          created_at: string | null
+          crop_name: string
+          id: string
+          land_size: number
+          tasks: Json
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          crop_name: string
+          id?: string
+          land_size: number
+          tasks: Json
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          crop_name?: string
+          id?: string
+          land_size?: number
+          tasks?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_lands: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_registered: boolean | null
+          land_name: string
+          land_size: number
+          land_type: string | null
+          location: string | null
+          registry_number: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_registered?: boolean | null
+          land_name: string
+          land_size: number
+          land_type?: string | null
+          location?: string | null
+          registry_number?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_registered?: boolean | null
+          land_name?: string
+          land_size?: number
+          land_type?: string | null
+          location?: string | null
+          registry_number?: string | null
+          user_id?: string
         }
         Relationships: []
       }

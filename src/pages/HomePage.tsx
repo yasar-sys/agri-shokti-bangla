@@ -22,7 +22,10 @@ import {
   CloudLightning,
   ChevronDown,
   Landmark,
-  Loader2
+  Loader2,
+  Warehouse,
+  ChevronLeft,
+  ChevronRight
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -56,6 +59,7 @@ const services = [
   { icon: Calculator, label: "সার ক্যালকুলেটর", to: "/npk-calculator", color: "text-primary", description: "NPK ডোজ হিসাব" },
   { icon: CloudLightning, label: "জলবায়ু সতর্কতা", to: "/climate-alert", color: "text-destructive", description: "দুর্যোগ সতর্কতা" },
   { icon: Landmark, label: "সরকারি সেবা", to: "/gov-services", color: "text-chart-3", description: "ভর্তুকি ও ঋণ" },
+  { icon: Warehouse, label: "গুদাম ব্যবস্থাপনা", to: "/storage", color: "text-chart-4", description: "ফসল সংরক্ষণ" },
   { icon: History, label: "ফসল ইতিহাস", to: "/history", color: "text-muted-foreground", description: "আগের স্ক্যান দেখুন" },
   { icon: Award, label: "পুরস্কার", to: "/gamification", color: "text-primary", description: "ব্যাজ ও পয়েন্ট" },
   { icon: Beaker, label: "সার পরামর্শ", to: "/fertilizer", color: "text-secondary", description: "সার সুপারিশ" },
@@ -69,10 +73,28 @@ const marketPrices = [
   { emoji: "🧅", name: "পেঁয়াজ", price: "৳৪,৫০০", weeklyAvg: "৳৪,৬৫০", change: "-১০০", positive: false },
 ];
 
+interface Profile {
+  full_name: string | null;
+  avatar_url: string | null;
+  total_scans: number;
+  xp_points: number;
+  rank: string;
+}
+
+const SERVICES_PER_PAGE = 6;
+
 export default function HomePage() {
   const [session, setSession] = useState<Session | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [currentPage, setCurrentPage] = useState(0);
   const location = useLocation();
   const weather = useWeather(location.latitude, location.longitude);
+
+  const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
+  const currentServices = services.slice(
+    currentPage * SERVICES_PER_PAGE,
+    (currentPage + 1) * SERVICES_PER_PAGE
+  );
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -88,6 +110,28 @@ export default function HomePage() {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (session?.user) {
+      fetchProfile();
+    } else {
+      setProfile(null);
+    }
+  }, [session]);
+
+  const fetchProfile = async () => {
+    if (!session?.user) return;
+
+    const { data, error } = await supabase
+      .from('profiles')
+      .select('full_name, avatar_url, total_scans, xp_points, rank')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (!error && data) {
+      setProfile(data);
+    }
+  };
+
   const handleLogout = async () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
@@ -96,6 +140,20 @@ export default function HomePage() {
       toast.success("সফলভাবে লগআউট হয়েছে");
     }
   };
+
+  const nextPage = () => {
+    setCurrentPage((prev) => (prev + 1) % totalPages);
+  };
+
+  const prevPage = () => {
+    setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
+  };
+
+  const getUserLevel = () => {
+    if (!profile) return 1;
+    return Math.floor(profile.xp_points / 100) + 1;
+  };
+
   return (
     <div className="min-h-screen pb-24 relative">
       {/* Background Image */}
@@ -143,12 +201,20 @@ export default function HomePage() {
               </div>
             </div>
             
-            {/* Right Side - Farmer Avatar with Dropdown */}
+            {/* Right Side - User Avatar with Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="relative group focus:outline-none">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border-2 border-primary/20 group-hover:border-secondary/50 transition-all shadow-lg group-hover:shadow-secondary/20">
-                    <span className="text-3xl">👨‍🌾</span>
+                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border-2 border-primary/20 group-hover:border-secondary/50 transition-all shadow-lg group-hover:shadow-secondary/20 overflow-hidden">
+                    {session && profile?.avatar_url ? (
+                      <img 
+                        src={profile.avatar_url} 
+                        alt="Profile" 
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <span className="text-3xl">👨‍🌾</span>
+                    )}
                   </div>
                   <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-card rounded-full border border-border flex items-center justify-center shadow-sm group-hover:bg-secondary/20 transition-colors">
                     <ChevronDown className="w-3 h-3 text-muted-foreground" />
@@ -164,12 +230,14 @@ export default function HomePage() {
                     <div className="px-3 py-2 border-b border-border">
                       <p className="text-xs text-muted-foreground">লগইন করা আছে</p>
                       <p className="text-sm font-medium text-foreground truncate">
-                        {session.user.email}
+                        {profile?.full_name || session.user.email?.split('@')[0]}
                       </p>
                     </div>
-                    <DropdownMenuItem className="cursor-pointer gap-2">
-                      <User className="w-4 h-4" />
-                      <span>প্রোফাইল</span>
+                    <DropdownMenuItem asChild>
+                      <Link to="/profile" className="cursor-pointer gap-2">
+                        <User className="w-4 h-4" />
+                        <span>প্রোফাইল</span>
+                      </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/settings" className="cursor-pointer gap-2">
@@ -237,15 +305,17 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Stats Row */}
+      {/* Stats Row - Real Data */}
       <section className="px-4 mb-4">
         <div className="grid grid-cols-3 gap-2">
           <div className="bg-card border border-border rounded-xl p-3 text-center">
-            <span className="text-lg font-bold text-foreground">০৬</span>
+            <span className="text-lg font-bold text-foreground">
+              {profile ? String(profile.total_scans).padStart(2, '০') : '০০'}
+            </span>
             <p className="text-xs text-muted-foreground mt-1">স্ক্যান</p>
           </div>
           <div className="bg-card border border-border rounded-xl p-3 text-center">
-            <span className="text-lg font-bold text-foreground">৩ লেভেল</span>
+            <span className="text-lg font-bold text-foreground">{getUserLevel()} লেভেল</span>
             <p className="text-xs text-muted-foreground mt-1">র‍্যাংক</p>
           </div>
           <div className="bg-card border border-border rounded-xl p-3 text-center">
@@ -273,23 +343,62 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Services Grid */}
+      {/* Services Carousel */}
       <section className="px-4 mb-4">
-        <h2 className="text-base font-semibold text-foreground mb-3">সেবা সমূহ</h2>
-        <div className="grid grid-cols-3 gap-2">
-          {services.map((service, index) => (
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-foreground">সেবা সমূহ</h2>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {currentPage + 1}/{totalPages}
+            </span>
+            <div className="flex gap-1">
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7"
+                onClick={prevPage}
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </Button>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                className="h-7 w-7"
+                onClick={nextPage}
+              >
+                <ChevronRight className="w-4 h-4" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-2 transition-all duration-300">
+          {currentServices.map((service, index) => (
             <Link
-              key={index}
+              key={service.to}
               to={service.to}
-              className="bg-card border border-border rounded-xl p-3 flex flex-col items-center gap-1.5 hover:bg-card/80 hover:border-secondary/50 transition-all active:scale-95"
+              className="bg-card border border-border rounded-xl p-3 flex flex-col items-center gap-1.5 hover:bg-card/80 hover:border-secondary/50 transition-all active:scale-95 animate-fade-in"
+              style={{ animationDelay: `${index * 50}ms` }}
             >
-              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center", 
-                index < 6 ? "bg-secondary/10" : "bg-muted/50"
-              )}>
+              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-secondary/10")}>
                 <service.icon className={cn("w-5 h-5", service.color)} />
               </div>
               <span className="text-xs text-foreground text-center font-medium leading-tight">{service.label}</span>
             </Link>
+          ))}
+        </div>
+
+        {/* Pagination Dots */}
+        <div className="flex justify-center gap-1.5 mt-3">
+          {Array.from({ length: totalPages }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i)}
+              className={cn(
+                "w-2 h-2 rounded-full transition-all",
+                i === currentPage ? "bg-secondary w-4" : "bg-muted-foreground/30"
+              )}
+            />
           ))}
         </div>
       </section>

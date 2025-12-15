@@ -1,21 +1,19 @@
 import { cn } from "@/lib/utils";
-import { Home, Scan, MessageSquare, History, Award } from "lucide-react";
+import { Scan, MessageSquare, HeadphonesIcon } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
-  { icon: Home, label: "হোম", path: "/home" },
-  { icon: Scan, label: "স্ক্যান", path: "/camera" },
-  { icon: MessageSquare, label: "চ্যাট", path: "/chat" },
-  { icon: History, label: "ইতিহাস", path: "/history" },
-  { icon: Award, label: "পুরস্কার", path: "/gamification" },
+  { icon: Scan, label: "স্ক্যানার", path: "/camera" },
+  { icon: MessageSquare, label: "AI চ্যাট", path: "/chat" },
+  { icon: HeadphonesIcon, label: "সাপোর্ট", path: "/support" },
 ];
 
 export function BottomNav() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
-      <div className="flex items-center justify-around py-2 px-2">
+    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg shadow-background/50">
+      <div className="flex items-center justify-around py-2 px-4">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
@@ -25,14 +23,22 @@ export function BottomNav() {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex flex-col items-center gap-1 py-2 px-4 rounded-lg transition-all",
+                "flex flex-col items-center gap-1 py-2 px-6 rounded-2xl transition-all duration-300",
                 isActive
-                  ? "text-secondary"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-secondary/20 text-secondary scale-105"
+                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
               )}
             >
-              <Icon className={cn("w-5 h-5", isActive && "text-secondary")} />
-              <span className="text-[10px] font-medium">{item.label}</span>
+              <div className={cn(
+                "p-2 rounded-xl transition-all",
+                isActive && "bg-secondary text-secondary-foreground shadow-lg shadow-secondary/30"
+              )}>
+                <Icon className="w-5 h-5" />
+              </div>
+              <span className={cn(
+                "text-[11px] font-medium",
+                isActive && "text-secondary"
+              )}>{item.label}</span>
             </Link>
           );
         })}
