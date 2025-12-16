@@ -25,7 +25,8 @@ import {
   Loader2,
   Warehouse,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  PlayCircle
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -65,6 +66,7 @@ const services = [
   { icon: Beaker, label: "সার পরামর্শ", to: "/fertilizer", color: "text-secondary", description: "সার সুপারিশ" },
   { icon: GraduationCap, label: "কৃষি জ্ঞান", to: "/knowledge", color: "text-accent-foreground", description: "শিখুন ও জানুন" },
   { icon: UsersRound, label: "কমিউনিটি", to: "/community", color: "text-muted-foreground", description: "কৃষক সংঘ" },
+  { icon: PlayCircle, label: "অ্যাপ গাইড", to: "/demo", color: "text-chart-5", description: "টিউটোরিয়াল দেখুন" },
 ];
 
 const marketPrices = [

@@ -31,6 +31,8 @@ import ClimateAlertPage from "./pages/ClimateAlertPage";
 import GovServicesPage from "./pages/GovServicesPage";
 import SupportPage from "./pages/SupportPage";
 import ProfilePage from "./pages/ProfilePage";
+import DemoPage from "./pages/DemoPage";
+import StoragePage from "./pages/StoragePage";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +70,9 @@ function AppContent() {
         <Route path="/gov-services" element={<GovServicesPage />} />
         <Route path="/support" element={<SupportPage />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/demo" element={<DemoPage />} />
+        <Route path="/storage" element={<StoragePage />} />
+        <Route path="*" element={<NotFound />} />
         <Route path="*" element={<NotFound />} />
       </Routes>
       {showNav && <BottomNav />}
