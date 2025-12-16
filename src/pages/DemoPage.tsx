@@ -411,9 +411,6 @@ export default function DemoPage() {
         <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-4 border border-border text-center">
           <p className="text-xs text-muted-foreground mb-1">তৈরি করেছে</p>
           <p className="text-lg font-bold text-foreground">TEAM_NEWBIES</p>
-          <p className="text-xs text-muted-foreground mt-1">
-            ময়মনসিংহ ইঞ্জিনিয়ারিং কলেজ ও গাজীপুর কৃষি বিশ্ববিদ্যালয়
-          </p>
         </div>
       </section>
 
