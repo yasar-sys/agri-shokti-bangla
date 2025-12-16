@@ -1,0 +1,1272 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=393, maximum-scale=1">
+  <title>agriশক্তি - স্মার্ট কৃষি অ্যাপ Demo</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    :root {
+      --background: #0A1F17;
+      --card: #123F2E;
+      --primary: #F2C94C;
+      --secondary: #7BF2A0;
+      --foreground: #FFFFFF;
+      --muted: #CFFFE6;
+      --destructive: #E76F51;
+      --border: rgba(123, 242, 160, 0.2);
+    }
+    
+    body {
+      font-family: 'Noto Sans Bengali', sans-serif;
+      background: var(--background);
+      color: var(--foreground);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .phone-frame {
+      width: 393px;
+      height: 852px;
+      margin: 20px auto;
+      background: var(--background);
+      border-radius: 40px;
+      border: 8px solid #333;
+      overflow: hidden;
+      position: relative;
+      box-shadow: 0 25px 80px rgba(0,0,0,0.5);
+    }
+    
+    .screen {
+      width: 100%;
+      height: 100%;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+    }
+    
+    .screen::-webkit-scrollbar {
+      display: none;
+    }
+    
+    /* Background */
+    .bg-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(10,31,23,0.9) 0%, rgba(18,63,46,0.95) 100%);
+      z-index: -1;
+    }
+    
+    /* Splash Screen */
+    .splash-screen {
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(135deg, #0A1F17 0%, #123F2E 50%, #0A1F17 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      transition: opacity 0.5s ease, transform 0.5s ease;
+    }
+    
+    .splash-screen.hidden {
+      opacity: 0;
+      transform: scale(1.1);
+      pointer-events: none;
+    }
+    
+    .splash-logo {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 60px;
+      margin-bottom: 24px;
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+    }
+    
+    .splash-title {
+      font-size: 36px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+    
+    .splash-tagline {
+      font-size: 14px;
+      color: var(--muted);
+      text-align: center;
+      padding: 0 40px;
+      margin-bottom: 40px;
+    }
+    
+    .splash-progress {
+      width: 200px;
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    
+    .splash-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--secondary));
+      width: 0%;
+      animation: loading 2.5s ease forwards;
+    }
+    
+    @keyframes loading {
+      0% { width: 0%; }
+      100% { width: 100%; }
+    }
+    
+    .splash-team {
+      position: absolute;
+      bottom: 40px;
+      font-size: 12px;
+      color: var(--muted);
+      opacity: 0.7;
+    }
+    
+    /* Header */
+    .header {
+      padding: 24px 16px 20px;
+      background: linear-gradient(180deg, rgba(18,63,46,0.95) 0%, transparent 100%);
+    }
+    
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+    
+    .logo-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .app-name {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    .app-name .beta {
+      font-size: 10px;
+      font-weight: 400;
+      background: rgba(123, 242, 160, 0.2);
+      color: var(--secondary);
+      padding: 2px 8px;
+      border-radius: 20px;
+      margin-left: 8px;
+    }
+    
+    .motto {
+      font-size: 11px;
+      color: var(--muted);
+      opacity: 0.8;
+    }
+    
+    .avatar {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, rgba(242,201,76,0.3), rgba(123,242,160,0.3));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      border: 2px solid rgba(242,201,76,0.3);
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .avatar:hover {
+      border-color: var(--secondary);
+      transform: scale(1.05);
+    }
+    
+    /* Location Bar */
+    .location-bar {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(18,63,46,0.5);
+      border-radius: 12px;
+      padding: 10px 14px;
+      border: 1px solid var(--border);
+    }
+    
+    .location {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    .location-icon {
+      color: var(--destructive);
+    }
+    
+    .weather {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 14px;
+    }
+    
+    .weather-temp {
+      font-weight: 600;
+    }
+    
+    .weather-condition {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    
+    /* Stats Row */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 0 16px;
+      margin-bottom: 16px;
+    }
+    
+    .stat-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 4px;
+    }
+    
+    /* Tips Section */
+    .tip-card {
+      margin: 0 16px 16px;
+      background: var(--card);
+      border: 2px solid rgba(242,201,76,0.5);
+      border-radius: 16px;
+      padding: 16px;
+    }
+    
+    .tip-header {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+    }
+    
+    .tip-icon {
+      font-size: 20px;
+    }
+    
+    .tip-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      margin-bottom: 4px;
+    }
+    
+    .tip-text {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    
+    /* Services Section */
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 16px;
+      margin-bottom: 12px;
+    }
+    
+    .section-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .page-indicator {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      padding: 0 16px;
+      margin-bottom: 16px;
+    }
+    
+    .service-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 14px 8px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .service-card:hover {
+      border-color: var(--secondary);
+      transform: translateY(-2px);
+    }
+    
+    .service-card.active {
+      border-color: var(--primary);
+      background: rgba(242,201,76,0.1);
+    }
+    
+    .service-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: rgba(123,242,160,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    
+    .service-label {
+      font-size: 11px;
+      text-align: center;
+      font-weight: 500;
+    }
+    
+    /* Market Section */
+    .market-section {
+      margin: 0 16px 16px;
+    }
+    
+    .market-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+    
+    .market-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .market-link {
+      font-size: 12px;
+      color: var(--secondary);
+      cursor: pointer;
+    }
+    
+    .market-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 8px;
+    }
+    
+    .market-crop {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    
+    .market-emoji {
+      font-size: 24px;
+    }
+    
+    .market-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .market-avg {
+      font-size: 11px;
+      color: var(--muted);
+    }
+    
+    .market-price {
+      text-align: right;
+    }
+    
+    .market-current {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .market-change {
+      font-size: 11px;
+    }
+    
+    .market-change.positive {
+      color: var(--secondary);
+    }
+    
+    .market-change.negative {
+      color: var(--destructive);
+    }
+    
+    /* Bottom Navigation */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 393px;
+      background: rgba(18,63,46,0.95);
+      backdrop-filter: blur(10px);
+      border-top: 1px solid var(--border);
+      padding: 12px 24px 24px;
+      display: flex;
+      justify-content: space-around;
+      z-index: 50;
+    }
+    
+    .nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .nav-item:hover {
+      transform: scale(1.1);
+    }
+    
+    .nav-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .nav-icon.camera {
+      background: linear-gradient(135deg, var(--secondary), #4CAF50);
+    }
+    
+    .nav-icon.chat {
+      background: linear-gradient(135deg, var(--primary), #FFA726);
+    }
+    
+    .nav-icon.support {
+      background: linear-gradient(135deg, #E76F51, #FF7043);
+    }
+    
+    .nav-label {
+      font-size: 10px;
+      color: var(--muted);
+    }
+    
+    /* Demo Screen */
+    .demo-screen {
+      display: none;
+      padding: 24px 16px 100px;
+    }
+    
+    .demo-screen.active {
+      display: block;
+      animation: fadeIn 0.3s ease;
+    }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .back-btn {
+      width: 40px;
+      height: 40px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      margin-bottom: 16px;
+      font-size: 20px;
+    }
+    
+    .demo-title {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .demo-subtitle {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 24px;
+    }
+    
+    /* Camera Demo */
+    .camera-preview {
+      width: 100%;
+      aspect-ratio: 4/3;
+      background: linear-gradient(135deg, #1a3a2a, #0d2419);
+      border-radius: 20px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 12px;
+      border: 2px dashed var(--border);
+    }
+    
+    .camera-icon {
+      font-size: 48px;
+      opacity: 0.5;
+    }
+    
+    .camera-text {
+      font-size: 14px;
+      color: var(--muted);
+    }
+    
+    .analyze-btn {
+      width: 100%;
+      padding: 16px;
+      background: linear-gradient(135deg, var(--secondary), #4CAF50);
+      border: none;
+      border-radius: 16px;
+      color: #0A1F17;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.3s;
+    }
+    
+    .analyze-btn:hover {
+      transform: scale(1.02);
+      box-shadow: 0 10px 30px rgba(123,242,160,0.3);
+    }
+    
+    /* Disease Result */
+    .result-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 20px;
+      margin-top: 16px;
+      display: none;
+    }
+    
+    .result-card.show {
+      display: block;
+      animation: fadeIn 0.5s ease;
+    }
+    
+    .result-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    
+    .result-icon {
+      width: 56px;
+      height: 56px;
+      background: rgba(231,111,81,0.2);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    
+    .result-title {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .result-score {
+      font-size: 12px;
+      color: var(--destructive);
+    }
+    
+    .result-section {
+      margin-bottom: 16px;
+    }
+    
+    .result-label {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+    
+    .result-text {
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    
+    /* Chat Demo */
+    .chat-messages {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin-bottom: 80px;
+    }
+    
+    .chat-bubble {
+      max-width: 85%;
+      padding: 14px 16px;
+      border-radius: 18px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .chat-bubble.user {
+      background: #5D4037;
+      align-self: flex-end;
+      border-bottom-right-radius: 4px;
+    }
+    
+    .chat-bubble.ai {
+      background: rgba(123,242,160,0.15);
+      border: 1px solid rgba(123,242,160,0.3);
+      align-self: flex-start;
+      border-bottom-left-radius: 4px;
+    }
+    
+    .chat-input-area {
+      position: fixed;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 361px;
+      display: flex;
+      gap: 8px;
+    }
+    
+    .chat-input {
+      flex: 1;
+      padding: 14px 16px;
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      color: var(--foreground);
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+    }
+    
+    .chat-send {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--primary), #FFA726);
+      border: none;
+      border-radius: 16px;
+      cursor: pointer;
+      font-size: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    /* Features Demo */
+    .feature-cards {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .feature-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .feature-card:hover {
+      border-color: var(--secondary);
+      transform: translateX(4px);
+    }
+    
+    .feature-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+    
+    .feature-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .feature-icon.green { background: rgba(123,242,160,0.2); }
+    .feature-icon.yellow { background: rgba(242,201,76,0.2); }
+    .feature-icon.red { background: rgba(231,111,81,0.2); }
+    .feature-icon.blue { background: rgba(100,181,246,0.2); }
+    
+    .feature-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .feature-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    
+    .feature-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+    
+    /* Presentation Mode */
+    .presentation-mode {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1000;
+    }
+    
+    .presentation-btn {
+      padding: 12px 24px;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      border: none;
+      border-radius: 12px;
+      color: #0A1F17;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+    }
+    
+    /* Animations */
+    .animate-in {
+      animation: fadeIn 0.3s ease forwards;
+    }
+    
+    .typing-indicator {
+      display: flex;
+      gap: 4px;
+      padding: 14px 16px;
+    }
+    
+    .typing-dot {
+      width: 8px;
+      height: 8px;
+      background: var(--secondary);
+      border-radius: 50%;
+      animation: bounce 1.4s infinite ease-in-out;
+    }
+    
+    .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+    .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+    
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0); }
+      40% { transform: scale(1); }
+    }
+    
+    /* Fullscreen mode */
+    body.fullscreen .phone-frame {
+      width: 100vw;
+      height: 100vh;
+      margin: 0;
+      border-radius: 0;
+      border: none;
+    }
+    
+    body.fullscreen .bottom-nav {
+      width: 100%;
+      left: 0;
+      transform: none;
+    }
+    
+    body.fullscreen .chat-input-area {
+      width: calc(100% - 32px);
+      left: 16px;
+      transform: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="presentation-mode">
+    <button class="presentation-btn" onclick="toggleFullscreen()">🎬 প্রেজেন্টেশন মোড</button>
+  </div>
+
+  <div class="phone-frame" id="phoneFrame">
+    <!-- Splash Screen -->
+    <div class="splash-screen" id="splashScreen">
+      <div class="splash-logo">🌾</div>
+      <div class="splash-title">agriশক্তি</div>
+      <div class="splash-tagline">"মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি"</div>
+      <div class="splash-progress">
+        <div class="splash-progress-bar"></div>
+      </div>
+      <div class="splash-team">Created by TEAM_NEWBIES</div>
+    </div>
+
+    <div class="screen" id="mainScreen">
+      <div class="bg-overlay"></div>
+      
+      <!-- Home Screen -->
+      <div id="homeScreen" class="demo-screen active">
+        <!-- Header -->
+        <div class="header">
+          <div class="header-top">
+            <div class="logo-section">
+              <div class="logo">🌾</div>
+              <div>
+                <div class="app-name">agriশক্তি <span class="beta">বেটা</span></div>
+                <div class="motto">"মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি"</div>
+              </div>
+            </div>
+            <div class="avatar" onclick="showDemo('profile')">👨‍🌾</div>
+          </div>
+          
+          <div class="location-bar">
+            <div class="location">
+              <span class="location-icon">📍</span>
+              <span>ময়মনসিংহ, বাংলাদেশ</span>
+            </div>
+            <div class="weather">
+              <span>⛅</span>
+              <span class="weather-temp">28°C</span>
+              <span class="weather-condition">মেঘলা</span>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Stats -->
+        <div class="stats-row">
+          <div class="stat-card">
+            <div class="stat-value">১৫</div>
+            <div class="stat-label">স্ক্যান</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">৩ লেভেল</div>
+            <div class="stat-label">র‍্যাংক</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value">⛅ 28°</div>
+            <div class="stat-label">মেঘলা</div>
+          </div>
+        </div>
+        
+        <!-- Today's Tip -->
+        <div class="tip-card">
+          <div class="tip-header">
+            <span class="tip-icon">💡</span>
+            <div>
+              <div class="tip-title">আজকের কৃষি টিপস</div>
+              <div class="tip-text">বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দিন, বিকেলে কীটনাশক স্প্রে করবেন না। ধানের চারা রোপণের সেরা সময়।</div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Services -->
+        <div class="section-header">
+          <div class="section-title">সেবা সমূহ</div>
+          <div class="page-indicator">1/3</div>
+        </div>
+        
+        <div class="services-grid">
+          <div class="service-card" onclick="showDemo('camera')">
+            <div class="service-icon">📷</div>
+            <div class="service-label">রোগ শনাক্তকরণ</div>
+          </div>
+          <div class="service-card" onclick="showDemo('fertilizer')">
+            <div class="service-icon">🔍</div>
+            <div class="service-label">সার স্ক্যান</div>
+          </div>
+          <div class="service-card" onclick="showDemo('pest')">
+            <div class="service-icon">🐛</div>
+            <div class="service-label">পোকার ম্যাপ</div>
+          </div>
+          <div class="service-card" onclick="showDemo('chat')">
+            <div class="service-icon">💬</div>
+            <div class="service-label">AI সহায়ক</div>
+          </div>
+          <div class="service-card" onclick="showDemo('market')">
+            <div class="service-icon">📈</div>
+            <div class="service-label">বাজার দর</div>
+          </div>
+          <div class="service-card" onclick="showDemo('weather')">
+            <div class="service-icon">🌤️</div>
+            <div class="service-label">আবহাওয়া</div>
+          </div>
+        </div>
+        
+        <!-- Market Prices -->
+        <div class="market-section">
+          <div class="market-header">
+            <div class="market-title">আজকের বাজার দর</div>
+            <div class="market-link" onclick="showDemo('market')">সব দেখুন →</div>
+          </div>
+          
+          <div class="market-row">
+            <div class="market-crop">
+              <span class="market-emoji">🌾</span>
+              <div>
+                <div class="market-name">ধান</div>
+                <div class="market-avg">সা. গড় ৳১,৮২০</div>
+              </div>
+            </div>
+            <div class="market-price">
+              <div class="market-current">৳১,৮৫০</div>
+              <div class="market-change positive">+৩০ ▲</div>
+            </div>
+          </div>
+          
+          <div class="market-row">
+            <div class="market-crop">
+              <span class="market-emoji">🥔</span>
+              <div>
+                <div class="market-name">আলু</div>
+                <div class="market-avg">সা. গড় ৳১,৪৮০</div>
+              </div>
+            </div>
+            <div class="market-price">
+              <div class="market-current">৳১,৫০০</div>
+              <div class="market-change positive">+২০ ▲</div>
+            </div>
+          </div>
+          
+          <div class="market-row">
+            <div class="market-crop">
+              <span class="market-emoji">🧅</span>
+              <div>
+                <div class="market-name">পেঁয়াজ</div>
+                <div class="market-avg">সা. গড় ৳৪,৬৫০</div>
+              </div>
+            </div>
+            <div class="market-price">
+              <div class="market-current">৳৪,৫০০</div>
+              <div class="market-change negative">-১০০ ▼</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Camera Screen -->
+      <div id="cameraScreen" class="demo-screen">
+        <div class="back-btn" onclick="showDemo('home')">←</div>
+        <div class="demo-title">🔬 রোগ শনাক্তকরণ</div>
+        <div class="demo-subtitle">Crop Health Detection with AI Vision</div>
+        
+        <div class="camera-preview" id="cameraPreview">
+          <div class="camera-icon">📷</div>
+          <div class="camera-text">ফসলের পাতার ছবি তুলুন</div>
+        </div>
+        
+        <button class="analyze-btn" onclick="analyzeImage()">🔍 বিশ্লেষণ করুন</button>
+        
+        <div class="result-card" id="diseaseResult">
+          <div class="result-header">
+            <div class="result-icon">🦠</div>
+            <div>
+              <div class="result-title">ধানের ব্লাস্ট রোগ</div>
+              <div class="result-score">স্বাস্থ্য স্কোর: ৪৫/১০০ ⚠️</div>
+            </div>
+          </div>
+          
+          <div class="result-section">
+            <div class="result-label">🔍 লক্ষণ সমূহ:</div>
+            <div class="result-text">পাতায় বাদামী দাগ, পাতার কিনারা শুকিয়ে যাওয়া, হলুদ বর্ণ ধারণ</div>
+          </div>
+          
+          <div class="result-section">
+            <div class="result-label">💊 চিকিৎসা:</div>
+            <div class="result-text">ট্রাইসাইক্লাজল বা কার্বেন্ডাজিম ছত্রাকনাশক স্প্রে করুন। প্রতি লিটার পানিতে ২ গ্রাম মিশিয়ে সকাল বা বিকেলে স্প্রে করুন।</div>
+          </div>
+          
+          <div class="result-section">
+            <div class="result-label">🌱 সার পরামর্শ:</div>
+            <div class="result-text">নাইট্রোজেন সার কম দিন। পটাশ সার বাড়ান যা রোগ প্রতিরোধ ক্ষমতা বাড়াবে।</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Chat Screen -->
+      <div id="chatScreen" class="demo-screen">
+        <div class="back-btn" onclick="showDemo('home')">←</div>
+        <div class="demo-title">💬 AI কৃষি সহায়ক</div>
+        <div class="demo-subtitle">Bangla AI Agricultural Assistant</div>
+        
+        <div class="chat-messages" id="chatMessages">
+          <div class="chat-bubble ai">আসসালামু আলাইকুম! 👨‍🌾 আমি agriশক্তি AI সহায়ক। কৃষি বিষয়ে যেকোনো প্রশ্ন করতে পারেন।</div>
+        </div>
+        
+        <div class="chat-input-area">
+          <input type="text" class="chat-input" id="chatInput" placeholder="আপনার প্রশ্ন লিখুন..." onkeypress="handleChatKey(event)">
+          <button class="chat-send" onclick="sendChat()">➤</button>
+        </div>
+      </div>
+      
+      <!-- Market Screen -->
+      <div id="marketScreen" class="demo-screen">
+        <div class="back-btn" onclick="showDemo('home')">←</div>
+        <div class="demo-title">📊 বাজারদর ও পূর্বাভাস</div>
+        <div class="demo-subtitle">AI-Powered Price Forecasting</div>
+        
+        <div class="feature-cards">
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon green">📈</div>
+              <div>
+                <div class="feature-title">বাজার দর</div>
+                <div class="feature-subtitle">লাইভ ফসলের দাম</div>
+              </div>
+            </div>
+            <div class="feature-desc">আজকের সর্বশেষ বাজার মূল্য দেখুন</div>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon yellow">🔮</div>
+              <div>
+                <div class="feature-title">AI পূর্বাভাস</div>
+                <div class="feature-subtitle">৭ দিনের দাম অনুমান</div>
+              </div>
+            </div>
+            <div class="feature-desc">AI মডেল দিয়ে আগামী ৭ দিনের সম্ভাব্য দাম জানুন</div>
+          </div>
+          
+          <div class="feature-card">
+            <div class="feature-header">
+              <div class="feature-icon red">💰</div>
+              <div>
+                <div class="feature-title">বিক্রি কৌশল</div>
+                <div class="feature-subtitle">সর্বোচ্চ মুনাফার সুপারিশ</div>
+              </div>
+            </div>
+            <div class="feature-desc">কখন বিক্রি করলে সবচেয়ে বেশি লাভ হবে জানুন</div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Features Overview Screen -->
+      <div id="featuresScreen" class="demo-screen">
+        <div class="back-btn" onclick="showDemo('home')">←</div>
+        <div class="demo-title">🚀 ৬টি AgriTech চ্যালেঞ্জ</div>
+        <div class="demo-subtitle">Smart Agriculture Solutions</div>
+        
+        <div class="feature-cards">
+          <div class="feature-card" onclick="showDemo('camera')">
+            <div class="feature-header">
+              <div class="feature-icon green">📷</div>
+              <div>
+                <div class="feature-title">১. Crop Health Detection</div>
+                <div class="feature-subtitle">ফসলের স্বাস্থ্য শনাক্তকরণ</div>
+              </div>
+            </div>
+            <div class="feature-desc">স্যাটেলাইট ও ক্যামেরা দিয়ে ফসলের রোগ, স্ট্রেস শনাক্ত</div>
+          </div>
+          
+          <div class="feature-card" onclick="showDemo('pest')">
+            <div class="feature-header">
+              <div class="feature-icon red">🐛</div>
+              <div>
+                <div class="feature-title">২. Pest Early Warning</div>
+                <div class="feature-subtitle">পোকামাকড় পূর্ব সতর্কতা</div>
+              </div>
+            </div>
+            <div class="feature-desc">জেলাভিত্তিক পোকার ম্যাপ ও আগাম সতর্কতা</div>
+          </div>
+          
+          <div class="feature-card" onclick="showDemo('fertilizer')">
+            <div class="feature-header">
+              <div class="feature-icon yellow">🧪</div>
+              <div>
+                <div class="feature-title">৩. Fertilizer Recommender</div>
+                <div class="feature-subtitle">সার ও সেচ সুপারিশ</div>
+              </div>
+            </div>
+            <div class="feature-desc">NPK ক্যালকুলেটর ও সার প্যাকেট স্ক্যানার</div>
+          </div>
+          
+          <div class="feature-card" onclick="showDemo('home')">
+            <div class="feature-header">
+              <div class="feature-icon blue">📊</div>
+              <div>
+                <div class="feature-title">৪. Decision Dashboard</div>
+                <div class="feature-subtitle">কৃষক সিদ্ধান্ত ড্যাশবোর্ড</div>
+              </div>
+            </div>
+            <div class="feature-desc">আবহাওয়া, মাটি, বাজার দর - সব এক জায়গায়</div>
+          </div>
+          
+          <div class="feature-card" onclick="showDemo('market')">
+            <div class="feature-header">
+              <div class="feature-icon green">💹</div>
+              <div>
+                <div class="feature-title">৫. Price Forecasting</div>
+                <div class="feature-subtitle">বাজার মূল্য পূর্বাভাস</div>
+              </div>
+            </div>
+            <div class="feature-desc">AI দিয়ে ফসলের দাম অনুমান ও বিক্রি কৌশল</div>
+          </div>
+          
+          <div class="feature-card" onclick="showDemo('chat')">
+            <div class="feature-header">
+              <div class="feature-icon yellow">🤖</div>
+              <div>
+                <div class="feature-title">৬. AI Assistant</div>
+                <div class="feature-subtitle">বাংলা AI কৃষি সহায়ক</div>
+              </div>
+            </div>
+            <div class="feature-desc">বাংলায় যেকোনো কৃষি প্রশ্নের তাৎক্ষণিক উত্তর</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="showDemo('camera')">
+        <div class="nav-icon camera">📷</div>
+        <div class="nav-label">স্ক্যানার</div>
+      </div>
+      <div class="nav-item" onclick="showDemo('chat')">
+        <div class="nav-icon chat">💬</div>
+        <div class="nav-label">AI চ্যাট</div>
+      </div>
+      <div class="nav-item" onclick="showDemo('features')">
+        <div class="nav-icon support">🚀</div>
+        <div class="nav-label">ফিচার</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Hide splash screen after loading
+    setTimeout(() => {
+      document.getElementById('splashScreen').classList.add('hidden');
+    }, 3000);
+    
+    // Show demo screen
+    function showDemo(screen) {
+      const screens = document.querySelectorAll('.demo-screen');
+      screens.forEach(s => s.classList.remove('active'));
+      document.getElementById(screen + 'Screen').classList.add('active');
+    }
+    
+    // Analyze image simulation
+    function analyzeImage() {
+      const preview = document.getElementById('cameraPreview');
+      const result = document.getElementById('diseaseResult');
+      
+      preview.innerHTML = '<div class="camera-icon">⏳</div><div class="camera-text">AI বিশ্লেষণ করছে...</div>';
+      
+      setTimeout(() => {
+        preview.innerHTML = '<div class="camera-icon">✅</div><div class="camera-text">বিশ্লেষণ সম্পন্ন!</div>';
+        result.classList.add('show');
+      }, 2000);
+    }
+    
+    // Chat functionality
+    const chatResponses = {
+      'ধান': 'ধান চাষের জন্য ভালো জমি নির্বাচন করুন যেখানে পানি জমে থাকে। বোরো ধানের জন্য নভেম্বর-ডিসেম্বরে বীজতলা তৈরি করুন। প্রতি বিঘায় ইউরিয়া ৩৫ কেজি, টিএসপি ২০ কেজি, এমওপি ১৫ কেজি সার প্রয়োগ করুন। 🌾',
+      'পোকা': 'পোকা দমনে সমন্বিত বালাই ব্যবস্থাপনা (IPM) অনুসরণ করুন। প্রথমে জৈব পদ্ধতি চেষ্টা করুন - নিম তেল স্প্রে, আলোক ফাঁদ ব্যবহার। গুরুতর হলে অনুমোদিত কীটনাশক ব্যবহার করুন। 🐛',
+      'সার': 'মাটি পরীক্ষা করে সার দিন। সাধারণত NPK অনুপাত ১০:২৬:২৬ ব্যবহার করুন। জৈব সার ব্যবহার করলে মাটির স্বাস্থ্য ভালো থাকে। ইউরিয়া কিস্তিতে দিন - রোপণের ১৫, ৩০ ও ৪৫ দিন পর। 🌱',
+      'default': 'আপনার প্রশ্নের জন্য ধন্যবাদ! আমি কৃষি বিষয়ে সাহায্য করতে পারি। ধান, সবজি, ফল, সার, পোকামাকড়, আবহাওয়া - যেকোনো বিষয়ে জিজ্ঞেস করুন। 🌿'
+    };
+    
+    function sendChat() {
+      const input = document.getElementById('chatInput');
+      const messages = document.getElementById('chatMessages');
+      const text = input.value.trim();
+      
+      if (!text) return;
+      
+      // Add user message
+      messages.innerHTML += `<div class="chat-bubble user">${text}</div>`;
+      input.value = '';
+      
+      // Show typing indicator
+      messages.innerHTML += `<div class="chat-bubble ai typing-indicator" id="typing"><div class="typing-dot"></div><div class="typing-dot"></div><div class="typing-dot"></div></div>`;
+      messages.scrollTop = messages.scrollHeight;
+      
+      // Generate response
+      setTimeout(() => {
+        document.getElementById('typing').remove();
+        
+        let response = chatResponses.default;
+        Object.keys(chatResponses).forEach(key => {
+          if (text.includes(key)) response = chatResponses[key];
+        });
+        
+        messages.innerHTML += `<div class="chat-bubble ai animate-in">${response}</div>`;
+        messages.scrollTop = messages.scrollHeight;
+      }, 1500);
+    }
+    
+    function handleChatKey(event) {
+      if (event.key === 'Enter') sendChat();
+    }
+    
+    // Toggle fullscreen mode
+    function toggleFullscreen() {
+      document.body.classList.toggle('fullscreen');
+    }
+  </script>
+</body>
+</html>
