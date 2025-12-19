@@ -83,7 +83,7 @@ MIT License © 2025 Team_Newbies
 
 ```bash
 # Clone repository
-git clone https://github.com/yourusername/agri-shokti-ai.git
+git clone https://github.com/your_user_name/agri-shokti-ai.git
 cd agri-shokti-ai
 
 # Install dependencies
