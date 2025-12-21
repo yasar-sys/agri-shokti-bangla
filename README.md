@@ -60,10 +60,10 @@
 
 ## 🛠️ প্রযুক্তি স্ট্যাক
 
-- **Frontend:** React, TypeScript, Tailwind CSS  
-- **Backend:** Supabase (Database, Auth, Edge Functions)  
-- **AI:** Google Gemini (Vision + Chat)  
-- **Font:** Noto Sans Bengali  
+- **Frontend :** React, TypeScript, Tailwind CSS  
+- **Backend :** Supabase (Database, Auth, Edge Functions)  
+- **AI :** Google Gemini (Vision + Chat)  
+- **Font :** Noto Sans Bengali  
 
 ---
 
