@@ -5,3 +5,9 @@ verify_jwt = false
 
 [functions.scan-fertilizer]
 verify_jwt = false
+
+[functions.detect-disease]
+verify_jwt = false
+
+[functions.rag-answer]
+verify_jwt = false
