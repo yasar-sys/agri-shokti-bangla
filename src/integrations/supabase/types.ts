@@ -38,6 +38,248 @@ export type Database = {
         }
         Relationships: []
       }
+      community_posts: {
+        Row: {
+          author_location: string | null
+          author_name: string
+          comments_count: number | null
+          content: string
+          created_at: string
+          crop_type: string | null
+          id: string
+          image_url: string | null
+          is_featured: boolean | null
+          is_verified: boolean | null
+          likes_count: number | null
+          post_type: string
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          author_location?: string | null
+          author_name: string
+          comments_count?: number | null
+          content: string
+          created_at?: string
+          crop_type?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          likes_count?: number | null
+          post_type?: string
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          author_location?: string | null
+          author_name?: string
+          comments_count?: number | null
+          content?: string
+          created_at?: string
+          crop_type?: string | null
+          id?: string
+          image_url?: string | null
+          is_featured?: boolean | null
+          is_verified?: boolean | null
+          likes_count?: number | null
+          post_type?: string
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      forum_answers: {
+        Row: {
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          is_accepted: boolean | null
+          is_ai_answer: boolean | null
+          is_expert_answer: boolean | null
+          likes_count: number | null
+          question_id: string
+          user_id: string | null
+        }
+        Insert: {
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          is_accepted?: boolean | null
+          is_ai_answer?: boolean | null
+          is_expert_answer?: boolean | null
+          likes_count?: number | null
+          question_id: string
+          user_id?: string | null
+        }
+        Update: {
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_accepted?: boolean | null
+          is_ai_answer?: boolean | null
+          is_expert_answer?: boolean | null
+          likes_count?: number | null
+          question_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "forum_answers_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "forum_questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      forum_questions: {
+        Row: {
+          ai_suggested_answer: string | null
+          answers_count: number | null
+          author_name: string
+          category: string
+          content: string
+          created_at: string
+          id: string
+          is_ai_moderated: boolean | null
+          is_answered: boolean | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string | null
+          views_count: number | null
+        }
+        Insert: {
+          ai_suggested_answer?: string | null
+          answers_count?: number | null
+          author_name: string
+          category?: string
+          content: string
+          created_at?: string
+          id?: string
+          is_ai_moderated?: boolean | null
+          is_answered?: boolean | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+          views_count?: number | null
+        }
+        Update: {
+          ai_suggested_answer?: string | null
+          answers_count?: number | null
+          author_name?: string
+          category?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_ai_moderated?: boolean | null
+          is_answered?: boolean | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+          views_count?: number | null
+        }
+        Relationships: []
+      }
+      knowledge_base: {
+        Row: {
+          category: string
+          content: string
+          created_at: string
+          crop_type: string | null
+          id: string
+          is_active: boolean | null
+          keywords: string[] | null
+          metadata: Json | null
+          region: string | null
+          season: string | null
+          source: string | null
+          title: string
+        }
+        Insert: {
+          category: string
+          content: string
+          created_at?: string
+          crop_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          metadata?: Json | null
+          region?: string | null
+          season?: string | null
+          source?: string | null
+          title: string
+        }
+        Update: {
+          category?: string
+          content?: string
+          created_at?: string
+          crop_type?: string | null
+          id?: string
+          is_active?: boolean | null
+          keywords?: string[] | null
+          metadata?: Json | null
+          region?: string | null
+          season?: string | null
+          source?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      local_experts: {
+        Row: {
+          created_at: string
+          experience_years: number | null
+          id: string
+          is_available: boolean | null
+          is_verified: boolean | null
+          location: string
+          name: string
+          phone: string | null
+          rating: number | null
+          specialization: string[] | null
+          total_consultations: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_available?: boolean | null
+          is_verified?: boolean | null
+          location: string
+          name: string
+          phone?: string | null
+          rating?: number | null
+          specialization?: string[] | null
+          total_consultations?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          experience_years?: number | null
+          id?: string
+          is_available?: boolean | null
+          is_verified?: boolean | null
+          location?: string
+          name?: string
+          phone?: string | null
+          rating?: number | null
+          specialization?: string[] | null
+          total_consultations?: number | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
