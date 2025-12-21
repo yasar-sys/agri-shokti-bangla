@@ -309,34 +309,72 @@ export default function HomePage() {
 
       {/* Stats Row - Real Data */}
       <section className="px-4 mb-4">
-        <div className="grid grid-cols-3 gap-2">
-          <div className="bg-card border border-border rounded-xl p-3 text-center">
-            <span className="text-lg font-bold text-foreground">
+        <div className="grid grid-cols-3 gap-3">
+          <div className={cn(
+            "group relative overflow-hidden",
+            "bg-gradient-to-br from-card via-card to-card/90",
+            "border border-border/50 rounded-2xl p-4 text-center",
+            "hover:border-secondary/50 hover:shadow-soft",
+            "transition-all duration-300 hover:-translate-y-1",
+            "backdrop-blur-sm"
+          )}>
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary/0 to-secondary/0 group-hover:from-secondary/10 group-hover:to-transparent transition-all duration-300" />
+            <span className="relative text-xl font-bold text-gradient-mint">
               {profile ? String(profile.total_scans).padStart(2, '০') : '০০'}
             </span>
-            <p className="text-xs text-muted-foreground mt-1">স্ক্যান</p>
+            <p className="relative text-xs text-muted-foreground mt-1.5 font-medium">স্ক্যান</p>
           </div>
-          <div className="bg-card border border-border rounded-xl p-3 text-center">
-            <span className="text-lg font-bold text-foreground">{getUserLevel()} লেভেল</span>
-            <p className="text-xs text-muted-foreground mt-1">র‍্যাংক</p>
+          <div className={cn(
+            "group relative overflow-hidden",
+            "bg-gradient-to-br from-card via-card to-card/90",
+            "border border-border/50 rounded-2xl p-4 text-center",
+            "hover:border-primary/50 hover:shadow-soft",
+            "transition-all duration-300 hover:-translate-y-1",
+            "backdrop-blur-sm"
+          )}>
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/10 group-hover:to-transparent transition-all duration-300" />
+            <span className="relative text-xl font-bold text-gradient-gold">{getUserLevel()} লেভেল</span>
+            <p className="relative text-xs text-muted-foreground mt-1.5 font-medium">র‍্যাংক</p>
           </div>
-          <div className="bg-card border border-border rounded-xl p-3 text-center">
-            <div className="flex items-center justify-center gap-1">
-              <span className="text-base">{weather.icon}</span>
-              <span className="text-lg font-bold text-foreground">{weather.temp}°</span>
+          <div className={cn(
+            "group relative overflow-hidden",
+            "bg-gradient-to-br from-card via-card to-card/90",
+            "border border-border/50 rounded-2xl p-4 text-center",
+            "hover:border-chart-3/50 hover:shadow-soft",
+            "transition-all duration-300 hover:-translate-y-1",
+            "backdrop-blur-sm"
+          )}>
+            <div className="absolute inset-0 bg-gradient-to-br from-chart-3/0 to-chart-3/0 group-hover:from-chart-3/10 group-hover:to-transparent transition-all duration-300" />
+            <div className="relative flex items-center justify-center gap-1.5">
+              <span className="text-lg group-hover:scale-110 transition-transform duration-300">{weather.icon}</span>
+              <span className="text-xl font-bold text-foreground">{weather.temp}°</span>
             </div>
-            <p className="text-xs text-muted-foreground mt-1">{weather.conditionBn}</p>
+            <p className="relative text-xs text-muted-foreground mt-1.5 font-medium">{weather.conditionBn}</p>
           </div>
         </div>
       </section>
 
       {/* Today's Tip */}
       <section className="px-4 mb-4">
-        <div className="bg-card border-2 border-primary/50 rounded-xl p-4">
-          <div className="flex items-start gap-2">
-            <span className="text-xl">💡</span>
-            <div>
-              <h3 className="font-semibold text-primary text-sm mb-1">আজকের কৃষি টিপস</h3>
+        <div className={cn(
+          "relative overflow-hidden",
+          "bg-gradient-to-br from-primary/20 via-primary/10 to-card",
+          "border-2 border-primary/50 rounded-2xl p-4",
+          "hover:border-primary/70 hover:shadow-glow-gold",
+          "transition-all duration-300 animate-fade-in"
+        )}>
+          {/* Animated background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 animate-gradient opacity-50" />
+          
+          <div className="relative flex items-start gap-3">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-xl shadow-soft">
+              💡
+            </div>
+            <div className="flex-1">
+              <h3 className="font-bold text-primary text-sm mb-2 flex items-center gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-glow" />
+                আজকের কৃষি টিপস
+              </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
                 বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দিন, বিকেলে কীটনাশক স্প্রে করবেন না। ধানের চারা রোপণের সেরা সময়।
               </p>
@@ -374,18 +412,36 @@ export default function HomePage() {
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-2 transition-all duration-300">
+        <div className="grid grid-cols-3 gap-3 transition-all duration-300">
           {currentServices.map((service, index) => (
             <Link
               key={service.to}
               to={service.to}
-              className="bg-card border border-border rounded-xl p-3 flex flex-col items-center gap-1.5 hover:bg-card/80 hover:border-secondary/50 transition-all active:scale-95 animate-fade-in"
-              style={{ animationDelay: `${index * 50}ms` }}
+              className={cn(
+                "group relative bg-gradient-to-br from-card via-card to-card/80",
+                "border border-border/50 rounded-2xl p-4 flex flex-col items-center gap-2",
+                "hover:border-secondary/50 hover:shadow-glow hover:shadow-secondary/20",
+                "transition-all duration-300 active:scale-95",
+                "animate-fade-in hover:-translate-y-1",
+                "backdrop-blur-sm"
+              )}
+              style={{ animationDelay: `${index * 50}ms`, animationFillMode: "forwards" }}
             >
-              <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center bg-secondary/10")}>
-                <service.icon className={cn("w-5 h-5", service.color)} />
+              {/* Glow effect on hover */}
+              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-secondary/0 to-secondary/0 group-hover:from-secondary/10 group-hover:to-transparent transition-all duration-300 opacity-0 group-hover:opacity-100" />
+              
+              <div className={cn(
+                "relative w-12 h-12 rounded-xl flex items-center justify-center",
+                "bg-gradient-to-br from-secondary/20 to-secondary/5",
+                "group-hover:from-secondary/30 group-hover:to-secondary/10",
+                "transition-all duration-300 group-hover:scale-110",
+                "shadow-soft"
+              )}>
+                <service.icon className={cn("w-6 h-6 transition-all duration-300", service.color, "group-hover:scale-110")} />
               </div>
-              <span className="text-xs text-foreground text-center font-medium leading-tight">{service.label}</span>
+              <span className="relative text-xs text-foreground text-center font-semibold leading-tight group-hover:text-secondary transition-colors">
+                {service.label}
+              </span>
             </Link>
           ))}
         </div>
@@ -411,24 +467,39 @@ export default function HomePage() {
           <h2 className="text-base font-semibold text-foreground">আজকের বাজার দর</h2>
           <Link to="/market" className="text-xs text-secondary">সব দেখুন →</Link>
         </div>
-        <div className="space-y-2">
+        <div className="space-y-3">
           {marketPrices.map((item, index) => (
             <div 
               key={index}
-              className="flex items-center justify-between bg-card border border-border rounded-xl px-4 py-3"
+              className={cn(
+                "group flex items-center justify-between",
+                "bg-gradient-to-r from-card via-card to-card/90",
+                "border border-border/50 rounded-2xl px-4 py-3.5",
+                "hover:border-primary/30 hover:shadow-soft",
+                "transition-all duration-300 hover:-translate-y-0.5",
+                "backdrop-blur-sm animate-fade-in"
+              )}
+              style={{ animationDelay: `${index * 100}ms`, animationFillMode: "forwards" }}
             >
-              <div className="flex items-center gap-2">
-                <span className="text-lg">{item.emoji}</span>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300 shadow-soft">
+                  {item.emoji}
+                </div>
                 <div>
-                  <span className="text-sm text-foreground block">{item.name}</span>
+                  <span className="text-sm font-semibold text-foreground block group-hover:text-primary transition-colors">
+                    {item.name}
+                  </span>
                   <span className="text-xs text-muted-foreground">সা. গড়: {item.weeklyAvg}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-sm font-semibold text-foreground">{item.price}</span>
+                <span className="text-base font-bold text-foreground">{item.price}</span>
                 <span className={cn(
-                  "text-xs px-1.5 py-0.5 rounded",
-                  item.positive ? "text-secondary bg-secondary/20" : "text-destructive bg-destructive/20"
+                  "text-xs px-2 py-1 rounded-lg font-semibold",
+                  "transition-all duration-300",
+                  item.positive 
+                    ? "text-secondary bg-secondary/20 shadow-glow shadow-secondary/20" 
+                    : "text-destructive bg-destructive/20"
                 )}>
                   {item.change}
                 </span>
@@ -441,10 +512,21 @@ export default function HomePage() {
       {/* CTA Button */}
       <section className="px-4 mb-4">
         <Link to="/camera">
-          <div className="bg-gradient-to-r from-secondary to-secondary/80 text-secondary-foreground rounded-xl p-4 text-center font-semibold hover:from-secondary/90 hover:to-secondary/70 transition-all active:scale-98 shadow-lg shadow-secondary/20">
-            <div className="flex items-center justify-center gap-2">
-              <Scan className="w-5 h-5" />
-              <span>ক্ষেতের ছবি তুলুন, AI দেখবে</span>
+          <div className={cn(
+            "relative overflow-hidden",
+            "bg-gradient-to-r from-secondary via-secondary to-secondary/90",
+            "text-secondary-foreground rounded-2xl p-5 text-center font-bold",
+            "hover:from-secondary/95 hover:via-secondary hover:to-secondary/85",
+            "transition-all duration-300 active:scale-[0.98]",
+            "shadow-glow shadow-secondary/30 hover:shadow-secondary/40",
+            "hover:-translate-y-1 group"
+          )}>
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            
+            <div className="relative flex items-center justify-center gap-3">
+              <Scan className="w-6 h-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
+              <span className="text-base">ক্ষেতের ছবি তুলুন, AI দেখবে</span>
             </div>
           </div>
         </Link>
