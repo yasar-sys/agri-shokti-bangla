@@ -67,6 +67,7 @@ const services = [
   { icon: GraduationCap, label: "কৃষি জ্ঞান", to: "/knowledge", color: "text-accent-foreground", description: "শিখুন ও জানুন" },
   { icon: UsersRound, label: "কমিউনিটি", to: "/community", color: "text-muted-foreground", description: "কৃষক সংঘ" },
   { icon: PlayCircle, label: "অ্যাপ গাইড", to: "/demo", color: "text-chart-5", description: "টিউটোরিয়াল দেখুন" },
+  { icon: MapPin, label: "জমি হিসাব", to: "/land-calculator", color: "text-primary", description: "জমির মাপ ও দাম" },
 ];
 
 const marketPrices = [
