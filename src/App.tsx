@@ -6,6 +6,8 @@ import { BrowserRouter, Routes, Route, useLocation } from "react-router-dom";
 import { Suspense, lazy, Component, ErrorInfo, ReactNode } from "react";
 import { BottomNav } from "@/components/ui/BottomNav";
 import { Loader2 } from "lucide-react";
+import { LanguageProvider } from "@/contexts/LanguageContext";
+import { OfflineBanner } from "@/components/ui/OfflineBanner";
 
 // Lazy load pages for better performance
 const SplashPage = lazy(() => import("./pages/SplashPage"));
@@ -35,6 +37,7 @@ const SupportPage = lazy(() => import("./pages/SupportPage"));
 const ProfilePage = lazy(() => import("./pages/ProfilePage"));
 const DemoPage = lazy(() => import("./pages/DemoPage"));
 const StoragePage = lazy(() => import("./pages/StoragePage"));
+const LandCalculatorPage = lazy(() => import("./pages/LandCalculatorPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Error Boundary Component
@@ -140,6 +143,7 @@ function AppContent() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/demo" element={<DemoPage />} />
             <Route path="/storage" element={<StoragePage />} />
+            <Route path="/land-calculator" element={<LandCalculatorPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
@@ -151,13 +155,16 @@ function AppContent() {
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <AppContent />
-      </BrowserRouter>
-    </TooltipProvider>
+    <LanguageProvider>
+      <TooltipProvider>
+        <OfflineBanner />
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <AppContent />
+        </BrowserRouter>
+      </TooltipProvider>
+    </LanguageProvider>
   </QueryClientProvider>
 );
 
