@@ -32,12 +32,14 @@ import {
   Zap,
   TrendingDown,
   Compass,
-  Map
+  Map,
+  Shield
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
 import { Session } from "@supabase/supabase-js";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -95,9 +97,16 @@ export default function HomePage() {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isAdmin, setIsAdmin] = useState(false);
   const location = useLocation();
   const weather = useWeather(location.latitude, location.longitude);
   const { prices: marketPrices, loading: marketLoading } = useMarketPrices();
+  const { trackPageView, trackFeatureUse } = useAnalyticsTracker();
+
+  // Track page view on mount
+  useEffect(() => {
+    trackPageView('home');
+  }, [trackPageView]);
 
   // Real-time clock
   useEffect(() => {
@@ -156,6 +165,16 @@ export default function HomePage() {
     if (!error && data) {
       setProfile(data);
     }
+
+    // Check if user is admin
+    const { data: roleData } = await supabase
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', session.user.id)
+      .eq('role', 'admin')
+      .maybeSingle();
+
+    setIsAdmin(!!roleData);
   };
 
   const handleLogout = async () => {
@@ -278,6 +297,14 @@ export default function HomePage() {
                         <span>সেটিংস</span>
                       </Link>
                     </DropdownMenuItem>
+                    {isAdmin && (
+                      <DropdownMenuItem asChild>
+                        <Link to="/admin" className="cursor-pointer gap-3 py-2.5">
+                          <Shield className="w-4 h-4 text-primary" />
+                          <span>অ্যাডমিন ড্যাশবোর্ড</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    )}
                     <DropdownMenuSeparator className="bg-border/50" />
                     <DropdownMenuItem 
                       onClick={handleLogout}
