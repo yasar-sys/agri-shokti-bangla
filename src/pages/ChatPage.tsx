@@ -1,10 +1,12 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, Bot, ArrowLeft } from "lucide-react";
+import { Send, Bot, ArrowLeft, Sparkles, Volume2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { useBengaliVoiceInput } from "@/hooks/useBengaliVoiceInput";
+import { VoiceInputButton } from "@/components/ui/VoiceInputButton";
 
 interface Message {
   id: string;
@@ -17,22 +19,53 @@ const suggestedQuestions = [
   "ধানের পাতা হলুদ হয়ে যাচ্ছে কেন?",
   "কখন সার দেওয়া উচিত?",
   "বৃষ্টিতে ফসল রক্ষা করব কীভাবে?",
+  "পোকামাকড় দমন করব কীভাবে?",
 ];
 
 export default function ChatPage() {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: "1",
-      content: "আসসালামু আলাইকুম! আমি agriশক্তি AI। আপনার কৃষি সমস্যায় সাহায্য করতে প্রস্তুত। কী জানতে চান?",
+      content: "আসসালামু আলাইকুম! আমি agriশক্তি AI। আপনার কৃষি সমস্যায় সাহায্য করতে প্রস্তুত। কী জানতে চান? 🌾",
       sender: "ai",
       timestamp: "এইমাত্র",
     },
   ]);
   const [inputText, setInputText] = useState("");
-  const [isRecording, setIsRecording] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Bengali Voice Input Hook
+  const {
+    isListening,
+    isSupported,
+    transcript,
+    toggleListening,
+    error: voiceError,
+  } = useBengaliVoiceInput({
+    onResult: (finalTranscript) => {
+      setInputText(finalTranscript);
+      toast({
+        title: "✓ কথা শোনা হয়েছে",
+        description: finalTranscript.slice(0, 50) + (finalTranscript.length > 50 ? '...' : ''),
+      });
+    },
+    onError: (error) => {
+      toast({
+        variant: "destructive",
+        title: "ভয়েস ত্রুটি",
+        description: error,
+      });
+    },
+  });
+
+  // Update input when transcript changes
+  useEffect(() => {
+    if (transcript) {
+      setInputText(transcript);
+    }
+  }, [transcript]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -58,9 +91,8 @@ export default function ChatPage() {
     setIsLoading(true);
 
     try {
-      // Build message history for context
       const messageHistory = messages
-        .filter(m => m.id !== "1") // Exclude initial greeting
+        .filter(m => m.id !== "1")
         .map(m => ({
           role: m.sender === "ai" ? "assistant" : "user",
           content: m.content
@@ -83,7 +115,6 @@ export default function ChatPage() {
       
       setMessages((prev) => [...prev, aiMessage]);
 
-      // Save to database
       await supabase.from('chat_messages').insert([
         { content: currentInput, sender: 'user' },
         { content: aiMessage.content, sender: 'ai' }
@@ -113,79 +144,85 @@ export default function ChatPage() {
     setInputText(question);
   };
 
-  const toggleRecording = () => {
-    setIsRecording(!isRecording);
-    toast({
-      title: isRecording ? "রেকর্ডিং বন্ধ" : "রেকর্ডিং শুরু",
-      description: isRecording ? "ভয়েস রেকর্ডিং বন্ধ হয়েছে" : "কথা বলুন...",
-    });
-  };
-
   return (
-    <div 
-      className="min-h-screen flex flex-col"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(/src/assets/bangladesh-village-bg.jpg)`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundAttachment: "fixed",
-      }}
-    >
+    <div className="min-h-screen flex flex-col bg-background">
+      {/* Gradient Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-br from-background via-background to-card" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-secondary/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
+      </div>
+
       {/* Header */}
-      <header className="px-4 pt-8 pb-4 border-b border-border bg-background/50 backdrop-blur-sm">
-        <div className="flex items-center gap-3">
+      <header className="relative px-4 pt-6 pb-4 border-b border-border/50 bg-card/30 backdrop-blur-xl">
+        <div className="flex items-center gap-4">
           <Link
             to="/home"
-            className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
+            className="w-11 h-11 rounded-2xl bg-card/80 flex items-center justify-center border border-border/50 hover:bg-muted/50 transition-all hover:scale-105 active:scale-95 shadow-soft"
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </Link>
-          <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center">
-            <Bot className="w-5 h-5 text-secondary" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-foreground">agriশক্তি AI সহকারী</h1>
-            <div className="flex items-center gap-2">
-              <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span className="text-xs text-muted-foreground">অনলাইন</span>
+          
+          <div className="flex-1 flex items-center gap-3">
+            <div className="relative">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center shadow-lg shadow-secondary/20">
+                <Bot className="w-6 h-6 text-secondary-foreground" />
+              </div>
+              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full border-2 border-card animate-pulse" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
+                agriশক্তি AI
+                <Sparkles className="w-4 h-4 text-primary" />
+              </h1>
+              <p className="text-xs text-muted-foreground">কৃষি বিশেষজ্ঞ সহকারী</p>
             </div>
           </div>
         </div>
       </header>
 
       {/* Chat Messages */}
-      <section className="flex-1 overflow-y-auto px-4 py-4 space-y-3 pb-48">
-        {messages.map((message) => (
+      <section className="flex-1 overflow-y-auto px-4 py-6 space-y-4 pb-52">
+        {messages.map((message, index) => (
           <div
             key={message.id}
             className={cn(
-              "flex",
+              "flex animate-slide-up",
               message.sender === "user" ? "justify-end" : "justify-start"
             )}
+            style={{ animationDelay: `${index * 0.05}s` }}
           >
+            {message.sender === "ai" && (
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center mr-2 mt-1 flex-shrink-0 shadow-sm">
+                <Bot className="w-4 h-4 text-secondary-foreground" />
+              </div>
+            )}
             <div
               className={cn(
-                "max-w-[85%] px-4 py-3 rounded-2xl",
+                "max-w-[80%] px-4 py-3 shadow-soft",
                 message.sender === "user"
-                  ? "bg-primary/20 text-foreground rounded-br-md"
-                  : "bg-card border border-border text-foreground rounded-bl-md"
+                  ? "bg-gradient-to-br from-primary/30 to-primary/20 text-foreground rounded-2xl rounded-br-md border border-primary/20"
+                  : "bg-card/80 backdrop-blur-sm border border-border/50 text-foreground rounded-2xl rounded-bl-md"
               )}
             >
-              <p className="text-sm leading-relaxed">{message.content}</p>
-              <p className="text-[10px] text-muted-foreground mt-1">{message.timestamp}</p>
+              <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
+              <p className="text-[10px] text-muted-foreground mt-2 opacity-70">{message.timestamp}</p>
             </div>
           </div>
         ))}
 
         {/* Loading indicator */}
         {isLoading && (
-          <div className="flex justify-start">
-            <div className="bg-card border border-border px-4 py-3 rounded-2xl rounded-bl-md">
-              <div className="flex gap-1">
+          <div className="flex justify-start animate-fade-in">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center mr-2 flex-shrink-0 shadow-sm">
+              <Bot className="w-4 h-4 text-secondary-foreground" />
+            </div>
+            <div className="bg-card/80 backdrop-blur-sm border border-border/50 px-4 py-3 rounded-2xl rounded-bl-md shadow-soft">
+              <div className="flex gap-1.5">
                 {[0, 1, 2].map((i) => (
                   <div
                     key={i}
-                    className="w-2 h-2 rounded-full bg-secondary animate-bounce"
+                    className="w-2.5 h-2.5 rounded-full bg-secondary animate-bounce"
                     style={{ animationDelay: `${i * 0.15}s` }}
                   />
                 ))}
@@ -197,14 +234,17 @@ export default function ChatPage() {
       </section>
 
       {/* Suggestions */}
-      <section className="px-4 py-3 border-t border-border bg-background">
-        <p className="text-xs text-muted-foreground mb-2">প্রস্তাবিত প্রশ্ন:</p>
+      <section className="px-4 py-3 border-t border-border/30 bg-card/30 backdrop-blur-xl">
+        <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
+          <Sparkles className="w-3 h-3" />
+          প্রস্তাবিত প্রশ্ন
+        </p>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {suggestedQuestions.map((question, index) => (
             <button
               key={index}
               onClick={() => handleSuggestionClick(question)}
-              className="px-3 py-2 rounded-xl bg-card border border-border text-xs text-foreground whitespace-nowrap hover:bg-muted transition-colors active:scale-95"
+              className="px-4 py-2.5 rounded-2xl bg-card/80 border border-border/50 text-xs text-foreground whitespace-nowrap hover:bg-muted/50 hover:border-secondary/50 transition-all active:scale-95 shadow-soft"
             >
               {question}
             </button>
@@ -212,50 +252,77 @@ export default function ChatPage() {
         </div>
       </section>
 
+      {/* Voice Input Status */}
+      {isListening && (
+        <div className="px-4 py-2 bg-destructive/10 border-t border-destructive/20">
+          <div className="flex items-center justify-center gap-2 text-destructive">
+            <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+            <p className="text-sm font-medium animate-pulse">
+              🎤 শুনছি... বাংলায় কথা বলুন
+            </p>
+          </div>
+          {transcript && (
+            <p className="text-xs text-center text-muted-foreground mt-1 truncate">
+              "{transcript}"
+            </p>
+          )}
+        </div>
+      )}
+
       {/* Input Area */}
-      <section className="px-4 pb-24 pt-2 bg-background border-t border-border">
-        <div className="flex items-center gap-2">
+      <section className="px-4 pb-24 pt-3 bg-card/50 backdrop-blur-xl border-t border-border/30">
+        <div className="flex items-center gap-3">
           {/* Voice Button */}
-          <button
-            onClick={toggleRecording}
-            className={cn(
-              "w-11 h-11 rounded-xl flex items-center justify-center transition-all",
-              isRecording
-                ? "bg-destructive text-destructive-foreground"
-                : "bg-card border border-border text-foreground hover:bg-muted"
-            )}
-          >
-            {isRecording ? (
-              <MicOff className="w-5 h-5" />
-            ) : (
-              <Mic className="w-5 h-5" />
-            )}
-          </button>
+          <VoiceInputButton
+            isListening={isListening}
+            isSupported={isSupported}
+            onClick={toggleListening}
+            size="md"
+          />
 
           {/* Text Input */}
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSend()}
-            placeholder="আপনার প্রশ্ন লিখুন..."
-            disabled={isLoading}
-            className="flex-1 h-11 px-4 rounded-xl bg-card border border-border text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-secondary text-sm disabled:opacity-50"
-          />
+          <div className="flex-1 relative">
+            <input
+              type="text"
+              value={inputText}
+              onChange={(e) => setInputText(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleSend()}
+              placeholder={isListening ? "শুনছি..." : "বাংলায় লিখুন বা বলুন..."}
+              disabled={isLoading}
+              className={cn(
+                "w-full h-12 px-5 rounded-2xl",
+                "bg-card/80 border-2 border-border/50",
+                "text-foreground placeholder:text-muted-foreground",
+                "focus:outline-none focus:border-secondary/50 focus:ring-2 focus:ring-secondary/20",
+                "text-sm transition-all shadow-soft",
+                "disabled:opacity-50",
+                isListening && "border-destructive/50 bg-destructive/5"
+              )}
+            />
+          </div>
 
           {/* Send Button */}
           <Button
             onClick={handleSend}
             disabled={!inputText.trim() || isLoading}
-            className="w-11 h-11 rounded-xl bg-secondary text-secondary-foreground hover:bg-secondary/90 p-0"
+            className={cn(
+              "w-12 h-12 rounded-2xl p-0",
+              "bg-gradient-to-br from-secondary to-secondary/80",
+              "text-secondary-foreground shadow-lg shadow-secondary/20",
+              "hover:shadow-xl hover:shadow-secondary/30 hover:scale-105",
+              "transition-all active:scale-95",
+              "disabled:opacity-50 disabled:hover:scale-100"
+            )}
           >
             <Send className="w-5 h-5" />
           </Button>
         </div>
-        
-        {isRecording && (
-          <p className="text-xs text-center text-destructive mt-2 animate-pulse">
-            🎤 রেকর্ডিং চলছে... কথা বলুন
+
+        {/* Voice Support Info */}
+        {isSupported && !isListening && (
+          <p className="text-[10px] text-center text-muted-foreground mt-2 flex items-center justify-center gap-1">
+            <Volume2 className="w-3 h-3" />
+            মাইক বাটনে ক্লিক করে বাংলায় কথা বলুন
           </p>
         )}
       </section>
