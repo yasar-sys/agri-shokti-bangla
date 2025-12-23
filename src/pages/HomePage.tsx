@@ -94,9 +94,16 @@ export default function HomePage() {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [currentPage, setCurrentPage] = useState(0);
+  const [currentTime, setCurrentTime] = useState(new Date());
   const location = useLocation();
   const weather = useWeather(location.latitude, location.longitude);
   const { prices: marketPrices, loading: marketLoading } = useMarketPrices();
+
+  // Real-time clock
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Get top 3 market prices for display
   const topMarketPrices = marketPrices.slice(0, 3).map(p => ({
@@ -304,39 +311,54 @@ export default function HomePage() {
             </DropdownMenu>
           </div>
           
-          {/* Location & Weather Bar */}
-          <div className="mt-5 flex items-center justify-between glass-card rounded-2xl px-4 py-3 border border-border/30">
-            <div className="flex items-center gap-2.5">
-              {location.loading ? (
-                <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
-                  <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+          {/* Location & Weather Bar with Real-time Clock */}
+          <div className="mt-5 glass-card rounded-2xl px-4 py-3 border border-border/30">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                {location.loading ? (
+                  <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
+                    <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-xl bg-destructive/10 flex items-center justify-center">
+                    <MapPin className="w-4 h-4 text-destructive" />
+                  </div>
+                )}
+                <div>
+                  <span className="text-sm font-medium text-foreground block">
+                    {location.loading ? 'খুঁজছি...' : location.city}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground">{location.country}</span>
                 </div>
-              ) : (
-                <div className="w-8 h-8 rounded-xl bg-destructive/10 flex items-center justify-center">
-                  <MapPin className="w-4 h-4 text-destructive" />
-                </div>
-              )}
-              <div>
-                <span className="text-sm font-medium text-foreground block">
-                  {location.loading ? 'খুঁজছি...' : location.city}
-                </span>
-                <span className="text-[10px] text-muted-foreground">{location.country}</span>
+              </div>
+              <div className="flex items-center gap-3">
+                {weather.loading ? (
+                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
+                ) : (
+                  <>
+                    <div className="text-right">
+                      <span className="text-lg font-bold text-foreground">{weather.temp}°</span>
+                      <span className="text-[10px] text-muted-foreground block">{weather.conditionBn}</span>
+                    </div>
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-2xl">
+                      {weather.icon}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              {weather.loading ? (
-                <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-              ) : (
-                <>
-                  <div className="text-right">
-                    <span className="text-lg font-bold text-foreground">{weather.temp}°</span>
-                    <span className="text-[10px] text-muted-foreground block">{weather.conditionBn}</span>
-                  </div>
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-2xl">
-                    {weather.icon}
-                  </div>
-                </>
-              )}
+            {/* Real-time Clock */}
+            <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl font-mono font-bold text-gradient-premium">
+                  {currentTime.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                </span>
+              </div>
+              <div className="text-right">
+                <span className="text-xs text-muted-foreground">
+                  {currentTime.toLocaleDateString('bn-BD', { weekday: 'long', day: 'numeric', month: 'long' })}
+                </span>
+              </div>
             </div>
           </div>
         </div>

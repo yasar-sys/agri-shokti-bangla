@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Globe, Bell, HelpCircle, Info, ChevronRight, User, Shield, Smartphone, ArrowLeft, Check, Phone } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Globe, Bell, HelpCircle, Info, ChevronRight, User, Shield, Smartphone, ArrowLeft, Check, Phone, Moon, Sun } from "lucide-react";
 import { Switch } from "@/components/ui/switch";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
+import { useTheme } from "@/contexts/ThemeContext";
 import {
   Dialog,
   DialogContent,
@@ -26,6 +27,7 @@ const languageOptions: { code: Language; label: string; flag: string }[] = [
 
 export default function SettingsPage() {
   const { language, setLanguage, t } = useLanguage();
+  const { theme, setTheme } = useTheme();
   const [pushEnabled, setPushEnabled] = useState(true);
   const [smsEnabled, setSmsEnabled] = useState(false);
   const [phoneNumber, setPhoneNumber] = useState("");
@@ -55,6 +57,11 @@ export default function SettingsPage() {
     } else {
       toast.error(t("validPhone"));
     }
+  };
+
+  const handleThemeChange = (newTheme: "dark" | "light") => {
+    setTheme(newTheme);
+    toast.success(language === "bn" ? "থিম পরিবর্তন হয়েছে" : "Theme changed");
   };
 
   const getCurrentLanguageLabel = () => {
@@ -91,6 +98,57 @@ export default function SettingsPage() {
 
       {/* Settings Groups */}
       <section className="px-4 py-6 space-y-6">
+        {/* Theme */}
+        <div className="rounded-2xl bg-card border border-border overflow-hidden">
+          <h3 className="px-4 pt-4 text-sm font-medium text-muted-foreground">
+            {language === "bn" ? "থিম" : "Theme"}
+          </h3>
+          <div className="p-4 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
+                {theme === "dark" ? (
+                  <Moon className="w-5 h-5 text-primary" />
+                ) : (
+                  <Sun className="w-5 h-5 text-primary" />
+                )}
+              </div>
+              <div>
+                <p className="font-medium text-foreground">
+                  {language === "bn" ? "ডার্ক/লাইট মোড" : "Dark/Light Mode"}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {theme === "dark" 
+                    ? (language === "bn" ? "ডার্ক মোড চালু আছে" : "Dark mode is on")
+                    : (language === "bn" ? "লাইট মোড চালু আছে" : "Light mode is on")
+                  }
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <button
+                onClick={() => handleThemeChange("light")}
+                className={`p-2 rounded-lg transition-all ${
+                  theme === "light" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                <Sun className="w-5 h-5" />
+              </button>
+              <button
+                onClick={() => handleThemeChange("dark")}
+                className={`p-2 rounded-lg transition-all ${
+                  theme === "dark" 
+                    ? "bg-primary text-primary-foreground" 
+                    : "bg-muted text-muted-foreground hover:bg-muted/80"
+                }`}
+              >
+                <Moon className="w-5 h-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Language */}
         <Dialog open={showLanguageDialog} onOpenChange={setShowLanguageDialog}>
           <DialogTrigger asChild>
