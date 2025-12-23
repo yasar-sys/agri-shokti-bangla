@@ -30,7 +30,9 @@ import {
   Sparkles,
   ArrowRight,
   Zap,
-  TrendingDown
+  TrendingDown,
+  Compass,
+  Map
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -59,8 +61,11 @@ const services = [
   { icon: MessageSquare, label: "AI সহায়ক", to: "/chat", gradient: "from-cyan-500/20 to-sky-500/20", iconColor: "text-cyan-400", borderColor: "border-cyan-500/30", description: "কৃষি পরামর্শ নিন" },
   { icon: TrendingUp, label: "বাজার দর", to: "/market", gradient: "from-green-500/20 to-emerald-500/20", iconColor: "text-green-400", borderColor: "border-green-500/30", description: "বাজার মূল্য দেখুন" },
   { icon: Cloud, label: "আবহাওয়া", to: "/weather", gradient: "from-blue-500/20 to-indigo-500/20", iconColor: "text-blue-400", borderColor: "border-blue-500/30", description: "আবহাওয়া পূর্বাভাস" },
+  { icon: Calendar, label: "ক্যালেন্ডার", to: "/farmer-calendar", gradient: "from-fuchsia-500/20 to-pink-500/20", iconColor: "text-fuchsia-400", borderColor: "border-fuchsia-500/30", description: "বাংলা/ইংরেজি ক্যালেন্ডার" },
+  { icon: Compass, label: "কম্পাস", to: "/compass", gradient: "from-cyan-500/20 to-teal-500/20", iconColor: "text-cyan-400", borderColor: "border-cyan-500/30", description: "দিক নির্ণয়" },
+  { icon: Map, label: "জমির ম্যাপ", to: "/map", gradient: "from-indigo-500/20 to-violet-500/20", iconColor: "text-indigo-400", borderColor: "border-indigo-500/30", description: "স্যাটেলাইট ম্যাপ" },
   { icon: Satellite, label: "স্যাটেলাইট ভিশন", to: "/satellite", gradient: "from-violet-500/20 to-purple-500/20", iconColor: "text-violet-400", borderColor: "border-violet-500/30", description: "NDVI ম্যাপ দেখুন" },
-  { icon: Calendar, label: "ফার্মিং ক্যালেন্ডার", to: "/calendar", gradient: "from-fuchsia-500/20 to-pink-500/20", iconColor: "text-fuchsia-400", borderColor: "border-fuchsia-500/30", description: "কাজের সময়সূচী" },
+  { icon: Calendar, label: "ফার্মিং ক্যালেন্ডার", to: "/calendar", gradient: "from-orange-500/20 to-amber-500/20", iconColor: "text-orange-400", borderColor: "border-orange-500/30", description: "ফসলের সময়সূচী" },
   { icon: Tractor, label: "যন্ত্র অপ্টিমাইজার", to: "/machine", gradient: "from-orange-500/20 to-red-500/20", iconColor: "text-orange-400", borderColor: "border-orange-500/30", description: "ট্রাক্টর/টিলার গাইড" },
   { icon: Calculator, label: "সার ক্যালকুলেটর", to: "/npk-calculator", gradient: "from-lime-500/20 to-green-500/20", iconColor: "text-lime-400", borderColor: "border-lime-500/30", description: "NPK ডোজ হিসাব" },
   { icon: CloudLightning, label: "জলবায়ু সতর্কতা", to: "/climate-alert", gradient: "from-red-500/20 to-rose-500/20", iconColor: "text-red-400", borderColor: "border-red-500/30", description: "দুর্যোগ সতর্কতা" },

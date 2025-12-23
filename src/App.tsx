@@ -29,6 +29,8 @@ const FertilizerScanPage = lazy(() => import("./pages/FertilizerScanPage"));
 const PestMapPage = lazy(() => import("./pages/PestMapPage"));
 const SatellitePage = lazy(() => import("./pages/SatellitePage"));
 const FarmingCalendarPage = lazy(() => import("./pages/FarmingCalendarPage"));
+const CalendarPage = lazy(() => import("./pages/CalendarPage"));
+const CompassPage = lazy(() => import("./pages/CompassPage"));
 const MachineOptimizerPage = lazy(() => import("./pages/MachineOptimizerPage"));
 const NPKCalculatorPage = lazy(() => import("./pages/NPKCalculatorPage"));
 const ClimateAlertPage = lazy(() => import("./pages/ClimateAlertPage"));
@@ -135,6 +137,8 @@ function AppContent() {
             <Route path="/pest-map" element={<PestMapPage />} />
             <Route path="/satellite" element={<SatellitePage />} />
             <Route path="/calendar" element={<FarmingCalendarPage />} />
+            <Route path="/farmer-calendar" element={<CalendarPage />} />
+            <Route path="/compass" element={<CompassPage />} />
             <Route path="/machine" element={<MachineOptimizerPage />} />
             <Route path="/npk-calculator" element={<NPKCalculatorPage />} />
             <Route path="/climate-alert" element={<ClimateAlertPage />} />
@@ -144,6 +148,7 @@ function AppContent() {
             <Route path="/demo" element={<DemoPage />} />
             <Route path="/storage" element={<StoragePage />} />
             <Route path="/land-calculator" element={<LandCalculatorPage />} />
+            <Route path="*" element={<NotFound />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
