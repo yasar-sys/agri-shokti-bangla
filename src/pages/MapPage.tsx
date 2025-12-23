@@ -48,6 +48,7 @@ export default function MapPage() {
   const [selectedField, setSelectedField] = useState<Field | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [mapReady, setMapReady] = useState(false);
   const [mapError, setMapError] = useState<string | null>(null);
   const [currentStyle, setCurrentStyle] = useState(0);
   const [showStylePicker, setShowStylePicker] = useState(false);
@@ -56,65 +57,59 @@ export default function MapPage() {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const location = useLocation();
 
-  // Fetch Mapbox token with timeout - always show fallback after 2 seconds
+  // Fetch Mapbox token (do not block late responses)
   useEffect(() => {
     let isMounted = true;
-    let hasCompleted = false;
-    
-    // Always show fallback after 2 seconds if not loaded
-    const timeoutId = setTimeout(() => {
-      if (isMounted && !hasCompleted) {
-        console.log('Token fetch timed out, showing fallback');
-        hasCompleted = true;
-        setIsLoading(false);
-        setMapError('ম্যাপ সার্ভার থেকে সাড়া পাওয়া যায়নি');
-      }
-    }, 2000);
+    const timeoutMs = 2000;
+
+    const timeoutId = window.setTimeout(() => {
+      if (!isMounted) return;
+      console.log("Token fetch is slow, showing fallback while waiting...");
+      setIsLoading(false);
+      setMapError("ম্যাপ লোড হচ্ছে… (ধীর নেটওয়ার্ক) ");
+    }, timeoutMs);
 
     const fetchToken = async () => {
       try {
-        console.log('Fetching Mapbox token...');
-        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
-        
-        if (!isMounted || hasCompleted) return;
-        hasCompleted = true;
-        clearTimeout(timeoutId);
-        
+        console.log("Fetching Mapbox token...");
+        const { data, error } = await supabase.functions.invoke("get-mapbox-token");
+
+        if (!isMounted) return;
+        window.clearTimeout(timeoutId);
+
         if (error) {
-          console.error('Edge function error:', error);
-          setMapError('এজ ফাংশন ত্রুটি: ' + error.message);
+          console.error("Edge function error:", error);
+          setMapError("টোকেন সার্ভিস ত্রুটি: " + error.message);
           setIsLoading(false);
           return;
         }
-        
+
         if (data?.token) {
-          console.log('Mapbox token received successfully');
+          console.log("Mapbox token received successfully");
+          setMapError(null);
           setMapboxToken(data.token);
           setIsLoading(false);
-        } else if (data?.error) {
-          console.error('Token error:', data.error);
-          setMapError(data.error);
-          setIsLoading(false);
-        } else {
-          console.error('No token in response:', data);
-          setMapError('টোকেন পাওয়া যায়নি');
-          setIsLoading(false);
+          return;
         }
+
+        const message = data?.error || "টোকেন পাওয়া যায়নি";
+        console.error("Token response invalid:", data);
+        setMapError(message);
+        setIsLoading(false);
       } catch (error: any) {
-        if (!isMounted || hasCompleted) return;
-        hasCompleted = true;
-        clearTimeout(timeoutId);
-        console.error('Failed to get Mapbox token:', error);
-        setMapError('ম্যাপ লোড ব্যর্থ: ' + (error?.message || 'Unknown error'));
+        if (!isMounted) return;
+        window.clearTimeout(timeoutId);
+        console.error("Failed to get Mapbox token:", error);
+        setMapError("ম্যাপ লোড ব্যর্থ: " + (error?.message || "Unknown error"));
         setIsLoading(false);
       }
     };
-    
+
     fetchToken();
-    
+
     return () => {
       isMounted = false;
-      clearTimeout(timeoutId);
+      window.clearTimeout(timeoutId);
     };
   }, []);
 
@@ -122,14 +117,22 @@ export default function MapPage() {
   useEffect(() => {
     if (!mapContainer.current || !mapboxToken) return;
 
+    setMapReady(false);
+
+    // Clean any previous instances
+    markersRef.current.forEach((m) => m.remove());
+    markersRef.current = [];
+    map.current?.remove();
+    map.current = null;
+
     try {
       mapboxgl.accessToken = mapboxToken;
-      
+
       // Use location data or default to Dhaka area
       const centerLat = location.latitude || 23.8103;
       const centerLng = location.longitude || 90.4125;
 
-      map.current = new mapboxgl.Map({
+      const nextMap = new mapboxgl.Map({
         container: mapContainer.current,
         style: mapStyles[currentStyle].style,
         center: [centerLng, centerLat],
@@ -137,55 +140,80 @@ export default function MapPage() {
         pitch: 45,
       });
 
-      map.current.addControl(
+      map.current = nextMap;
+
+      nextMap.addControl(
         new mapboxgl.NavigationControl({ visualizePitch: true }),
-        'top-right'
+        "top-right"
       );
 
-      map.current.addControl(
+      nextMap.addControl(
         new mapboxgl.GeolocateControl({
           positionOptions: { enableHighAccuracy: true },
           trackUserLocation: true,
-          showUserHeading: true
+          showUserHeading: true,
         }),
-        'top-right'
+        "top-right"
       );
 
-      // Add markers for fields
-      fieldsData.forEach((field) => {
-        const el = document.createElement('div');
-        el.className = 'field-marker';
-        el.innerHTML = `
-          <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg cursor-pointer transform hover:scale-110 transition-transform ${
-            field.status === 'healthy' ? 'bg-emerald-500' :
-            field.status === 'warning' ? 'bg-amber-500' : 'bg-red-500'
-          }">
-            <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-          </div>
-        `;
+      const onLoad = () => {
+        setMapReady(true);
 
-        el.addEventListener('click', () => setSelectedField(field));
+        // Add markers for fields after style loads
+        fieldsData.forEach((field) => {
+          const el = document.createElement("div");
+          el.className = "field-marker";
+          el.innerHTML = `
+            <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg cursor-pointer transform hover:scale-110 transition-transform ${
+              field.status === "healthy"
+                ? "bg-emerald-500"
+                : field.status === "warning"
+                  ? "bg-amber-500"
+                  : "bg-red-500"
+            }">
+              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+              </svg>
+            </div>
+          `;
 
-        const marker = new mapboxgl.Marker(el)
-          .setLngLat([field.position.lng, field.position.lat])
-          .addTo(map.current!);
+          el.addEventListener("click", () => setSelectedField(field));
 
-        markersRef.current.push(marker);
-      });
+          const marker = new mapboxgl.Marker(el)
+            .setLngLat([field.position.lng, field.position.lat])
+            .addTo(nextMap);
+
+          markersRef.current.push(marker);
+        });
+      };
+
+      const onError = (e: any) => {
+        console.error("Mapbox error event:", e);
+        setMapReady(false);
+        setMapboxToken(null);
+        setMapError("ম্যাপ লোড করা যাচ্ছে না (Mapbox error)");
+        setIsLoading(false);
+      };
+
+      nextMap.once("load", onLoad);
+      nextMap.on("error", onError);
+
+      return () => {
+        nextMap.off("error", onError);
+        markersRef.current.forEach((m) => m.remove());
+        markersRef.current = [];
+        nextMap.remove();
+      };
     } catch (error) {
-      console.error('Map initialization error:', error);
+      console.error("Map initialization error:", error);
+      setMapReady(false);
+      setMapboxToken(null);
+      setMapError("ম্যাপ ইনিশিয়ালাইজ করতে সমস্যা হয়েছে");
       toast.error("ম্যাপ ইনিশিয়ালাইজ করতে সমস্যা হয়েছে");
+      setIsLoading(false);
     }
-
-    return () => {
-      markersRef.current.forEach(marker => marker.remove());
-      markersRef.current = [];
-      map.current?.remove();
-    };
-  }, [mapboxToken]); // Only depend on mapboxToken, not location
+  }, [mapboxToken, currentStyle]);
 
   // Update map center when location changes
   useEffect(() => {
@@ -230,7 +258,17 @@ export default function MapPage() {
           </div>
         </div>
       ) : mapboxToken ? (
-        <div ref={mapContainer} className="absolute inset-0" />
+        <div className="absolute inset-0">
+          <div ref={mapContainer} className="absolute inset-0" />
+          {!mapReady && (
+            <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
+              <div className="text-center">
+                <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-3" />
+                <p className="text-muted-foreground">ম্যাপ রেন্ডার হচ্ছে...</p>
+              </div>
+            </div>
+          )}
+        </div>
       ) : (
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-background to-teal-900/30">
           {/* Village background with overlay */}
