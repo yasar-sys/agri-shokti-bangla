@@ -26,7 +26,10 @@ import {
   Warehouse,
   ChevronLeft,
   ChevronRight,
-  PlayCircle
+  PlayCircle,
+  Sparkles,
+  ArrowRight,
+  Zap
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -48,26 +51,26 @@ import {
 } from "@/components/ui/dropdown-menu";
 
 const services = [
-  { icon: Scan, label: "রোগ শনাক্তকরণ", to: "/camera", color: "text-secondary", description: "ফসলের রোগ চিনুন" },
-  { icon: ScanSearch, label: "সার স্ক্যান", to: "/fertilizer-scan", color: "text-destructive", description: "সার যাচাই করুন" },
-  { icon: Bug, label: "পোকার ম্যাপ", to: "/pest-map", color: "text-primary", description: "এলাকার পোকা দেখুন" },
-  { icon: MessageSquare, label: "AI সহায়ক", to: "/chat", color: "text-secondary", description: "কৃষি পরামর্শ নিন" },
-  { icon: TrendingUp, label: "বাজার দর", to: "/market", color: "text-chart-2", description: "বাজার মূল্য দেখুন" },
-  { icon: Cloud, label: "আবহাওয়া", to: "/weather", color: "text-chart-3", description: "আবহাওয়া পূর্বাভাস" },
-  { icon: Satellite, label: "স্যাটেলাইট ভিশন", to: "/satellite", color: "text-chart-4", description: "NDVI ম্যাপ দেখুন" },
-  { icon: Calendar, label: "ফার্মিং ক্যালেন্ডার", to: "/calendar", color: "text-chart-5", description: "কাজের সময়সূচী" },
-  { icon: Tractor, label: "যন্ত্র অপ্টিমাইজার", to: "/machine", color: "text-chart-1", description: "ট্রাক্টর/টিলার গাইড" },
-  { icon: Calculator, label: "সার ক্যালকুলেটর", to: "/npk-calculator", color: "text-primary", description: "NPK ডোজ হিসাব" },
-  { icon: CloudLightning, label: "জলবায়ু সতর্কতা", to: "/climate-alert", color: "text-destructive", description: "দুর্যোগ সতর্কতা" },
-  { icon: Landmark, label: "সরকারি সেবা", to: "/gov-services", color: "text-chart-3", description: "ভর্তুকি ও ঋণ" },
-  { icon: Warehouse, label: "গুদাম ব্যবস্থাপনা", to: "/storage", color: "text-chart-4", description: "ফসল সংরক্ষণ" },
-  { icon: History, label: "ফসল ইতিহাস", to: "/history", color: "text-muted-foreground", description: "আগের স্ক্যান দেখুন" },
-  { icon: Award, label: "পুরস্কার", to: "/gamification", color: "text-primary", description: "ব্যাজ ও পয়েন্ট" },
-  { icon: Beaker, label: "সার পরামর্শ", to: "/fertilizer", color: "text-secondary", description: "সার সুপারিশ" },
-  { icon: GraduationCap, label: "কৃষি জ্ঞান", to: "/knowledge", color: "text-accent-foreground", description: "শিখুন ও জানুন" },
-  { icon: UsersRound, label: "কমিউনিটি", to: "/community", color: "text-muted-foreground", description: "কৃষক সংঘ" },
-  { icon: PlayCircle, label: "অ্যাপ গাইড", to: "/demo", color: "text-chart-5", description: "টিউটোরিয়াল দেখুন" },
-  { icon: MapPin, label: "জমি হিসাব", to: "/land-calculator", color: "text-primary", description: "জমির মাপ ও দাম" },
+  { icon: Scan, label: "রোগ শনাক্তকরণ", to: "/camera", gradient: "from-emerald-500/20 to-teal-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", description: "ফসলের রোগ চিনুন" },
+  { icon: ScanSearch, label: "সার স্ক্যান", to: "/fertilizer-scan", gradient: "from-rose-500/20 to-pink-500/20", iconColor: "text-rose-400", borderColor: "border-rose-500/30", description: "সার যাচাই করুন" },
+  { icon: Bug, label: "পোকার ম্যাপ", to: "/pest-map", gradient: "from-amber-500/20 to-orange-500/20", iconColor: "text-amber-400", borderColor: "border-amber-500/30", description: "এলাকার পোকা দেখুন" },
+  { icon: MessageSquare, label: "AI সহায়ক", to: "/chat", gradient: "from-cyan-500/20 to-sky-500/20", iconColor: "text-cyan-400", borderColor: "border-cyan-500/30", description: "কৃষি পরামর্শ নিন" },
+  { icon: TrendingUp, label: "বাজার দর", to: "/market", gradient: "from-green-500/20 to-emerald-500/20", iconColor: "text-green-400", borderColor: "border-green-500/30", description: "বাজার মূল্য দেখুন" },
+  { icon: Cloud, label: "আবহাওয়া", to: "/weather", gradient: "from-blue-500/20 to-indigo-500/20", iconColor: "text-blue-400", borderColor: "border-blue-500/30", description: "আবহাওয়া পূর্বাভাস" },
+  { icon: Satellite, label: "স্যাটেলাইট ভিশন", to: "/satellite", gradient: "from-violet-500/20 to-purple-500/20", iconColor: "text-violet-400", borderColor: "border-violet-500/30", description: "NDVI ম্যাপ দেখুন" },
+  { icon: Calendar, label: "ফার্মিং ক্যালেন্ডার", to: "/calendar", gradient: "from-fuchsia-500/20 to-pink-500/20", iconColor: "text-fuchsia-400", borderColor: "border-fuchsia-500/30", description: "কাজের সময়সূচী" },
+  { icon: Tractor, label: "যন্ত্র অপ্টিমাইজার", to: "/machine", gradient: "from-orange-500/20 to-red-500/20", iconColor: "text-orange-400", borderColor: "border-orange-500/30", description: "ট্রাক্টর/টিলার গাইড" },
+  { icon: Calculator, label: "সার ক্যালকুলেটর", to: "/npk-calculator", gradient: "from-lime-500/20 to-green-500/20", iconColor: "text-lime-400", borderColor: "border-lime-500/30", description: "NPK ডোজ হিসাব" },
+  { icon: CloudLightning, label: "জলবায়ু সতর্কতা", to: "/climate-alert", gradient: "from-red-500/20 to-rose-500/20", iconColor: "text-red-400", borderColor: "border-red-500/30", description: "দুর্যোগ সতর্কতা" },
+  { icon: Landmark, label: "সরকারি সেবা", to: "/gov-services", gradient: "from-teal-500/20 to-cyan-500/20", iconColor: "text-teal-400", borderColor: "border-teal-500/30", description: "ভর্তুকি ও ঋণ" },
+  { icon: Warehouse, label: "গুদাম ব্যবস্থাপনা", to: "/storage", gradient: "from-slate-500/20 to-gray-500/20", iconColor: "text-slate-400", borderColor: "border-slate-500/30", description: "ফসল সংরক্ষণ" },
+  { icon: History, label: "ফসল ইতিহাস", to: "/history", gradient: "from-zinc-500/20 to-stone-500/20", iconColor: "text-zinc-400", borderColor: "border-zinc-500/30", description: "আগের স্ক্যান দেখুন" },
+  { icon: Award, label: "পুরস্কার", to: "/gamification", gradient: "from-yellow-500/20 to-amber-500/20", iconColor: "text-yellow-400", borderColor: "border-yellow-500/30", description: "ব্যাজ ও পয়েন্ট" },
+  { icon: Beaker, label: "সার পরামর্শ", to: "/fertilizer", gradient: "from-indigo-500/20 to-blue-500/20", iconColor: "text-indigo-400", borderColor: "border-indigo-500/30", description: "সার সুপারিশ" },
+  { icon: GraduationCap, label: "কৃষি জ্ঞান", to: "/knowledge", gradient: "from-purple-500/20 to-violet-500/20", iconColor: "text-purple-400", borderColor: "border-purple-500/30", description: "শিখুন ও জানুন" },
+  { icon: UsersRound, label: "কমিউনিটি", to: "/community", gradient: "from-sky-500/20 to-blue-500/20", iconColor: "text-sky-400", borderColor: "border-sky-500/30", description: "কৃষক সংঘ" },
+  { icon: PlayCircle, label: "অ্যাপ গাইড", to: "/demo", gradient: "from-pink-500/20 to-rose-500/20", iconColor: "text-pink-400", borderColor: "border-pink-500/30", description: "টিউটোরিয়াল দেখুন" },
+  { icon: MapPin, label: "জমি হিসাব", to: "/land-calculator", gradient: "from-emerald-500/20 to-green-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", description: "জমির মাপ ও দাম" },
 ];
 
 const marketPrices = [
@@ -158,57 +161,64 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 relative">
-      {/* Background Image */}
-      <div 
-        className="fixed inset-0 -z-10"
-        style={{
-          backgroundImage: `url(${villageBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-          backgroundRepeat: 'no-repeat',
-        }}
-      >
-        <div className="absolute inset-0 bg-background/85 backdrop-blur-[2px]" />
+    <div className="min-h-screen pb-28 relative overflow-hidden">
+      {/* Premium Background */}
+      <div className="fixed inset-0 -z-10">
+        <div 
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${villageBg})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background" />
+        {/* Animated orbs */}
+        <div className="absolute top-20 right-10 w-72 h-72 bg-secondary/10 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute bottom-40 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
       </div>
 
-      {/* Professional Header */}
-      <header className="relative overflow-hidden">
-        {/* Header Background Gradient */}
-        <div className="absolute inset-0 bg-gradient-to-br from-primary/20 via-secondary/10 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-r from-card/90 to-card/70 backdrop-blur-md" />
-        
-        {/* Decorative Elements */}
-        <div className="absolute top-0 right-0 w-32 h-32 bg-secondary/10 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
-        <div className="absolute bottom-0 left-0 w-24 h-24 bg-primary/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-xl" />
-        
-        <div className="relative px-4 pt-6 pb-5">
+      {/* Premium Header */}
+      <header className="relative">
+        {/* Glass Header */}
+        <div className="relative px-5 pt-6 pb-5">
+          {/* Decorative gradient line */}
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
+          
           <div className="flex items-start justify-between">
-            {/* Left Side - Logo & Greeting */}
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <img 
-                  src={agriBrainLogo} 
-                  alt="agriশক্তি Logo" 
-                  className="w-12 h-12 object-contain rounded-xl"
-                />
+            {/* Left Side - Logo & Branding */}
+            <div className="flex items-center gap-4">
+              <div className="relative group">
+                <div className="absolute -inset-1 bg-gradient-to-br from-primary/50 to-secondary/50 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity" />
+                <div className="relative w-14 h-14 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 flex items-center justify-center overflow-hidden shadow-premium">
+                  <img 
+                    src={agriBrainLogo} 
+                    alt="agriশক্তি Logo" 
+                    className="w-10 h-10 object-contain"
+                  />
+                </div>
               </div>
               <div>
-                <h1 className="text-lg font-bold text-foreground flex items-center gap-1">
-                  agriশক্তি
-                  <span className="text-xs font-normal bg-secondary/20 text-secondary px-1.5 py-0.5 rounded-full ml-1">বেটা</span>
+                <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+                  <span className="text-gradient-premium">agriশক্তি</span>
+                  <span className="text-[10px] font-semibold bg-gradient-to-r from-primary/20 to-secondary/20 text-primary px-2 py-0.5 rounded-full border border-primary/20">
+                    PRO
+                  </span>
                 </h1>
-                <p className="text-xs text-muted-foreground">
-                  "মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি"
+                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-primary" />
+                  কৃষির নতুন শক্তি
                 </p>
               </div>
             </div>
             
-            {/* Right Side - User Avatar with Dropdown */}
+            {/* Right Side - User Avatar */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <button className="relative group focus:outline-none">
-                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/30 to-secondary/30 flex items-center justify-center border-2 border-primary/20 group-hover:border-secondary/50 transition-all shadow-lg group-hover:shadow-secondary/20 overflow-hidden">
+                  <div className="absolute -inset-1 bg-gradient-to-br from-primary/40 to-secondary/40 rounded-2xl blur opacity-0 group-hover:opacity-50 transition-opacity" />
+                  <div className="relative w-14 h-14 rounded-2xl glass-card flex items-center justify-center border border-border/50 group-hover:border-primary/30 transition-all shadow-premium overflow-hidden">
                     {session && profile?.avatar_url ? (
                       <img 
                         src={profile.avatar_url} 
@@ -219,39 +229,39 @@ export default function HomePage() {
                       <span className="text-3xl">👨‍🌾</span>
                     )}
                   </div>
-                  <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 bg-card rounded-full border border-border flex items-center justify-center shadow-sm group-hover:bg-secondary/20 transition-colors">
+                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-card rounded-full border border-border/50 flex items-center justify-center shadow-soft">
                     <ChevronDown className="w-3 h-3 text-muted-foreground" />
                   </div>
                   {session && (
-                    <div className="absolute -top-1 -right-1 w-3 h-3 bg-secondary rounded-full border-2 border-card animate-pulse" />
+                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-secondary to-secondary/80 rounded-full border-2 border-card shadow-glow animate-pulse" />
                   )}
                 </button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+              <DropdownMenuContent align="end" className="w-52 glass-strong border-border/50 shadow-elevated">
                 {session ? (
                   <>
-                    <div className="px-3 py-2 border-b border-border">
-                      <p className="text-xs text-muted-foreground">লগইন করা আছে</p>
-                      <p className="text-sm font-medium text-foreground truncate">
+                    <div className="px-3 py-3 border-b border-border/50">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">অ্যাকাউন্ট</p>
+                      <p className="text-sm font-semibold text-foreground truncate mt-0.5">
                         {profile?.full_name || session.user.email?.split('@')[0]}
                       </p>
                     </div>
                     <DropdownMenuItem asChild>
-                      <Link to="/profile" className="cursor-pointer gap-2">
-                        <User className="w-4 h-4" />
+                      <Link to="/profile" className="cursor-pointer gap-3 py-2.5">
+                        <User className="w-4 h-4 text-muted-foreground" />
                         <span>প্রোফাইল</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/settings" className="cursor-pointer gap-2">
-                        <Settings className="w-4 h-4" />
+                      <Link to="/settings" className="cursor-pointer gap-3 py-2.5">
+                        <Settings className="w-4 h-4 text-muted-foreground" />
                         <span>সেটিংস</span>
                       </Link>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-border" />
+                    <DropdownMenuSeparator className="bg-border/50" />
                     <DropdownMenuItem 
                       onClick={handleLogout}
-                      className="cursor-pointer gap-2 text-destructive focus:text-destructive"
+                      className="cursor-pointer gap-3 py-2.5 text-destructive focus:text-destructive"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>লগআউট</span>
@@ -259,19 +269,19 @@ export default function HomePage() {
                   </>
                 ) : (
                   <>
-                    <div className="px-3 py-2 border-b border-border">
-                      <p className="text-xs text-muted-foreground">স্বাগতম!</p>
-                      <p className="text-sm font-medium text-foreground">অ্যাকাউন্ট তৈরি করুন</p>
+                    <div className="px-3 py-3 border-b border-border/50">
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">স্বাগতম!</p>
+                      <p className="text-sm font-semibold text-foreground mt-0.5">শুরু করুন</p>
                     </div>
                     <DropdownMenuItem asChild>
-                      <Link to="/auth" className="cursor-pointer gap-2">
-                        <LogIn className="w-4 h-4" />
+                      <Link to="/auth" className="cursor-pointer gap-3 py-2.5">
+                        <LogIn className="w-4 h-4 text-muted-foreground" />
                         <span>লগইন / রেজিস্টার</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
-                      <Link to="/settings" className="cursor-pointer gap-2">
-                        <Settings className="w-4 h-4" />
+                      <Link to="/settings" className="cursor-pointer gap-3 py-2.5">
+                        <Settings className="w-4 h-4 text-muted-foreground" />
                         <span>সেটিংস</span>
                       </Link>
                     </DropdownMenuItem>
@@ -282,25 +292,36 @@ export default function HomePage() {
           </div>
           
           {/* Location & Weather Bar */}
-          <div className="mt-4 flex items-center justify-between bg-card/50 rounded-xl px-3 py-2 border border-border/50">
-            <div className="flex items-center gap-2">
+          <div className="mt-5 flex items-center justify-between glass-card rounded-2xl px-4 py-3 border border-border/30">
+            <div className="flex items-center gap-2.5">
               {location.loading ? (
-                <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
+                  <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                </div>
               ) : (
-                <MapPin className="w-4 h-4 text-destructive" />
+                <div className="w-8 h-8 rounded-xl bg-destructive/10 flex items-center justify-center">
+                  <MapPin className="w-4 h-4 text-destructive" />
+                </div>
               )}
-              <span className="text-sm text-foreground">
-                {location.loading ? 'লোকেশন খুঁজছি...' : `${location.city}, ${location.country}`}
-              </span>
+              <div>
+                <span className="text-sm font-medium text-foreground block">
+                  {location.loading ? 'খুঁজছি...' : location.city}
+                </span>
+                <span className="text-[10px] text-muted-foreground">{location.country}</span>
+              </div>
             </div>
-            <div className="flex items-center gap-1 text-sm">
+            <div className="flex items-center gap-3">
               {weather.loading ? (
-                <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
+                <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
               ) : (
                 <>
-                  <span className="text-base">{weather.icon}</span>
-                  <span className="text-foreground font-medium">{weather.temp}°C</span>
-                  <span className="text-muted-foreground text-xs">{weather.conditionBn}</span>
+                  <div className="text-right">
+                    <span className="text-lg font-bold text-foreground">{weather.temp}°</span>
+                    <span className="text-[10px] text-muted-foreground block">{weather.conditionBn}</span>
+                  </div>
+                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-2xl">
+                    {weather.icon}
+                  </div>
                 </>
               )}
             </div>
@@ -308,72 +329,83 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Stats Row - Real Data */}
-      <section className="px-4 mb-4">
+      {/* Stats Row */}
+      <section className="px-5 mb-5 animate-slide-up">
         <div className="grid grid-cols-3 gap-3">
-          <div className={cn(
-            "group relative overflow-hidden",
-            "bg-gradient-to-br from-card via-card to-card/90",
-            "border border-border/50 rounded-2xl p-4 text-center",
-            "hover:border-secondary/50 hover:shadow-soft",
-            "transition-all duration-300 hover:-translate-y-1",
-            "backdrop-blur-sm"
-          )}>
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary/0 to-secondary/0 group-hover:from-secondary/10 group-hover:to-transparent transition-all duration-300" />
-            <span className="relative text-xl font-bold text-gradient-mint">
-              {profile ? String(profile.total_scans).padStart(2, '০') : '০০'}
+          {/* Scans */}
+          <div className="group relative overflow-hidden glass-card rounded-2xl p-4 text-center border border-border/30 hover:border-secondary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-glow">
+            <div className="absolute inset-0 bg-gradient-to-br from-secondary/0 to-secondary/0 group-hover:from-secondary/10 group-hover:to-transparent transition-all duration-500" />
+            <span className="relative text-2xl font-bold text-gradient-mint block">
+              {profile ? String(profile.total_scans).padStart(2, '0') : '00'}
             </span>
-            <p className="relative text-xs text-muted-foreground mt-1.5 font-medium">স্ক্যান</p>
+            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">স্ক্যান</p>
           </div>
-          <div className={cn(
-            "group relative overflow-hidden",
-            "bg-gradient-to-br from-card via-card to-card/90",
-            "border border-border/50 rounded-2xl p-4 text-center",
-            "hover:border-primary/50 hover:shadow-soft",
-            "transition-all duration-300 hover:-translate-y-1",
-            "backdrop-blur-sm"
-          )}>
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/10 group-hover:to-transparent transition-all duration-300" />
-            <span className="relative text-xl font-bold text-gradient-gold">{getUserLevel()} লেভেল</span>
-            <p className="relative text-xs text-muted-foreground mt-1.5 font-medium">র‍্যাংক</p>
+          
+          {/* Level */}
+          <div className="group relative overflow-hidden glass-card rounded-2xl p-4 text-center border border-border/30 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-glow-gold">
+            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/10 group-hover:to-transparent transition-all duration-500" />
+            <span className="relative text-2xl font-bold text-gradient-gold block">{getUserLevel()}</span>
+            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">লেভেল</p>
           </div>
-          <div className={cn(
-            "group relative overflow-hidden",
-            "bg-gradient-to-br from-card via-card to-card/90",
-            "border border-border/50 rounded-2xl p-4 text-center",
-            "hover:border-chart-3/50 hover:shadow-soft",
-            "transition-all duration-300 hover:-translate-y-1",
-            "backdrop-blur-sm"
-          )}>
-            <div className="absolute inset-0 bg-gradient-to-br from-chart-3/0 to-chart-3/0 group-hover:from-chart-3/10 group-hover:to-transparent transition-all duration-300" />
-            <div className="relative flex items-center justify-center gap-1.5">
-              <span className="text-lg group-hover:scale-110 transition-transform duration-300">{weather.icon}</span>
-              <span className="text-xl font-bold text-foreground">{weather.temp}°</span>
+          
+          {/* Weather Quick */}
+          <div className="group relative overflow-hidden glass-card rounded-2xl p-4 text-center border border-border/30 hover:border-chart-3/40 transition-all duration-300 hover:-translate-y-1">
+            <div className="absolute inset-0 bg-gradient-to-br from-chart-3/0 to-chart-3/0 group-hover:from-chart-3/10 group-hover:to-transparent transition-all duration-500" />
+            <div className="relative flex items-center justify-center">
+              <span className="text-2xl group-hover:scale-125 transition-transform duration-300">{weather.icon}</span>
             </div>
-            <p className="relative text-xs text-muted-foreground mt-1.5 font-medium">{weather.conditionBn}</p>
+            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">{weather.temp}°C</p>
           </div>
         </div>
       </section>
 
+      {/* AI CTA Banner */}
+      <section className="px-5 mb-5 animate-slide-up stagger-1">
+        <Link to="/camera">
+          <div className="relative overflow-hidden rounded-3xl p-5 group">
+            {/* Gradient background */}
+            <div className="absolute inset-0 bg-gradient-to-r from-secondary via-secondary/90 to-emerald-500 opacity-90" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
+            
+            {/* Shimmer effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+            
+            {/* Decorative circles */}
+            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
+            <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full blur-xl" />
+            
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
+                  <Scan className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h3 className="text-white font-bold text-base flex items-center gap-2">
+                    AI রোগ নির্ণয়
+                    <Zap className="w-4 h-4 text-yellow-300 animate-pulse" />
+                  </h3>
+                  <p className="text-white/80 text-xs mt-0.5">ফসলের ছবি তুলুন, AI বিশ্লেষণ করবে</p>
+                </div>
+              </div>
+              <ArrowRight className="w-6 h-6 text-white group-hover:translate-x-1 transition-transform" />
+            </div>
+          </div>
+        </Link>
+      </section>
+
       {/* Today's Tip */}
-      <section className="px-4 mb-4">
-        <div className={cn(
-          "relative overflow-hidden",
-          "bg-gradient-to-br from-primary/20 via-primary/10 to-card",
-          "border-2 border-primary/50 rounded-2xl p-4",
-          "hover:border-primary/70 hover:shadow-glow-gold",
-          "transition-all duration-300 animate-fade-in"
-        )}>
-          {/* Animated background gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 animate-gradient opacity-50" />
+      <section className="px-5 mb-5 animate-slide-up stagger-2">
+        <div className="relative overflow-hidden glass-card rounded-2xl p-4 border border-primary/30">
+          {/* Animated gradient */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 animate-gradient" />
           
-          <div className="relative flex items-start gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-xl shadow-soft">
+          <div className="relative flex items-start gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-2xl flex-shrink-0 shadow-soft animate-bounce-subtle">
               💡
             </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-primary text-sm mb-2 flex items-center gap-2">
-                <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse-glow" />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                 আজকের কৃষি টিপস
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
@@ -384,19 +416,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Services Carousel */}
-      <section className="px-4 mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-foreground">সেবা সমূহ</h2>
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-muted-foreground">
+      {/* Services Grid */}
+      <section className="px-5 mb-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-primary" />
+            সেবা সমূহ
+          </h2>
+          <div className="flex items-center gap-3">
+            <span className="text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-full">
               {currentPage + 1}/{totalPages}
             </span>
             <div className="flex gap-1">
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7"
+                className="h-8 w-8 rounded-xl glass-card border border-border/30 hover:border-secondary/50"
                 onClick={prevPage}
               >
                 <ChevronLeft className="w-4 h-4" />
@@ -404,7 +439,7 @@ export default function HomePage() {
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="h-7 w-7"
+                className="h-8 w-8 rounded-xl glass-card border border-border/30 hover:border-secondary/50"
                 onClick={nextPage}
               >
                 <ChevronRight className="w-4 h-4" />
@@ -413,34 +448,44 @@ export default function HomePage() {
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-3 transition-all duration-300">
+        <div className="grid grid-cols-3 gap-3">
           {currentServices.map((service, index) => (
             <Link
               key={service.to}
               to={service.to}
               className={cn(
-                "group relative bg-gradient-to-br from-card via-card to-card/80",
-                "border border-border/50 rounded-2xl p-4 flex flex-col items-center gap-2",
-                "hover:border-secondary/50 hover:shadow-glow hover:shadow-secondary/20",
-                "transition-all duration-300 active:scale-95",
-                "animate-fade-in hover:-translate-y-1",
-                "backdrop-blur-sm"
+                "group relative overflow-hidden rounded-2xl p-4 flex flex-col items-center gap-3",
+                "glass-card border transition-all duration-300",
+                "active:scale-95 hover:-translate-y-1",
+                service.borderColor,
+                "hover:shadow-lg"
               )}
-              style={{ animationDelay: `${index * 50}ms`, animationFillMode: "forwards" }}
+              style={{ 
+                animationDelay: `${index * 60}ms`,
+              }}
             >
-              {/* Glow effect on hover */}
-              <div className="absolute inset-0 rounded-2xl bg-gradient-to-br from-secondary/0 to-secondary/0 group-hover:from-secondary/10 group-hover:to-transparent transition-all duration-300 opacity-0 group-hover:opacity-100" />
-              
+              {/* Gradient background on hover */}
               <div className={cn(
-                "relative w-12 h-12 rounded-xl flex items-center justify-center",
-                "bg-gradient-to-br from-secondary/20 to-secondary/5",
-                "group-hover:from-secondary/30 group-hover:to-secondary/10",
-                "transition-all duration-300 group-hover:scale-110",
-                "shadow-soft"
+                "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300",
+                service.gradient
+              )} />
+              
+              {/* Icon container */}
+              <div className={cn(
+                "relative w-14 h-14 rounded-2xl flex items-center justify-center",
+                "bg-gradient-to-br transition-all duration-300",
+                service.gradient,
+                "group-hover:scale-110 group-hover:shadow-lg"
               )}>
-                <service.icon className={cn("w-6 h-6 transition-all duration-300", service.color, "group-hover:scale-110")} />
+                <service.icon className={cn(
+                  "w-7 h-7 transition-all duration-300",
+                  service.iconColor,
+                  "group-hover:scale-110"
+                )} />
               </div>
-              <span className="relative text-xs text-foreground text-center font-semibold leading-tight group-hover:text-secondary transition-colors">
+              
+              {/* Label */}
+              <span className="relative text-xs text-foreground text-center font-semibold leading-tight group-hover:text-primary transition-colors">
                 {service.label}
               </span>
             </Link>
@@ -448,14 +493,16 @@ export default function HomePage() {
         </div>
 
         {/* Pagination Dots */}
-        <div className="flex justify-center gap-1.5 mt-3">
+        <div className="flex justify-center gap-2 mt-4">
           {Array.from({ length: totalPages }).map((_, i) => (
             <button
               key={i}
               onClick={() => setCurrentPage(i)}
               className={cn(
-                "w-2 h-2 rounded-full transition-all",
-                i === currentPage ? "bg-secondary w-4" : "bg-muted-foreground/30"
+                "h-2 rounded-full transition-all duration-300",
+                i === currentPage 
+                  ? "w-6 bg-gradient-to-r from-primary to-secondary" 
+                  : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
               )}
             />
           ))}
@@ -463,10 +510,16 @@ export default function HomePage() {
       </section>
 
       {/* Market Prices */}
-      <section className="px-4 mb-4">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-base font-semibold text-foreground">আজকের বাজার দর</h2>
-          <Link to="/market" className="text-xs text-secondary">সব দেখুন →</Link>
+      <section className="px-5 mb-5">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
+            <TrendingUp className="w-4 h-4 text-secondary" />
+            আজকের বাজার দর
+          </h2>
+          <Link to="/market" className="text-xs text-secondary font-medium flex items-center gap-1 hover:underline">
+            সব দেখুন
+            <ArrowRight className="w-3 h-3" />
+          </Link>
         </div>
         <div className="space-y-3">
           {marketPrices.map((item, index) => (
@@ -474,33 +527,31 @@ export default function HomePage() {
               key={index}
               className={cn(
                 "group flex items-center justify-between",
-                "bg-gradient-to-r from-card via-card to-card/90",
-                "border border-border/50 rounded-2xl px-4 py-3.5",
+                "glass-card rounded-2xl px-4 py-4 border border-border/30",
                 "hover:border-primary/30 hover:shadow-soft",
                 "transition-all duration-300 hover:-translate-y-0.5",
-                "backdrop-blur-sm animate-fade-in"
+                "animate-slide-up"
               )}
-              style={{ animationDelay: `${index * 100}ms`, animationFillMode: "forwards" }}
+              style={{ animationDelay: `${(index + 1) * 80}ms` }}
             >
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-2xl group-hover:scale-110 transition-transform duration-300 shadow-soft">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300 shadow-soft">
                   {item.emoji}
                 </div>
                 <div>
-                  <span className="text-sm font-semibold text-foreground block group-hover:text-primary transition-colors">
+                  <span className="text-sm font-bold text-foreground block group-hover:text-primary transition-colors">
                     {item.name}
                   </span>
-                  <span className="text-xs text-muted-foreground">সা. গড়: {item.weeklyAvg}</span>
+                  <span className="text-[11px] text-muted-foreground">সা. গড়: {item.weeklyAvg}</span>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-base font-bold text-foreground">{item.price}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-lg font-bold text-foreground">{item.price}</span>
                 <span className={cn(
-                  "text-xs px-2 py-1 rounded-lg font-semibold",
-                  "transition-all duration-300",
+                  "text-xs px-2.5 py-1.5 rounded-xl font-bold",
                   item.positive 
-                    ? "text-secondary bg-secondary/20 shadow-glow shadow-secondary/20" 
-                    : "text-destructive bg-destructive/20"
+                    ? "text-secondary bg-secondary/15 border border-secondary/30" 
+                    : "text-destructive bg-destructive/15 border border-destructive/30"
                 )}>
                   {item.change}
                 </span>
@@ -510,35 +561,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* CTA Button */}
-      <section className="px-4 mb-4">
-        <Link to="/camera">
-          <div className={cn(
-            "relative overflow-hidden",
-            "bg-gradient-to-r from-secondary via-secondary to-secondary/90",
-            "text-secondary-foreground rounded-2xl p-5 text-center font-bold",
-            "hover:from-secondary/95 hover:via-secondary hover:to-secondary/85",
-            "transition-all duration-300 active:scale-[0.98]",
-            "shadow-glow shadow-secondary/30 hover:shadow-secondary/40",
-            "hover:-translate-y-1 group"
-          )}>
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            
-            <div className="relative flex items-center justify-center gap-3">
-              <Scan className="w-6 h-6 group-hover:scale-110 group-hover:rotate-12 transition-all duration-300" />
-              <span className="text-base">ক্ষেতের ছবি তুলুন, AI দেখবে</span>
-            </div>
-          </div>
-        </Link>
-      </section>
-
       {/* Community Banner */}
-      <section className="px-4">
-        <div className="bg-card border border-border rounded-xl p-3 text-center">
-          <p className="text-xs text-muted-foreground">
-            🤝 আপনার গ্রামে <span className="text-secondary font-semibold">১২৫ জন</span> কৃষক agriশক্তি ব্যবহার করছেন!
-          </p>
+      <section className="px-5 mb-5">
+        <div className="glass-card rounded-2xl p-4 text-center border border-border/30">
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <UsersRound className="w-4 h-4 text-secondary" />
+            <p className="text-muted-foreground">
+              আপনার গ্রামে <span className="text-secondary font-bold">১২৫ জন</span> কৃষক agriশক্তি ব্যবহার করছেন!
+            </p>
+          </div>
         </div>
       </section>
     </div>
