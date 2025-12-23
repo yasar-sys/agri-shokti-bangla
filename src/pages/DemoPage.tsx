@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   ArrowLeft, 
-  Play, 
+  Download,
   ChevronRight, 
   Camera, 
   Bug, 
@@ -14,14 +14,32 @@ import {
   Sparkles,
   Smartphone,
   Leaf,
-  CloudSun,
   Shield,
   Award,
-  Heart
+  Heart,
+  Phone,
+  MapPin,
+  Search,
+  Building2
 } from "lucide-react";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import agriBrainLogo from "@/assets/agri-brain-logo.png";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { supabase } from "@/integrations/supabase/client";
+import { useLanguage } from "@/contexts/LanguageContext";
+
+interface AgriContact {
+  id: string;
+  division: string;
+  district: string;
+  upazila: string;
+  office_name: string;
+  officer_name: string | null;
+  phone: string;
+  email: string | null;
+  address: string | null;
+}
 
 const challenges = [
   {
@@ -165,11 +183,56 @@ const quickStartSteps = [
   { icon: Award, title: "পয়েন্ট অর্জন", description: "ব্যবহার করে পয়েন্ট ও র‍্যাংক অর্জন করুন" }
 ];
 
+const pwaSteps = [
+  { platform: "Android (Chrome)", steps: [
+    "১. Chrome ব্রাউজারে অ্যাপ খুলুন",
+    "২. উপরে ডানদিকে ⋮ (তিন ডট) মেনুতে ক্লিক করুন",
+    "৩. 'Add to Home screen' বা 'হোম স্ক্রিনে যোগ করুন' অপশনে ক্লিক করুন",
+    "৪. নাম দিয়ে 'Add' বাটনে ক্লিক করুন",
+    "৫. আপনার হোম স্ক্রিনে অ্যাপ আইকন দেখতে পাবেন!"
+  ]},
+  { platform: "iPhone (Safari)", steps: [
+    "১. Safari ব্রাউজারে অ্যাপ খুলুন",
+    "২. নিচে শেয়ার আইকনে (⬆️) ক্লিক করুন",
+    "৩. স্ক্রল করে 'Add to Home Screen' অপশন খুঁজুন",
+    "৪. নাম দিয়ে 'Add' বাটনে ক্লিক করুন",
+    "৫. আপনার হোম স্ক্রিনে অ্যাপ আইকন দেখতে পাবেন!"
+  ]},
+  { platform: "Desktop (Chrome/Edge)", steps: [
+    "১. ব্রাউজারে অ্যাপ খুলুন",
+    "২. URL বারে ডানদিকে ইনস্টল আইকন (📥) দেখুন",
+    "৩. 'Install' বাটনে ক্লিক করুন",
+    "৪. অ্যাপ আপনার ডেস্কটপে ইনস্টল হয়ে যাবে!"
+  ]}
+];
+
 export default function DemoPage() {
   const [activeChallenge, setActiveChallenge] = useState(0);
   const [showSteps, setShowSteps] = useState(false);
+  const [contacts, setContacts] = useState<AgriContact[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showContacts, setShowContacts] = useState(false);
+  const { language } = useLanguage();
 
   const currentChallenge = challenges[activeChallenge];
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      const { data } = await supabase
+        .from('agriculture_contacts')
+        .select('*')
+        .order('division', { ascending: true });
+      
+      if (data) setContacts(data);
+    };
+    fetchContacts();
+  }, []);
+
+  const filteredContacts = contacts.filter(c => 
+    c.district.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.upazila.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    c.division.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen pb-24 relative">
@@ -195,8 +258,12 @@ export default function DemoPage() {
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </Link>
           <div className="flex-1">
-            <h1 className="text-xl font-bold text-foreground">অ্যাপ টিউটোরিয়াল</h1>
-            <p className="text-xs text-muted-foreground">নতুন কৃষকদের জন্য সম্পূর্ণ গাইড</p>
+            <h1 className="text-xl font-bold text-foreground">
+              {language === 'bn' ? 'অ্যাপ গাইড' : 'App Guide'}
+            </h1>
+            <p className="text-xs text-muted-foreground">
+              {language === 'bn' ? 'সম্পূর্ণ গাইড ও সাহায্য' : 'Complete guide & help'}
+            </p>
           </div>
           <img src={agriBrainLogo} alt="Logo" className="w-10 h-10 rounded-xl" />
         </div>
@@ -210,16 +277,50 @@ export default function DemoPage() {
           <div className="relative">
             <div className="flex items-center gap-2 mb-2">
               <Heart className="w-5 h-5 text-destructive animate-pulse" />
-              <span className="text-sm text-primary font-medium">স্বাগতম!</span>
+              <span className="text-sm text-primary font-medium">
+                {language === 'bn' ? 'স্বাগতম!' : 'Welcome!'}
+              </span>
             </div>
             <h2 className="text-2xl font-bold text-foreground mb-2">
-              আসসালামু আলাইকুম, কৃষক ভাই!
+              {language === 'bn' ? 'আসসালামু আলাইকুম, কৃষক ভাই!' : 'Welcome, Farmer!'}
             </h2>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              agriশক্তি হলো বাংলাদেশের কৃষকদের জন্য তৈরি একটি AI-চালিত স্মার্ট কৃষি অ্যাপ। 
-              এই টিউটোরিয়ালে আপনি শিখবেন কিভাবে সব ফিচার ব্যবহার করবেন।
+              {language === 'bn' 
+                ? 'agriশক্তি হলো বাংলাদেশের কৃষকদের জন্য তৈরি একটি AI-চালিত স্মার্ট কৃষি অ্যাপ। এই গাইডে আপনি শিখবেন কিভাবে অ্যাপ ইনস্টল ও ব্যবহার করবেন।'
+                : 'agriShokti is an AI-powered smart agriculture app for Bangladesh farmers. This guide will help you install and use the app.'}
             </p>
           </div>
+        </div>
+      </section>
+
+      {/* PWA Install Guide */}
+      <section className="px-4 mb-6">
+        <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Download className="w-5 h-5 text-primary" />
+          {language === 'bn' ? 'অ্যাপ ইনস্টল করুন (PWA)' : 'Install App (PWA)'}
+        </h3>
+        <div className="space-y-3">
+          {pwaSteps.map((item, index) => (
+            <div 
+              key={index}
+              className="bg-card border border-border rounded-2xl overflow-hidden"
+            >
+              <div className="p-4 bg-gradient-to-r from-primary/10 to-secondary/10 border-b border-border">
+                <h4 className="font-semibold text-foreground flex items-center gap-2">
+                  <Smartphone className="w-4 h-4 text-primary" />
+                  {item.platform}
+                </h4>
+              </div>
+              <div className="p-4 space-y-2">
+                {item.steps.map((step, idx) => (
+                  <p key={idx} className="text-sm text-muted-foreground flex items-start gap-2">
+                    <CheckCircle2 className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
+                    {step}
+                  </p>
+                ))}
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -227,7 +328,7 @@ export default function DemoPage() {
       <section className="px-4 mb-6">
         <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
           <Sparkles className="w-5 h-5 text-primary" />
-          দ্রুত শুরু করুন
+          {language === 'bn' ? 'দ্রুত শুরু করুন' : 'Quick Start'}
         </h3>
         <div className="grid grid-cols-2 gap-2">
           {quickStartSteps.map((item, index) => (
@@ -246,11 +347,82 @@ export default function DemoPage() {
         </div>
       </section>
 
-      {/* 6 AgriTech Challenges */}
+      {/* Agriculture Department Contacts */}
+      <section className="px-4 mb-6">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-lg font-semibold text-foreground flex items-center gap-2">
+            <Building2 className="w-5 h-5 text-secondary" />
+            {language === 'bn' ? 'কৃষি অধিদপ্তর যোগাযোগ' : 'Agriculture Dept. Contacts'}
+          </h3>
+          <Button 
+            variant="outline" 
+            size="sm"
+            onClick={() => setShowContacts(!showContacts)}
+          >
+            {showContacts ? (language === 'bn' ? 'লুকান' : 'Hide') : (language === 'bn' ? 'দেখুন' : 'View')}
+          </Button>
+        </div>
+        
+        {showContacts && (
+          <div className="space-y-3 animate-fade-in">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                placeholder={language === 'bn' ? "জেলা বা উপজেলা খুঁজুন..." : "Search district or upazila..."}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <div className="max-h-[400px] overflow-y-auto space-y-2">
+              {filteredContacts.length === 0 ? (
+                <p className="text-center text-muted-foreground py-4">
+                  {language === 'bn' ? 'কোনো ফলাফল পাওয়া যায়নি' : 'No results found'}
+                </p>
+              ) : (
+                filteredContacts.map((contact) => (
+                  <div 
+                    key={contact.id}
+                    className="bg-card border border-border rounded-xl p-4"
+                  >
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-medium text-foreground">{contact.office_name}</h4>
+                        <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                          <MapPin className="w-3 h-3" />
+                          <span>{contact.upazila}, {contact.district}, {contact.division}</span>
+                        </div>
+                        {contact.officer_name && (
+                          <p className="text-xs text-muted-foreground mt-1">{contact.officer_name}</p>
+                        )}
+                      </div>
+                      <a 
+                        href={`tel:${contact.phone}`}
+                        className="w-10 h-10 rounded-xl bg-secondary/10 flex items-center justify-center shrink-0"
+                      >
+                        <Phone className="w-5 h-5 text-secondary" />
+                      </a>
+                    </div>
+                    <div className="flex items-center gap-2 mt-2 pt-2 border-t border-border">
+                      <Phone className="w-3 h-3 text-muted-foreground" />
+                      <a href={`tel:${contact.phone}`} className="text-sm text-primary">
+                        {contact.phone}
+                      </a>
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* 6 AgriTech Features */}
       <section className="px-4 mb-6">
         <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Play className="w-5 h-5 text-secondary" />
-          ৬টি প্রধান ফিচার
+          <Sparkles className="w-5 h-5 text-secondary" />
+          {language === 'bn' ? '৬টি প্রধান ফিচার' : '6 Main Features'}
         </h3>
         
         {/* Challenge Tabs */}
@@ -284,7 +456,7 @@ export default function DemoPage() {
               <div className="flex-1">
                 <div className="flex items-center gap-2">
                   <span className="text-xs px-2 py-0.5 bg-primary/20 text-primary rounded-full font-medium">
-                    চ্যালেঞ্জ #{currentChallenge.id}
+                    {language === 'bn' ? `ফিচার #${currentChallenge.id}` : `Feature #${currentChallenge.id}`}
                   </span>
                 </div>
                 <h4 className="text-lg font-bold text-foreground mt-1">{currentChallenge.title}</h4>
@@ -298,7 +470,9 @@ export default function DemoPage() {
 
           {/* Features */}
           <div className="p-4 bg-card/30">
-            <h5 className="text-sm font-semibold text-foreground mb-2">এই ফিচারে পাবেন:</h5>
+            <h5 className="text-sm font-semibold text-foreground mb-2">
+              {language === 'bn' ? 'এই ফিচারে পাবেন:' : 'Features:'}
+            </h5>
             <div className="grid grid-cols-2 gap-2">
               {currentChallenge.features.map((feature, index) => (
                 <div 
@@ -321,7 +495,7 @@ export default function DemoPage() {
             >
               <span className="flex items-center gap-2">
                 <CheckCircle2 className="w-4 h-4" />
-                কিভাবে ব্যবহার করবেন?
+                {language === 'bn' ? 'কিভাবে ব্যবহার করবেন?' : 'How to use?'}
               </span>
               <ChevronRight className={`w-4 h-4 transition-transform ${showSteps ? 'rotate-90' : ''}`} />
             </Button>
@@ -348,79 +522,29 @@ export default function DemoPage() {
           <div className="p-4 bg-card/50">
             <Link to={currentChallenge.link}>
               <Button className="w-full gap-2">
-                <Play className="w-4 h-4" />
-                এখনই চেষ্টা করুন
+                <Sparkles className="w-4 h-4" />
+                {language === 'bn' ? 'এখনই চেষ্টা করুন' : 'Try Now'}
               </Button>
             </Link>
           </div>
         </div>
       </section>
 
-      {/* Video Placeholder */}
-      <section className="px-4 mb-6">
-        <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-          <Play className="w-5 h-5 text-chart-4" />
-          ভিডিও টিউটোরিয়াল
-        </h3>
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <div className="aspect-video bg-gradient-to-br from-chart-4/20 to-chart-5/20 flex items-center justify-center relative">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.3)_100%)]" />
-            <div className="text-center z-10">
-              <div className="w-16 h-16 rounded-full bg-primary/20 backdrop-blur-md flex items-center justify-center mx-auto mb-3 border border-primary/30">
-                <Play className="w-8 h-8 text-primary" />
-              </div>
-              <p className="text-sm text-foreground font-medium">ভিডিও শীঘ্রই আসছে</p>
-              <p className="text-xs text-muted-foreground">সম্পূর্ণ অ্যাপ ডেমো</p>
-            </div>
+      {/* Support */}
+      <section className="px-4">
+        <Link to="/support">
+          <div className="bg-gradient-to-br from-chart-5/20 to-primary/20 rounded-2xl p-6 border border-border text-center">
+            <h3 className="text-lg font-bold text-foreground mb-2">
+              {language === 'bn' ? 'আরও সাহায্য প্রয়োজন?' : 'Need more help?'}
+            </h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              {language === 'bn' ? 'আমাদের সাপোর্ট টিমের সাথে যোগাযোগ করুন' : 'Contact our support team'}
+            </p>
+            <Button variant="outline" className="gap-2">
+              <Phone className="w-4 h-4" />
+              {language === 'bn' ? 'সাপোর্টে যোগাযোগ' : 'Contact Support'}
+            </Button>
           </div>
-          <div className="p-4">
-            <h4 className="font-semibold text-foreground mb-1">agriশক্তি সম্পূর্ণ গাইড</h4>
-            <p className="text-xs text-muted-foreground">৫ মিনিটে শিখুন সব ফিচার ব্যবহার করতে</p>
-          </div>
-        </div>
-      </section>
-
-      {/* Pro Tips */}
-      <section className="px-4 mb-6">
-        <h3 className="text-lg font-semibold text-foreground mb-3 flex items-center gap-2">
-          <CloudSun className="w-5 h-5 text-chart-3" />
-          সেরা টিপস
-        </h3>
-        <div className="space-y-2">
-          {[
-            { emoji: "💡", tip: "প্রতিদিন অ্যাপ ব্যবহার করুন, XP পয়েন্ট পাবেন" },
-            { emoji: "📸", tip: "পরিষ্কার ছবি তুলুন, AI ভালো ফলাফল দেবে" },
-            { emoji: "🔔", tip: "নোটিফিকেশন চালু রাখুন, সতর্কতা মিস হবে না" },
-            { emoji: "👨‍🌾", tip: "কমিউনিটিতে যোগ দিন, অন্য কৃষকদের থেকে শিখুন" },
-            { emoji: "📊", tip: "বাজার দর নিয়মিত চেক করুন, সঠিক সময়ে বিক্রি করুন" }
-          ].map((item, index) => (
-            <div 
-              key={index}
-              className="bg-card border border-border rounded-xl p-3 flex items-center gap-3 animate-fade-in"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <span className="text-xl">{item.emoji}</span>
-              <p className="text-sm text-foreground">{item.tip}</p>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Team Credit */}
-      <section className="px-4 mb-6">
-        <div className="bg-gradient-to-r from-primary/10 to-secondary/10 rounded-2xl p-4 border border-border text-center">
-          <p className="text-xs text-muted-foreground mb-1">তৈরি করেছে</p>
-          <p className="text-lg font-bold text-foreground">TEAM_NEWBIES</p>
-        </div>
-      </section>
-
-      {/* Start Using Button */}
-      <section className="px-4 pb-6">
-        <Link to="/home">
-          <Button className="w-full h-14 text-lg gap-2" size="lg">
-            <Sparkles className="w-5 h-5" />
-            অ্যাপ ব্যবহার শুরু করুন
-          </Button>
         </Link>
       </section>
     </div>
