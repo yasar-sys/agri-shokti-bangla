@@ -178,11 +178,27 @@ export default function HomePage() {
   };
 
   const handleLogout = async () => {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
+    try {
+      // Clear local state first for immediate UI feedback
+      setSession(null);
+      setProfile(null);
+      setIsAdmin(false);
+      
+      // Then sign out from Supabase with global scope
+      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      
+      if (error) {
+        console.error('Logout error:', error);
+        toast.error("লগআউট করতে সমস্যা হয়েছে");
+        // Re-fetch session if logout failed
+        const { data } = await supabase.auth.getSession();
+        setSession(data.session);
+      } else {
+        toast.success("সফলভাবে লগআউট হয়েছে");
+      }
+    } catch (err) {
+      console.error('Logout exception:', err);
       toast.error("লগআউট করতে সমস্যা হয়েছে");
-    } else {
-      toast.success("সফলভাবে লগআউট হয়েছে");
     }
   };
 
