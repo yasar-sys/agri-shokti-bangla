@@ -29,7 +29,8 @@ import {
   PlayCircle,
   Sparkles,
   ArrowRight,
-  Zap
+  Zap,
+  TrendingDown
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -42,6 +43,7 @@ import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import agriBrainLogo from "@/assets/agri-brain-logo.png";
 import { useLocation } from "@/hooks/useLocation";
 import { useWeather } from "@/hooks/useWeather";
+import { useMarketPrices } from "@/hooks/useMarketPrices";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -73,12 +75,6 @@ const services = [
   { icon: MapPin, label: "জমি হিসাব", to: "/land-calculator", gradient: "from-emerald-500/20 to-green-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", description: "জমির মাপ ও দাম" },
 ];
 
-const marketPrices = [
-  { emoji: "🌾", name: "ধান", price: "৳১,৮৫০", weeklyAvg: "৳১,৮২০", change: "+৩০", positive: true },
-  { emoji: "🥔", name: "আলু", price: "৳১,৫০০", weeklyAvg: "৳১,৪৮০", change: "+২০", positive: true },
-  { emoji: "🧅", name: "পেঁয়াজ", price: "৳৪,৫০০", weeklyAvg: "৳৪,৬৫০", change: "-১০০", positive: false },
-];
-
 interface Profile {
   full_name: string | null;
   avatar_url: string | null;
@@ -95,6 +91,18 @@ export default function HomePage() {
   const [currentPage, setCurrentPage] = useState(0);
   const location = useLocation();
   const weather = useWeather(location.latitude, location.longitude);
+  const { prices: marketPrices, loading: marketLoading } = useMarketPrices();
+
+  // Get top 3 market prices for display
+  const topMarketPrices = marketPrices.slice(0, 3).map(p => ({
+    emoji: p.crop_emoji || '🌾',
+    name: p.crop_name,
+    price: `৳${p.today_price.toLocaleString('bn-BD')}`,
+    weeklyAvg: p.weekly_avg ? `৳${p.weekly_avg.toLocaleString('bn-BD')}` : null,
+    change: p.today_price - p.yesterday_price,
+    positive: p.today_price >= p.yesterday_price,
+    unit: p.unit || 'টাকা/কেজি'
+  }));
 
   const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
   const currentServices = services.slice(
@@ -515,6 +523,7 @@ export default function HomePage() {
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-secondary" />
             আজকের বাজার দর
+            {marketLoading && <Loader2 className="w-3 h-3 animate-spin" />}
           </h2>
           <Link to="/market" className="text-xs text-secondary font-medium flex items-center gap-1 hover:underline">
             সব দেখুন
@@ -522,7 +531,7 @@ export default function HomePage() {
           </Link>
         </div>
         <div className="space-y-3">
-          {marketPrices.map((item, index) => (
+          {topMarketPrices.length > 0 ? topMarketPrices.map((item, index) => (
             <div 
               key={index}
               className={cn(
@@ -542,22 +551,29 @@ export default function HomePage() {
                   <span className="text-sm font-bold text-foreground block group-hover:text-primary transition-colors">
                     {item.name}
                   </span>
-                  <span className="text-[11px] text-muted-foreground">সা. গড়: {item.weeklyAvg}</span>
+                  <span className="text-[11px] text-muted-foreground">
+                    {item.weeklyAvg ? `সা. গড়: ${item.weeklyAvg}` : item.unit}
+                  </span>
                 </div>
               </div>
               <div className="flex items-center gap-3">
                 <span className="text-lg font-bold text-foreground">{item.price}</span>
-                <span className={cn(
-                  "text-xs px-2.5 py-1.5 rounded-xl font-bold",
+                <div className={cn(
+                  "flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-xl font-bold",
                   item.positive 
                     ? "text-secondary bg-secondary/15 border border-secondary/30" 
                     : "text-destructive bg-destructive/15 border border-destructive/30"
                 )}>
-                  {item.change}
-                </span>
+                  {item.positive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {item.change >= 0 ? '+' : ''}{item.change}
+                </div>
               </div>
             </div>
-          ))}
+          )) : (
+            <div className="glass-card rounded-2xl p-6 text-center border border-border/30">
+              <p className="text-muted-foreground text-sm">বাজার দর লোড হচ্ছে...</p>
+            </div>
+          )}
         </div>
       </section>
 

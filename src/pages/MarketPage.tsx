@@ -1,12 +1,10 @@
 import { useState } from "react";
-import { ArrowLeft, TrendingUp, TrendingDown, Minus, RefreshCw, Loader2, LineChart, AlertCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, TrendingUp, TrendingDown, Minus, RefreshCw, Loader2, LineChart, AlertCircle, Sparkles, Zap, ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useMarketPrices } from "@/hooks/useMarketPrices";
 import { SEOHead } from "@/components/seo/SEOHead";
-import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const getTrendIcon = (change: number) => {
   if (change > 0) return <TrendingUp className="w-4 h-4" />;
@@ -20,17 +18,19 @@ const getTrendColor = (change: number) => {
   return "text-muted-foreground";
 };
 
-const getTrendBg = (change: number) => {
-  if (change > 0) return "bg-secondary/10";
-  if (change < 0) return "bg-destructive/10";
-  return "bg-muted/30";
-};
-
 const getForecastText = (forecast: string | null) => {
   switch (forecast) {
     case 'up': return 'বাড়বে';
     case 'down': return 'কমবে';
     default: return 'স্থিতিশীল';
+  }
+};
+
+const getForecastColor = (forecast: string | null) => {
+  switch (forecast) {
+    case 'up': return 'text-secondary bg-secondary/10 border-secondary/30';
+    case 'down': return 'text-destructive bg-destructive/10 border-destructive/30';
+    default: return 'text-muted-foreground bg-muted/30 border-border';
   }
 };
 
@@ -44,7 +44,6 @@ export default function MarketPage() {
     setRefreshing(false);
   };
 
-  // Generate AI recommendations based on real data
   const generateRecommendations = () => {
     return prices
       .filter(p => p.forecast)
@@ -89,31 +88,37 @@ export default function MarketPage() {
         description="বাংলাদেশের কৃষি পণ্যের আজকের বাজার দর। ধান, আলু, পেঁয়াজ, সবজির দাম এবং AI পূর্বাভাস দেখুন।"
         keywords="বাজার দর, কৃষি পণ্য দাম, ধানের দাম, আলুর দাম, পেঁয়াজের দাম, বাংলাদেশ কৃষি বাজার"
       />
-      <div 
-        className="min-h-screen pb-24"
-        style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(10, 31, 23, 0.92), rgba(10, 31, 23, 0.98)), url(${villageBg})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-        }}
-      >
+      <div className="min-h-screen pb-28 relative overflow-hidden bg-background">
+        {/* Premium Background */}
+        <div className="fixed inset-0 -z-10">
+          <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card" />
+          <div className="absolute top-20 right-10 w-72 h-72 bg-green-500/10 rounded-full blur-3xl animate-float-slow" />
+          <div className="absolute bottom-40 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
+        </div>
+
         {/* Header */}
-        <header className="px-4 pt-8 pb-4 sticky top-0 z-40 bg-background/80 backdrop-blur-lg border-b border-border">
+        <header className="relative px-5 pt-6 pb-4 sticky top-0 z-40 glass-strong">
+          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-chart-2/50 to-transparent" />
+          
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-4">
               <Link
                 to="/home"
-                className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border hover:bg-muted transition-colors"
+                className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center border border-border/50 hover:border-chart-2/50 transition-all shadow-soft"
               >
                 <ArrowLeft className="w-5 h-5 text-foreground" />
               </Link>
-              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-chart-2/30 to-primary/20 flex items-center justify-center shadow-lg">
-                <LineChart className="w-6 h-6 text-chart-2" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">বাজার দর</h1>
-                <p className="text-sm text-muted-foreground">আজকের লাইভ মূল্য</p>
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-chart-2/30 to-primary/20 flex items-center justify-center shadow-lg">
+                  <LineChart className="w-6 h-6 text-chart-2" />
+                </div>
+                <div>
+                  <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+                    বাজার দর
+                    <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+                  </h1>
+                  <p className="text-xs text-muted-foreground">লাইভ মূল্য আপডেট</p>
+                </div>
               </div>
             </div>
             <Button 
@@ -121,7 +126,7 @@ export default function MarketPage() {
               size="icon"
               onClick={handleRefresh}
               disabled={refreshing || loading}
-              className="rounded-xl"
+              className="w-11 h-11 rounded-2xl glass-card border border-border/50"
             >
               <RefreshCw className={cn("w-5 h-5", (refreshing || loading) && "animate-spin")} />
             </Button>
@@ -130,152 +135,167 @@ export default function MarketPage() {
 
         {/* Loading State */}
         {loading && (
-          <div className="flex items-center justify-center py-12">
-            <Loader2 className="w-8 h-8 animate-spin text-secondary" />
+          <div className="flex items-center justify-center py-16">
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-full border-4 border-chart-2/30 border-t-chart-2 animate-spin mx-auto mb-4" />
+              <p className="text-muted-foreground text-sm">বাজার দর লোড হচ্ছে...</p>
+            </div>
           </div>
         )}
 
         {/* AI Recommendations */}
-        {recommendations.length > 0 && (
-          <section className="px-4 py-4">
-            <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
+        {recommendations.length > 0 && !loading && (
+          <section className="px-5 py-4">
+            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center">
+                <Zap className="w-4 h-4 text-primary" />
+              </div>
               AI বিক্রয় পরামর্শ
             </h2>
             <div className="space-y-3">
               {recommendations.map((rec, index) => (
-                <Card 
+                <div 
                   key={index}
                   className={cn(
-                    "bg-card/80 border-border overflow-hidden",
-                    rec.action === 'এখনই বিক্রি করুন' && "border-l-4 border-l-destructive"
+                    "glass-card rounded-2xl p-4 border animate-slide-up",
+                    rec.action === 'এখনই বিক্রি করুন' 
+                      ? "border-l-4 border-l-destructive border-destructive/30" 
+                      : "border-border/30"
                   )}
+                  style={{ animationDelay: `${index * 60}ms` }}
                 >
-                  <CardContent className="p-4">
-                    <div className="flex items-start gap-3">
-                      <span className="text-2xl">{rec.emoji}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <h3 className="font-medium text-foreground">{rec.crop}</h3>
-                          <span className={cn(
-                            "text-xs px-2 py-1 rounded-full font-medium",
-                            rec.action === 'এখনই বিক্রি করুন' ? "bg-destructive/20 text-destructive" :
-                            rec.action === 'অপেক্ষা করুন' ? "bg-secondary/20 text-secondary" :
-                            "bg-muted text-muted-foreground"
-                          )}>
-                            {rec.action}
-                          </span>
-                        </div>
-                        <p className="text-sm text-muted-foreground mt-1">{rec.reason}</p>
-                        <div className="flex items-center justify-between mt-2">
-                          <span className="text-xs text-muted-foreground">{rec.timing}</span>
-                          <span className="text-xs text-primary">{rec.confidence}% আত্মবিশ্বাস</span>
-                        </div>
+                  <div className="flex items-start gap-3">
+                    <span className="text-3xl">{rec.emoji}</span>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2 mb-1">
+                        <h3 className="font-bold text-foreground">{rec.crop}</h3>
+                        <span className={cn(
+                          "text-xs px-2.5 py-1 rounded-full font-semibold border",
+                          rec.action === 'এখনই বিক্রি করুন' 
+                            ? "bg-destructive/10 text-destructive border-destructive/30" 
+                            : rec.action === 'অপেক্ষা করুন' 
+                              ? "bg-secondary/10 text-secondary border-secondary/30" 
+                              : "bg-muted text-muted-foreground border-border"
+                        )}>
+                          {rec.action}
+                        </span>
+                      </div>
+                      <p className="text-sm text-muted-foreground">{rec.reason}</p>
+                      <div className="flex items-center justify-between mt-2">
+                        <span className="text-[11px] text-muted-foreground">{rec.timing}</span>
+                        <span className="text-[11px] text-primary font-medium">{rec.confidence}% আত্মবিশ্বাস</span>
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
+                  </div>
+                </div>
               ))}
             </div>
           </section>
         )}
 
         {/* Market Prices Table */}
-        <section className="px-4 py-4">
-          <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-chart-2" />
-            আজকের বাজার দর
-          </h2>
-          
-          {!loading && prices.length === 0 && (
-            <Card className="bg-card/50 border-border">
-              <CardContent className="p-8 text-center">
+        {!loading && (
+          <section className="px-5 py-4">
+            <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+              <div className="w-8 h-8 rounded-xl bg-chart-2/20 flex items-center justify-center">
+                <TrendingUp className="w-4 h-4 text-chart-2" />
+              </div>
+              আজকের বাজার দর
+            </h2>
+            
+            {prices.length === 0 && (
+              <div className="glass-card rounded-2xl p-8 text-center border border-border/30">
                 <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground">বাজার দর লোড করতে সমস্যা হয়েছে</p>
-                <Button onClick={handleRefresh} className="mt-4" variant="outline">
+                <p className="text-muted-foreground mb-4">বাজার দর লোড করতে সমস্যা হয়েছে</p>
+                <Button onClick={handleRefresh} variant="outline" className="rounded-xl">
                   আবার চেষ্টা করুন
                 </Button>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            )}
 
-          <div className="space-y-2">
-            {prices.map((item, index) => {
-              const change = item.today_price - item.yesterday_price;
-              const changePercent = ((change / item.yesterday_price) * 100).toFixed(1);
-              
-              return (
-                <div 
-                  key={item.id}
-                  className={cn(
-                    "bg-card border border-border rounded-xl p-4 hover:border-secondary/30 transition-all",
-                    "animate-slide-up"
-                  )}
-                  style={{ animationDelay: `${index * 0.03}s` }}
-                >
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <span className="text-2xl">{item.crop_emoji || '🌾'}</span>
-                      <div>
-                        <h3 className="font-medium text-foreground">{item.crop_name}</h3>
-                        <p className="text-xs text-muted-foreground">{item.unit || 'টাকা/কেজি'}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-lg text-foreground">
-                        ৳{item.today_price.toLocaleString('bn-BD')}
-                      </p>
-                      <div className={cn(
-                        "flex items-center gap-1 text-xs font-medium justify-end",
-                        getTrendColor(change)
-                      )}>
-                        {getTrendIcon(change)}
-                        <span>{change >= 0 ? '+' : ''}{change.toLocaleString('bn-BD')} ({changePercent}%)</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* Additional Info */}
-                  <div className="mt-3 pt-3 border-t border-border flex items-center justify-between text-xs">
-                    <span className="text-muted-foreground">
-                      সাপ্তাহিক গড়: ৳{(item.weekly_avg || item.today_price).toLocaleString('bn-BD')}
-                    </span>
-                    {item.forecast && (
-                      <span className={cn(
-                        "px-2 py-0.5 rounded-full",
-                        getTrendBg(item.forecast === 'up' ? 1 : item.forecast === 'down' ? -1 : 0),
-                        getTrendColor(item.forecast === 'up' ? 1 : item.forecast === 'down' ? -1 : 0)
-                      )}>
-                        পূর্বাভাস: {getForecastText(item.forecast)}
-                      </span>
+            <div className="space-y-3">
+              {prices.map((item, index) => {
+                const change = item.today_price - item.yesterday_price;
+                const changePercent = ((change / item.yesterday_price) * 100).toFixed(1);
+                
+                return (
+                  <div 
+                    key={item.id}
+                    className={cn(
+                      "glass-card rounded-2xl p-4 border border-border/30",
+                      "hover:border-primary/30 transition-all duration-300",
+                      "animate-slide-up"
                     )}
+                    style={{ animationDelay: `${index * 40}ms` }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-3xl shadow-soft">
+                          {item.crop_emoji || '🌾'}
+                        </div>
+                        <div>
+                          <h3 className="font-bold text-foreground">{item.crop_name}</h3>
+                          <p className="text-xs text-muted-foreground">{item.unit || 'টাকা/কেজি'}</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-xl text-foreground">
+                          ৳{item.today_price.toLocaleString('bn-BD')}
+                        </p>
+                        <div className={cn(
+                          "flex items-center gap-1.5 text-xs font-semibold justify-end mt-1",
+                          getTrendColor(change)
+                        )}>
+                          {getTrendIcon(change)}
+                          <span>{change >= 0 ? '+' : ''}{change}</span>
+                          <span className="text-muted-foreground">({changePercent}%)</span>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Additional Info */}
+                    <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
+                      <span className="text-xs text-muted-foreground">
+                        সা. গড়: ৳{(item.weekly_avg || item.today_price).toLocaleString('bn-BD')}
+                      </span>
+                      {item.forecast && (
+                        <span className={cn(
+                          "text-xs px-2.5 py-1 rounded-full font-medium border",
+                          getForecastColor(item.forecast)
+                        )}>
+                          পূর্বাভাস: {getForecastText(item.forecast)}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
-        </section>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
         {/* Market Insights */}
-        <section className="px-4 py-4">
-          <Card className="bg-gradient-to-br from-primary/10 to-secondary/10 border-primary/30">
-            <CardHeader>
-              <CardTitle className="text-base flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-primary" />
-                বাজার বিশ্লেষণ
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-sm text-foreground leading-relaxed">
-                বর্তমানে ধান ও পাটের দাম বাড়ার প্রবণতা দেখা যাচ্ছে। আলুর দাম শীতকালে স্বাভাবিকভাবেই কমতে পারে। 
-                পেঁয়াজের দাম স্থিতিশীল থাকবে বলে ধারণা করা হচ্ছে।
-              </p>
-              <p className="text-xs text-muted-foreground mt-2">
-                সর্বশেষ আপডেট: {new Date().toLocaleDateString('bn-BD')}
-              </p>
-            </CardContent>
-          </Card>
-        </section>
+        {!loading && prices.length > 0 && (
+          <section className="px-5 py-4">
+            <div className="glass-card rounded-2xl p-5 border border-primary/30 bg-gradient-to-br from-primary/5 to-transparent">
+              <div className="flex items-start gap-3">
+                <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center flex-shrink-0">
+                  <Sparkles className="w-5 h-5 text-primary" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-foreground mb-2">বাজার বিশ্লেষণ</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    বর্তমানে ধান ও পাটের দাম বাড়ার প্রবণতা দেখা যাচ্ছে। আলুর দাম শীতকালে স্বাভাবিকভাবেই কমতে পারে। 
+                    পেঁয়াজের দাম স্থিতিশীল থাকবে বলে ধারণা করা হচ্ছে।
+                  </p>
+                  <p className="text-[10px] text-muted-foreground mt-3">
+                    সর্বশেষ আপডেট: {new Date().toLocaleDateString('bn-BD')}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
       </div>
     </>
   );
