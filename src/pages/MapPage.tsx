@@ -56,55 +56,57 @@ export default function MapPage() {
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const location = useLocation();
 
-  // Fetch Mapbox token with timeout
+  // Fetch Mapbox token with timeout - always show fallback after 2 seconds
   useEffect(() => {
     let isMounted = true;
+    let hasCompleted = false;
     
-    const fetchToken = async () => {
-      // Set a timeout to prevent infinite loading
-      const timeoutId = setTimeout(() => {
-        if (isMounted && isLoading) {
-          console.log('Token fetch timed out, showing fallback');
-          setIsLoading(false);
-          setMapError('টোকেন লোড টাইমআউট হয়েছে');
-        }
-      }, 3000);
+    // Always show fallback after 2 seconds if not loaded
+    const timeoutId = setTimeout(() => {
+      if (isMounted && !hasCompleted) {
+        console.log('Token fetch timed out, showing fallback');
+        hasCompleted = true;
+        setIsLoading(false);
+        setMapError('ম্যাপ সার্ভার থেকে সাড়া পাওয়া যায়নি');
+      }
+    }, 2000);
 
+    const fetchToken = async () => {
       try {
         console.log('Fetching Mapbox token...');
         const { data, error } = await supabase.functions.invoke('get-mapbox-token');
         
+        if (!isMounted || hasCompleted) return;
+        hasCompleted = true;
         clearTimeout(timeoutId);
-        
-        if (!isMounted) return;
         
         if (error) {
           console.error('Edge function error:', error);
-          setMapError('এজ ফাংশন ত্রুটি');
+          setMapError('এজ ফাংশন ত্রুটি: ' + error.message);
           setIsLoading(false);
           return;
         }
         
         if (data?.token) {
-          console.log('Mapbox token received');
+          console.log('Mapbox token received successfully');
           setMapboxToken(data.token);
+          setIsLoading(false);
         } else if (data?.error) {
           console.error('Token error:', data.error);
           setMapError(data.error);
+          setIsLoading(false);
         } else {
-          console.error('No token in response');
+          console.error('No token in response:', data);
           setMapError('টোকেন পাওয়া যায়নি');
-        }
-      } catch (error) {
-        clearTimeout(timeoutId);
-        if (isMounted) {
-          console.error('Failed to get Mapbox token:', error);
-          setMapError('ম্যাপ লোড ব্যর্থ');
-        }
-      } finally {
-        if (isMounted) {
           setIsLoading(false);
         }
+      } catch (error: any) {
+        if (!isMounted || hasCompleted) return;
+        hasCompleted = true;
+        clearTimeout(timeoutId);
+        console.error('Failed to get Mapbox token:', error);
+        setMapError('ম্যাপ লোড ব্যর্থ: ' + (error?.message || 'Unknown error'));
+        setIsLoading(false);
       }
     };
     
@@ -112,6 +114,7 @@ export default function MapPage() {
     
     return () => {
       isMounted = false;
+      clearTimeout(timeoutId);
     };
   }, []);
 
@@ -229,34 +232,46 @@ export default function MapPage() {
       ) : mapboxToken ? (
         <div ref={mapContainer} className="absolute inset-0" />
       ) : (
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${villageBg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-          }}
-        >
-          <div className="absolute inset-0 bg-background/80" />
-          {/* Fallback grid pattern */}
+        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-background to-teal-900/30">
+          {/* Village background with overlay */}
           <div 
-            className="absolute inset-0 opacity-10"
+            className="absolute inset-0 opacity-30"
             style={{
-              backgroundImage: `
-                linear-gradient(rgba(123, 242, 160, 0.3) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(123, 242, 160, 0.3) 1px, transparent 1px)
-              `,
-              backgroundSize: "40px 40px",
+              backgroundImage: `url(${villageBg})`,
+              backgroundSize: 'cover',
+              backgroundPosition: 'center',
             }}
           />
-          {/* Fallback markers */}
+          
+          {/* Grid pattern for map feel */}
+          <div 
+            className="absolute inset-0"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(16, 185, 129, 0.15) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 185, 129, 0.15) 1px, transparent 1px)
+              `,
+              backgroundSize: "50px 50px",
+            }}
+          />
+          
+          {/* Error message if any */}
+          {mapError && (
+            <div className="absolute top-24 left-1/2 transform -translate-x-1/2 z-10">
+              <div className="glass-strong rounded-xl px-4 py-2 text-center border border-amber-500/30 bg-amber-500/10">
+                <p className="text-amber-400 text-xs">{mapError}</p>
+              </div>
+            </div>
+          )}
+          
+          {/* Fallback markers with better visibility */}
           {fieldsData.map((field, idx) => (
             <div
               key={field.id}
-              className="absolute"
+              className="absolute z-10"
               style={{ 
-                top: `${25 + idx * 12}%`, 
-                left: `${30 + idx * 10}%` 
+                top: `${30 + idx * 12}%`, 
+                left: `${20 + idx * 15}%` 
               }}
             >
               <MapMarker
@@ -268,6 +283,12 @@ export default function MapPage() {
               />
             </div>
           ))}
+          
+          {/* Demo label */}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
+            <MapPin className="w-16 h-16 text-primary/30 mx-auto mb-2" />
+            <p className="text-muted-foreground/50 text-sm">ডেমো মোড</p>
+          </div>
         </div>
       )}
 
