@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Share2, Download, AlertTriangle, CheckCircle, Leaf, Droplets, FlaskConical } from "lucide-react";
+import { ArrowLeft, Share2, Download, AlertTriangle, CheckCircle, Leaf, Droplets, FlaskConical, Zap, Shield, Clock, TrendingDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 interface DiseaseResult {
   diseaseName: string;
@@ -38,7 +39,6 @@ export default function DiagnosisPage() {
       setScannedImage(storedImage);
     }
     
-    // If no data, redirect to camera
     if (!storedResult) {
       navigate('/camera');
     }
@@ -46,12 +46,12 @@ export default function DiagnosisPage() {
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'text-red-500 bg-red-500/20';
-      case 'high': return 'text-orange-500 bg-orange-500/20';
-      case 'medium': return 'text-yellow-500 bg-yellow-500/20';
-      case 'low': return 'text-green-500 bg-green-500/20';
-      case 'none': return 'text-secondary bg-secondary/20';
-      default: return 'text-muted-foreground bg-muted';
+      case 'critical': return 'from-red-500/30 to-red-500/10 border-red-500/50 text-red-400';
+      case 'high': return 'from-orange-500/30 to-orange-500/10 border-orange-500/50 text-orange-400';
+      case 'medium': return 'from-yellow-500/30 to-yellow-500/10 border-yellow-500/50 text-yellow-400';
+      case 'low': return 'from-green-500/30 to-green-500/10 border-green-500/50 text-green-400';
+      case 'none': return 'from-secondary/30 to-secondary/10 border-secondary/50 text-secondary';
+      default: return 'from-muted/30 to-muted/10 border-border text-muted-foreground';
     }
   };
 
@@ -68,187 +68,200 @@ export default function DiagnosisPage() {
 
   if (!diseaseData) {
     return (
-      <div className="mobile-container min-h-screen bg-background flex items-center justify-center">
-        <p className="text-muted-foreground">লোড হচ্ছে...</p>
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full border-4 border-secondary/30 border-t-secondary animate-spin mx-auto mb-4" />
+          <p className="text-muted-foreground">লোড হচ্ছে...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="mobile-container min-h-screen bg-background pb-24">
+    <div className="min-h-screen bg-background pb-28 relative overflow-hidden">
+      {/* Premium Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card" />
+        <div className="absolute top-20 right-10 w-72 h-72 bg-secondary/10 rounded-full blur-3xl" />
+        <div className="absolute bottom-40 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
+      </div>
+
       {/* Header */}
-      <header className="px-4 pt-12 pb-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <Link
-            to="/camera"
-            className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
-          >
-            <ArrowLeft className="w-5 h-5 text-foreground" />
-          </Link>
-          <div>
-            <h1 className="text-xl font-bold text-foreground">রোগ নির্ণয়</h1>
-            <p className="text-xs text-muted-foreground">AI বিশ্লেষণ সম্পন্ন</p>
+      <header className="relative px-5 pt-6 pb-4">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-secondary/50 to-transparent" />
+        
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Link
+              to="/camera"
+              className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center border border-border/50 hover:border-secondary/50 transition-all shadow-soft"
+            >
+              <ArrowLeft className="w-5 h-5 text-foreground" />
+            </Link>
+            <div>
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+                রোগ নির্ণয়
+                <Zap className="w-4 h-4 text-primary" />
+              </h1>
+              <p className="text-xs text-muted-foreground">AI বিশ্লেষণ সম্পন্ন</p>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <button className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border">
-            <Share2 className="w-5 h-5 text-foreground" />
-          </button>
-          <button className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border">
-            <Download className="w-5 h-5 text-foreground" />
-          </button>
+          <div className="flex gap-2">
+            <button className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center border border-border/50 hover:border-secondary/50 transition-all">
+              <Share2 className="w-5 h-5 text-foreground" />
+            </button>
+            <button className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center border border-border/50 hover:border-secondary/50 transition-all">
+              <Download className="w-5 h-5 text-foreground" />
+            </button>
+          </div>
         </div>
       </header>
 
       {/* Scanned Image */}
-      <section className="px-4 mb-4">
-        <div className="aspect-video rounded-2xl overflow-hidden bg-card border border-border">
+      <section className="px-5 mb-5">
+        <div className="relative aspect-video rounded-2xl overflow-hidden border border-border/50 shadow-elevated">
           {scannedImage ? (
             <img src={scannedImage} alt="Scanned crop" className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full bg-gradient-to-br from-secondary/20 to-primary/20 flex items-center justify-center">
-              <p className="text-muted-foreground text-sm">স্ক্যান করা ছবি</p>
+              <Leaf className="w-12 h-12 text-muted-foreground" />
             </div>
           )}
+          
+          {/* Confidence Badge */}
+          <div className="absolute top-3 right-3 glass-strong px-3 py-2 rounded-xl flex items-center gap-2">
+            <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+            <span className="text-sm font-bold text-secondary">{diseaseData.confidence}%</span>
+          </div>
         </div>
       </section>
 
-      {/* Disease Result Card */}
-      <section className="px-4 mb-4">
-        <div className="p-4 rounded-2xl bg-card border border-border animate-slide-up">
-          {/* Header with confidence */}
-          <div className="flex items-start justify-between mb-4">
+      {/* Main Result Card */}
+      <section className="px-5 mb-5">
+        <div className="glass-card rounded-3xl p-5 border border-border/50 animate-slide-up">
+          {/* Status Header */}
+          <div className="flex items-start justify-between mb-5">
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-2">
-                {diseaseData.isHealthy ? (
-                  <CheckCircle className="w-6 h-6 text-secondary" />
-                ) : (
-                  <AlertTriangle className="w-6 h-6 text-destructive" />
-                )}
-                <h2 className="text-lg font-bold text-foreground">{diseaseData.diseaseName}</h2>
+              <div className="flex items-center gap-3 mb-2">
+                <div className={cn(
+                  "w-12 h-12 rounded-2xl flex items-center justify-center",
+                  diseaseData.isHealthy ? "bg-secondary/20" : "bg-destructive/20"
+                )}>
+                  {diseaseData.isHealthy ? (
+                    <CheckCircle className="w-6 h-6 text-secondary" />
+                  ) : (
+                    <AlertTriangle className="w-6 h-6 text-destructive" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-lg font-bold text-foreground">{diseaseData.diseaseName}</h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="px-2.5 py-1 rounded-full bg-primary/20 text-primary text-xs font-semibold border border-primary/30">
+                      {diseaseData.cropType}
+                    </span>
+                    <span className={cn(
+                      "px-2.5 py-1 rounded-full text-xs font-semibold border bg-gradient-to-r",
+                      getSeverityColor(diseaseData.severity)
+                    )}>
+                      {getSeverityText(diseaseData.severity)}
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <span className="px-2 py-1 rounded-full bg-primary/20 text-primary text-xs font-medium">
-                  {diseaseData.cropType}
-                </span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium ${getSeverityColor(diseaseData.severity)}`}>
-                  {getSeverityText(diseaseData.severity)}
-                </span>
-              </div>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-secondary">{diseaseData.confidence}%</div>
-              <div className="text-xs text-muted-foreground">নির্ভুলতা</div>
             </div>
           </div>
 
           {/* Symptoms */}
           {diseaseData.symptoms.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-foreground mb-2">🔍 লক্ষণসমূহ</h3>
-              <ul className="space-y-1">
+            <div className="mb-5">
+              <h3 className="text-sm font-bold text-foreground mb-3 flex items-center gap-2">
+                <div className="w-6 h-6 rounded-lg bg-chart-3/20 flex items-center justify-center">
+                  <span className="text-xs">🔍</span>
+                </div>
+                লক্ষণসমূহ
+              </h3>
+              <div className="space-y-2">
                 {diseaseData.symptoms.map((symptom, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-secondary mt-1">•</span>
+                  <div key={index} className="flex items-start gap-2 text-sm text-muted-foreground">
+                    <span className="w-1.5 h-1.5 rounded-full bg-secondary mt-2 flex-shrink-0" />
                     {symptom}
-                  </li>
+                  </div>
                 ))}
-              </ul>
-            </div>
-          )}
-
-          {/* Causes */}
-          {diseaseData.causes && diseaseData.causes.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-foreground mb-2">⚠️ কারণ</h3>
-              <ul className="space-y-1">
-                {diseaseData.causes.map((cause, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-primary mt-1">•</span>
-                    {cause}
-                  </li>
-                ))}
-              </ul>
+              </div>
             </div>
           )}
 
           {/* Treatment */}
           {diseaseData.treatment && (
-            <div className="mb-4 p-3 rounded-xl bg-secondary/10 border border-secondary/20">
-              <h3 className="text-sm font-semibold text-foreground mb-2">💊 চিকিৎসা</h3>
-              <p className="text-sm text-muted-foreground">{diseaseData.treatment}</p>
+            <div className="mb-5 p-4 rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/5 border border-secondary/30">
+              <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
+                <Shield className="w-4 h-4 text-secondary" />
+                চিকিৎসা
+              </h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{diseaseData.treatment}</p>
             </div>
           )}
 
-          {/* Chemical Solution */}
-          {diseaseData.chemicalSolution && (
-            <div className="mb-4 p-3 rounded-xl bg-destructive/10 border border-destructive/20">
-              <div className="flex items-center gap-2 mb-2">
-                <FlaskConical className="w-4 h-4 text-destructive" />
-                <h3 className="text-sm font-semibold text-foreground">রাসায়নিক সমাধান</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">{diseaseData.chemicalSolution}</p>
-            </div>
-          )}
-
-          {/* Organic Solution */}
-          {diseaseData.organicSolution && (
-            <div className="mb-4 p-3 rounded-xl bg-green-500/10 border border-green-500/20">
-              <div className="flex items-center gap-2 mb-2">
-                <Leaf className="w-4 h-4 text-green-500" />
-                <h3 className="text-sm font-semibold text-foreground">জৈব সমাধান</h3>
-              </div>
-              <p className="text-sm text-muted-foreground">{diseaseData.organicSolution}</p>
-            </div>
-          )}
-
-          {/* Fertilizer & Irrigation */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            {diseaseData.fertilizer && (
-              <div className="p-3 rounded-xl bg-primary/10 border border-primary/20">
-                <h3 className="text-xs font-semibold text-foreground mb-1">🌱 সার</h3>
-                <p className="text-xs text-muted-foreground">{diseaseData.fertilizer}</p>
+          {/* Solutions Grid */}
+          <div className="grid grid-cols-1 gap-3 mb-5">
+            {diseaseData.chemicalSolution && (
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-destructive/10 to-destructive/5 border border-destructive/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <FlaskConical className="w-4 h-4 text-destructive" />
+                  <h3 className="text-sm font-bold text-foreground">রাসায়নিক সমাধান</h3>
+                </div>
+                <p className="text-xs text-muted-foreground leading-relaxed">{diseaseData.chemicalSolution}</p>
               </div>
             )}
-            {diseaseData.irrigation && (
-              <div className="p-3 rounded-xl bg-blue-500/10 border border-blue-500/20">
-                <div className="flex items-center gap-1 mb-1">
-                  <Droplets className="w-3 h-3 text-blue-500" />
-                  <h3 className="text-xs font-semibold text-foreground">সেচ</h3>
+
+            {diseaseData.organicSolution && (
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/30">
+                <div className="flex items-center gap-2 mb-2">
+                  <Leaf className="w-4 h-4 text-green-500" />
+                  <h3 className="text-sm font-bold text-foreground">জৈব সমাধান</h3>
                 </div>
-                <p className="text-xs text-muted-foreground">{diseaseData.irrigation}</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{diseaseData.organicSolution}</p>
               </div>
             )}
           </div>
 
-          {/* Preventive Measures */}
-          {diseaseData.preventiveMeasures && diseaseData.preventiveMeasures.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-sm font-semibold text-foreground mb-2">🛡️ প্রতিরোধমূলক ব্যবস্থা</h3>
-              <ul className="space-y-1">
-                {diseaseData.preventiveMeasures.map((measure, index) => (
-                  <li key={index} className="text-sm text-muted-foreground flex items-start gap-2">
-                    <span className="text-green-500 mt-1">✓</span>
-                    {measure}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* Fertilizer & Irrigation */}
+          <div className="grid grid-cols-2 gap-3 mb-5">
+            {diseaseData.fertilizer && (
+              <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
+                <div className="flex items-center gap-1 mb-1">
+                  <span className="text-sm">🌱</span>
+                  <h3 className="text-xs font-bold text-foreground">সার</h3>
+                </div>
+                <p className="text-[11px] text-muted-foreground">{diseaseData.fertilizer}</p>
+              </div>
+            )}
+            {diseaseData.irrigation && (
+              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/30">
+                <div className="flex items-center gap-1 mb-1">
+                  <Droplets className="w-3 h-3 text-blue-500" />
+                  <h3 className="text-xs font-bold text-foreground">সেচ</h3>
+                </div>
+                <p className="text-[11px] text-muted-foreground">{diseaseData.irrigation}</p>
+              </div>
+            )}
+          </div>
 
-          {/* Recovery & Impact Info */}
+          {/* Recovery Stats */}
           {(diseaseData.expectedRecoveryDays > 0 || diseaseData.yieldImpact) && (
-            <div className="flex gap-3 mb-4">
+            <div className="flex gap-3 mb-5">
               {diseaseData.expectedRecoveryDays > 0 && (
-                <div className="flex-1 p-2 rounded-lg bg-muted text-center">
+                <div className="flex-1 p-3 rounded-xl glass-card text-center border border-border/30">
+                  <Clock className="w-5 h-5 text-secondary mx-auto mb-1" />
                   <div className="text-lg font-bold text-foreground">{diseaseData.expectedRecoveryDays}</div>
-                  <div className="text-xs text-muted-foreground">দিনে সুস্থ</div>
+                  <div className="text-[10px] text-muted-foreground">দিনে সুস্থ</div>
                 </div>
               )}
               {diseaseData.yieldImpact && (
-                <div className="flex-1 p-2 rounded-lg bg-muted text-center">
+                <div className="flex-1 p-3 rounded-xl glass-card text-center border border-border/30">
+                  <TrendingDown className="w-5 h-5 text-destructive mx-auto mb-1" />
                   <div className="text-lg font-bold text-foreground">{diseaseData.yieldImpact}</div>
-                  <div className="text-xs text-muted-foreground">ফলনে প্রভাব</div>
+                  <div className="text-[10px] text-muted-foreground">ফলনে প্রভাব</div>
                 </div>
               )}
             </div>
@@ -256,9 +269,10 @@ export default function DiagnosisPage() {
 
           {/* Additional Notes */}
           {diseaseData.additionalNotes && (
-            <div className="p-3 rounded-xl bg-muted border border-border">
-              <p className="text-sm text-muted-foreground">
-                💡 {diseaseData.additionalNotes}
+            <div className="p-3 rounded-xl glass-card border border-border/30">
+              <p className="text-xs text-muted-foreground flex items-start gap-2">
+                <span className="text-primary">💡</span>
+                {diseaseData.additionalNotes}
               </p>
             </div>
           )}
@@ -266,24 +280,36 @@ export default function DiagnosisPage() {
       </section>
 
       {/* Action Buttons */}
-      <section className="px-4 space-y-3">
+      <section className="px-5 space-y-3">
         <Link to="/chat">
-          <Button className="w-full h-12 bg-secondary text-secondary-foreground hover:bg-secondary/90 font-semibold">
+          <Button className={cn(
+            "w-full h-13 font-bold rounded-2xl",
+            "bg-gradient-to-r from-secondary to-secondary/80",
+            "text-secondary-foreground shadow-glow",
+            "hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]",
+            "transition-all duration-300"
+          )}>
             AI এর সাথে আরও কথা বলুন
           </Button>
         </Link>
         <Link to="/camera">
-          <Button variant="outline" className="w-full h-12 border-border text-foreground hover:bg-muted font-semibold">
+          <Button variant="outline" className={cn(
+            "w-full h-13 font-semibold rounded-2xl",
+            "glass-card border-border/50 text-foreground",
+            "hover:bg-muted/50 hover:border-secondary/50",
+            "transition-all duration-300"
+          )}>
             নতুন স্ক্যান করুন
           </Button>
         </Link>
       </section>
 
-      {/* LLM Attribution */}
-      <section className="px-4 mt-6">
-        <div className="p-3 rounded-xl bg-muted/50 border border-border">
-          <p className="text-xs text-muted-foreground text-center">
-            🤖 এই বিশ্লেষণ Gemini Vision AI দ্বারা সম্পন্ন
+      {/* Attribution */}
+      <section className="px-5 mt-6">
+        <div className="glass-card p-3 rounded-xl border border-border/30 text-center">
+          <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+            <Zap className="w-3 h-3 text-primary" />
+            Gemini Vision AI দ্বারা বিশ্লেষিত
           </p>
         </div>
       </section>

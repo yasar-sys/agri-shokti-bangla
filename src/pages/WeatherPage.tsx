@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
-import { Droplets, Wind, Sun, Thermometer, Gauge, MapPin, ArrowLeft, Loader2 } from "lucide-react";
+import { Droplets, Wind, Sun, Thermometer, Gauge, MapPin, ArrowLeft, Loader2, Cloud, CloudRain, Zap, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLocation } from "@/hooks/useLocation";
 import { useWeather } from "@/hooks/useWeather";
-import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import { cn } from "@/lib/utils";
 
 export default function WeatherPage() {
   const location = useLocation();
@@ -26,7 +26,7 @@ export default function WeatherPage() {
           80: '🌦️', 81: '🌦️', 82: '⛈️', 95: '⛈️', 96: '🌨️', 99: '🌨️',
         };
         
-        const days = ['আজ', 'আগামীকাল', 'পরশু', '৩ দিন পরে', '৪ দিন পরে'];
+        const days = ['আজ', 'আগামী', 'পরশু', '৩ দিন', '৪ দিন'];
         
         const forecastData = data.daily.time.slice(0, 5).map((date: string, i: number) => ({
           day: days[i],
@@ -56,79 +56,84 @@ export default function WeatherPage() {
   };
 
   return (
-    <div className="min-h-screen pb-24 relative">
-      {/* Background */}
-      <div 
-        className="fixed inset-0 -z-10"
-        style={{
-          backgroundImage: `url(${villageBg})`,
-          backgroundSize: 'cover',
-          backgroundPosition: 'center',
-        }}
-      >
-        <div className="absolute inset-0 bg-background/90 backdrop-blur-sm" />
+    <div className="min-h-screen pb-28 relative overflow-hidden bg-background">
+      {/* Premium Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background to-card" />
+        <div className="absolute top-20 right-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl animate-float-slow" />
+        <div className="absolute bottom-40 left-10 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl animate-float" />
       </div>
 
       {/* Header */}
-      <header className="px-4 pt-6 pb-4 flex items-center gap-3">
-        <Link
-          to="/home"
-          className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
-        >
-          <ArrowLeft className="w-5 h-5 text-foreground" />
-        </Link>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">আবহাওয়া ও মাটি</h1>
-          <p className="text-xs text-muted-foreground flex items-center gap-1">
-            <MapPin className="w-3 h-3" />
-            {location.loading ? 'লোকেশন খুঁজছি...' : `${location.city}, ${location.country}`}
-          </p>
+      <header className="relative px-5 pt-6 pb-4">
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-chart-3/50 to-transparent" />
+        
+        <div className="flex items-center gap-4">
+          <Link
+            to="/home"
+            className="w-12 h-12 rounded-2xl glass-card flex items-center justify-center border border-border/50 hover:border-chart-3/50 transition-all shadow-soft"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
+          <div className="flex-1">
+            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+              আবহাওয়া
+              <Cloud className="w-5 h-5 text-chart-3" />
+            </h1>
+            <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
+              <MapPin className="w-3 h-3 text-destructive" />
+              {location.loading ? 'লোকেশন খুঁজছি...' : `${location.city}, ${location.country}`}
+            </p>
+          </div>
         </div>
       </header>
 
-      {/* Current Weather */}
-      <section className="px-4 mb-6">
-        <div className="relative p-6 rounded-2xl bg-gradient-to-br from-card to-muted/50 border border-border overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 opacity-10">
-            <Sun className="w-full h-full text-primary" />
-          </div>
-
-          <div className="relative z-10">
-            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
-              <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+      {/* Current Weather Card */}
+      <section className="px-5 mb-6">
+        <div className="relative rounded-3xl overflow-hidden glass-card border border-border/50 shadow-elevated">
+          {/* Background gradient */}
+          <div className="absolute inset-0 bg-gradient-to-br from-blue-500/10 via-cyan-500/5 to-transparent" />
+          
+          <div className="relative p-6">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
+              <div className="w-2 h-2 rounded-full bg-chart-3 animate-pulse" />
               <span>রিয়েল-টাইম আবহাওয়া</span>
             </div>
 
             {weather.loading ? (
-              <div className="flex items-center justify-center py-8">
-                <Loader2 className="w-8 h-8 text-secondary animate-spin" />
+              <div className="flex items-center justify-center py-12">
+                <div className="w-12 h-12 rounded-full border-4 border-chart-3/30 border-t-chart-3 animate-spin" />
               </div>
             ) : (
               <>
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between mb-6">
                   <div>
                     <div className="flex items-start">
-                      <span className="text-6xl font-bold text-foreground">{weather.temp}</span>
-                      <span className="text-2xl text-muted-foreground mt-2">°C</span>
+                      <span className="text-7xl font-bold text-foreground">{weather.temp}</span>
+                      <span className="text-3xl text-muted-foreground mt-2">°C</span>
                     </div>
                     <p className="text-lg text-muted-foreground mt-1">{weather.conditionBn}</p>
                   </div>
-                  <span className="text-6xl">{weather.icon}</span>
+                  <div className="text-7xl animate-float-slow">{weather.icon}</div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4 mt-6">
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-                    <Droplets className="w-6 h-6 text-secondary" />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-3 p-4 rounded-2xl glass-card border border-border/30">
+                    <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center">
+                      <Droplets className="w-5 h-5 text-blue-400" />
+                    </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">আর্দ্রতা</p>
-                      <p className="font-semibold text-foreground">{weather.humidity}%</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">আর্দ্রতা</p>
+                      <p className="font-bold text-foreground text-lg">{weather.humidity}%</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-muted/50">
-                    <Wind className="w-6 h-6 text-secondary" />
+                  <div className="flex items-center gap-3 p-4 rounded-2xl glass-card border border-border/30">
+                    <div className="w-10 h-10 rounded-xl bg-cyan-500/20 flex items-center justify-center">
+                      <Wind className="w-5 h-5 text-cyan-400" />
+                    </div>
                     <div>
-                      <p className="text-xs text-muted-foreground">বাতাস</p>
-                      <p className="font-semibold text-foreground">{weather.wind} কি.মি./ঘ.</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">বাতাস</p>
+                      <p className="font-bold text-foreground text-lg">{weather.wind} <span className="text-xs font-normal">কি.মি./ঘ.</span></p>
                     </div>
                   </div>
                 </div>
@@ -139,23 +144,33 @@ export default function WeatherPage() {
       </section>
 
       {/* Forecast */}
-      <section className="px-4 mb-6">
-        <h2 className="text-lg font-semibold text-foreground mb-3">আগামী দিনের পূর্বাভাস</h2>
+      <section className="px-5 mb-6">
+        <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+          <CloudRain className="w-4 h-4 text-chart-3" />
+          আগামী দিনের পূর্বাভাস
+        </h2>
         {forecastLoading ? (
           <div className="flex items-center justify-center py-8">
-            <Loader2 className="w-6 h-6 text-secondary animate-spin" />
+            <Loader2 className="w-6 h-6 text-chart-3 animate-spin" />
           </div>
         ) : (
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {forecast.map((day, index) => (
               <div
                 key={index}
-                className="flex-1 min-w-[70px] p-3 rounded-xl bg-card border border-border text-center"
+                className={cn(
+                  "flex-shrink-0 w-[80px] p-4 rounded-2xl glass-card border text-center",
+                  "transition-all duration-300 hover:scale-105",
+                  index === 0 ? "border-chart-3/50 bg-chart-3/5" : "border-border/30"
+                )}
               >
-                <p className="text-xs text-muted-foreground mb-2">{day.day}</p>
-                <span className="text-2xl">{day.icon}</span>
-                <div className="mt-2">
-                  <p className="font-semibold text-foreground text-sm">{day.high}°</p>
+                <p className={cn(
+                  "text-xs font-medium mb-2",
+                  index === 0 ? "text-chart-3" : "text-muted-foreground"
+                )}>{day.day}</p>
+                <span className="text-3xl block mb-2">{day.icon}</span>
+                <div className="space-y-0.5">
+                  <p className="font-bold text-foreground">{day.high}°</p>
                   <p className="text-xs text-muted-foreground">{day.low}°</p>
                 </div>
               </div>
@@ -165,31 +180,40 @@ export default function WeatherPage() {
       </section>
 
       {/* Soil Data */}
-      <section className="px-4">
-        <h2 className="text-lg font-semibold text-foreground mb-3">মাটির তথ্য</h2>
-        <div className="p-4 rounded-2xl bg-card border border-border">
-          <div className="grid grid-cols-3 gap-4 mb-4">
-            <div className="text-center p-3 rounded-xl bg-muted/50">
-              <Droplets className="w-6 h-6 text-secondary mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">আর্দ্রতা</p>
-              <p className="font-semibold text-foreground">{soilData.moisture}%</p>
+      <section className="px-5">
+        <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
+          <Sparkles className="w-4 h-4 text-primary" />
+          মাটির তথ্য
+        </h2>
+        <div className="glass-card rounded-3xl p-5 border border-border/50">
+          <div className="grid grid-cols-3 gap-3 mb-5">
+            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/30">
+              <Droplets className="w-6 h-6 text-blue-400 mx-auto mb-2" />
+              <p className="text-[10px] text-muted-foreground uppercase">আর্দ্রতা</p>
+              <p className="font-bold text-foreground text-lg">{soilData.moisture}%</p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-muted/50">
+            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
               <Gauge className="w-6 h-6 text-primary mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">pH</p>
-              <p className="font-semibold text-foreground">{soilData.ph}</p>
+              <p className="text-[10px] text-muted-foreground uppercase">pH</p>
+              <p className="font-bold text-foreground text-lg">{soilData.ph}</p>
             </div>
-            <div className="text-center p-3 rounded-xl bg-muted/50">
+            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/30">
               <Thermometer className="w-6 h-6 text-secondary mx-auto mb-2" />
-              <p className="text-xs text-muted-foreground">নাইট্রোজেন</p>
-              <p className="font-semibold text-foreground">{soilData.nitrogen}</p>
+              <p className="text-[10px] text-muted-foreground uppercase">নাইট্রোজেন</p>
+              <p className="font-bold text-foreground text-lg">{soilData.nitrogen}</p>
             </div>
           </div>
 
-          <div className="p-3 rounded-xl bg-secondary/10 border border-secondary/20">
-            <p className="text-sm text-foreground">
-              <strong>AI পরামর্শ:</strong> {soilData.recommendation}
-            </p>
+          <div className="p-4 rounded-2xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/30">
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center flex-shrink-0">
+                <Zap className="w-5 h-5 text-secondary" />
+              </div>
+              <div>
+                <p className="text-sm font-bold text-foreground mb-1">AI পরামর্শ</p>
+                <p className="text-xs text-muted-foreground leading-relaxed">{soilData.recommendation}</p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
