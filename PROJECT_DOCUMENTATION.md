@@ -1,28 +1,33 @@
-# AgriBrain AI - Project Documentation
+# 🌾 AgriShokti - AI-Powered Smart Agriculture Platform
 
 > **An AI-Powered Agricultural Assistant for Bangladesh Farmers**
 > 
-> Version: 1.0.0 | Last Updated: December 2024
+> **Project Name:** AgriShokti (কৃষিশক্তি - "Agricultural Power")
+> 
+> Version: 1.0.0 | Last Updated: December 23, 2024
 
 ---
 
 ## Table of Contents
 
 1. [Project Overview](#1-project-overview)
-2. [Technology Stack](#2-technology-stack)
-3. [Architecture](#3-architecture)
-4. [Features](#4-features)
-5. [Database Schema](#5-database-schema)
-6. [Edge Functions (Backend API)](#6-edge-functions-backend-api)
-7. [Frontend Structure](#7-frontend-structure)
-8. [Authentication](#8-authentication)
-9. [AI Capabilities](#9-ai-capabilities)
-10. [PWA & Offline Support](#10-pwa--offline-support)
-11. [Internationalization](#11-internationalization)
-12. [Security](#12-security)
-13. [Deployment](#13-deployment)
-14. [API Reference](#14-api-reference)
-15. [Contributing](#15-contributing)
+2. [Team Information & Credits](#2-team-information--credits)
+3. [Technology Stack](#3-technology-stack)
+4. [Architecture](#4-architecture)
+5. [Features](#5-features)
+6. [Database Schema](#6-database-schema)
+7. [Edge Functions (Backend API)](#7-edge-functions-backend-api)
+8. [Frontend Structure](#8-frontend-structure)
+9. [Authentication](#9-authentication)
+10. [AI Capabilities](#10-ai-capabilities)
+11. [PWA & Offline Support](#11-pwa--offline-support)
+12. [Internationalization](#12-internationalization)
+13. [Security](#13-security)
+14. [Deployment](#14-deployment)
+15. [API Reference](#15-api-reference)
+16. [Future Vision & Goals](#16-future-vision--goals)
+17. [References & Data Sources](#17-references--data-sources)
+18. [Contributing](#18-contributing)
 
 ---
 
@@ -51,7 +56,49 @@ AgriBrain AI (agriশক্তি) is a Progressive Web Application (PWA) design
 
 ---
 
-## 2. Technology Stack
+## 2. Team Information & Credits
+
+### Project Name
+**AgriShokti** (কৃষিশক্তি - "Agricultural Power")
+
+### Team Name
+**TEAM_NEWBIES**
+
+### Team Lead & Prompt Engineer
+**Samin Yasar**  
+*Mymensingh Engineering College*  
+Role: Team Lead, Prompt Engineering & AI Integration Specialist
+
+### Team Members
+
+| Name | Institution | Role |
+|------|-------------|------|
+| **Samin Yasar** | Mymensingh Engineering College | Team Lead, Prompt Engineer |
+| **Rahiatul Jannat** | Mymensingh Engineering College | Developer |
+| **Maisha Osman Umama** | Mymensingh Engineering College | Developer |
+| **Neshat Sultana Keya** | Gazipur Agricultural University | Agricultural Expert |
+
+### Special Credits
+
+#### 🏆 Prompt Engineering & AI Development
+**Samin Yasar** - As the Prompt Engineering Lead and primary deliverer of all AI prompts, Samin was responsible for:
+
+- ✅ Designing and optimizing all AI prompts for the platform
+- ✅ Integrating Gemini AI for crop disease detection
+- ✅ Developing the conversational AI chatbot (AgriBot)
+- ✅ Creating the RAG (Retrieval-Augmented Generation) system for agricultural knowledge
+- ✅ Optimizing AI responses for Bengali language support
+- ✅ Building the complete frontend and backend architecture
+- ✅ Database design and API integration
+- ✅ Full-stack development and deployment
+
+### Institution Partners
+- **Mymensingh Engineering College** - Technical Development
+- **Gazipur Agricultural University** - Agricultural Domain Expertise
+
+---
+
+## 3. Technology Stack
 
 ### Frontend
 
@@ -1063,4 +1110,197 @@ For support or questions, contact the development team.
 
 ---
 
-**© 2024 AgriBrain AI - Empowering Bangladeshi Farmers with AI**
+## 16. Future Vision & Goals
+
+### Short-Term Goals (6 Months)
+
+#### 🎯 Enhanced AI Accuracy
+- Improve disease detection to 95%+ accuracy
+- Add more crop varieties support (100+ crops)
+- Real-time pest identification with geo-tracking
+
+#### 📱 Mobile App Launch
+- Native Android app development
+- iOS app development
+- Improved offline capabilities with local AI models
+
+#### 🎤 Voice-First Experience
+- Full Bengali voice navigation
+- Voice-based disease reporting
+- Audio farming guides and tutorials
+
+### Medium-Term Goals (1-2 Years)
+
+#### 🌐 IoT Integration
+- Soil sensor connectivity
+- Automated irrigation systems
+- Weather station integration
+- Smart greenhouse monitoring
+
+#### 🛒 Marketplace Platform
+- Direct farmer-to-consumer sales
+- Agricultural input marketplace
+- Equipment rental system
+- Logistics integration
+
+#### 💰 Financial Services
+- Crop insurance integration
+- Microfinance connections
+- Payment processing
+- Loan eligibility checker
+
+#### 🚁 Drone Technology
+- Aerial crop monitoring
+- Precision spraying
+- Field mapping
+- Damage assessment
+
+### Long-Term Vision (3-5 Years)
+
+#### 🤖 AI-Powered Precision Agriculture
+- Predictive analytics for crop yields
+- Automated farm management
+- Climate-smart recommendations
+- Carbon footprint tracking
+
+#### 🌏 Regional Expansion
+- South Asian countries coverage
+- Multi-language support (Hindi, Urdu, Tamil, Nepali)
+- Regional crop databases
+- Cross-border market data
+
+#### 🔬 Research Integration
+- University partnerships
+- Research data contribution
+- Farmer experiments platform
+- Agricultural innovation hub
+
+#### ⛓️ Blockchain Integration
+- Supply chain transparency
+- Quality certification
+- Fair trade verification
+- Smart contracts for transactions
+
+### Impact Goals
+
+| Metric | Target (5 Years) |
+|--------|------------------|
+| Active Users | 10 Million+ |
+| Farmers Helped | 5 Million+ |
+| Districts Covered | All 64 in Bangladesh |
+| Crop Diseases Detectable | 200+ |
+| Languages Supported | 10+ |
+| Partner Organizations | 100+ |
+
+### Technology Roadmap
+
+```
+2024 Q4: PWA Optimization + Voice Enhancement
+    ↓
+2025 Q1: Android Native App Launch
+    ↓
+2025 Q2: IoT Sensor Integration
+    ↓
+2025 Q3: Marketplace Beta
+    ↓
+2025 Q4: Financial Services Integration
+    ↓
+2026 Q1: Drone Technology Pilot
+    ↓
+2026 Q2: Regional Expansion (India, Nepal)
+    ↓
+2026 Q3: Blockchain Implementation
+    ↓
+2026 Q4: Full Precision Agriculture Suite
+```
+
+---
+
+## 17. References & Data Sources
+
+### Agricultural Data Sources
+- Bangladesh Agricultural Research Institute (BARI)
+- Bangladesh Rice Research Institute (BRRI)
+- Department of Agricultural Extension (DAE)
+- Bangladesh Meteorological Department (BMD)
+- Food and Agriculture Organization (FAO)
+
+### Technology References
+- [React Documentation](https://react.dev)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Google Gemini AI](https://ai.google.dev)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Mapbox GL JS](https://docs.mapbox.com)
+
+### Agricultural Books Referenced
+- "বাংলাদেশের কৃষি" - Bangladesh Agricultural Research Council
+- "ধান চাষ পদ্ধতি" - BRRI Publication
+- "সমন্বিত বালাই ব্যবস্থাপনা" - DAE Manual
+- "জৈব কৃষি নির্দেশিকা" - BARC
+- "Modern Agriculture Practices" - FAO Publications
+
+### Research Papers
+- AI in Agriculture: A Comprehensive Review
+- Machine Learning for Crop Disease Detection
+- IoT Applications in Smart Farming
+- Precision Agriculture in Developing Countries
+
+---
+
+## 18. Contributing
+
+### Development Setup
+
+```bash
+# Clone repository
+git clone <repository-url>
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+### Code Standards
+
+- TypeScript strict mode
+- ESLint configuration
+- Prettier formatting
+- Tailwind CSS utility classes
+- Component-based architecture
+
+### Git Workflow
+
+1. Create feature branch
+2. Make changes
+3. Test locally
+4. Push to GitHub
+5. Auto-deploy via Lovable
+
+---
+
+## Appendix
+
+### A. Useful Links
+
+- [Lovable Documentation](https://docs.lovable.dev/)
+- [Supabase Documentation](https://supabase.com/docs)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Shadcn/UI](https://ui.shadcn.com/)
+
+### B. Contact
+
+**Team Lead:** Samin Yasar  
+**Institution:** Mymensingh Engineering College  
+**Project:** AgriShokti (কৃষিশক্তি)
+
+For support or questions, contact **TEAM_NEWBIES**.
+
+---
+
+**© 2024 AgriShokti - TEAM_NEWBIES**
+
+*Developed by Samin Yasar & Team | Mymensingh Engineering College*
+
+*Empowering Bangladeshi Farmers with AI-Powered Agricultural Intelligence*
