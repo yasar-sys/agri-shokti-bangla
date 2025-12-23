@@ -70,9 +70,19 @@ class ErrorBoundary extends Component<
             <h1 className="text-2xl font-bold text-destructive mb-4">
               কিছু সমস্যা হয়েছে
             </h1>
-            <p className="text-muted-foreground mb-6">
+            <p className="text-muted-foreground mb-4">
               অ্যাপে একটি ত্রুটি ঘটেছে। অনুগ্রহ করে পৃষ্ঠাটি রিফ্রেশ করুন।
             </p>
+
+            {import.meta.env.DEV && this.state.error?.message && (
+              <div className="mb-4 rounded-lg border border-border bg-card p-3 text-left">
+                <p className="text-xs font-medium text-foreground mb-1">Debug error</p>
+                <pre className="text-[11px] leading-snug text-muted-foreground whitespace-pre-wrap break-words">
+                  {this.state.error.message}
+                </pre>
+              </div>
+            )}
+
             <button
               onClick={() => window.location.reload()}
               className="px-4 py-2 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90"
