@@ -1,26 +1,33 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { 
   ChevronLeft, 
   Layers, 
   Plus, 
   RefreshCw, 
-  MapPin, 
-  Satellite,
-  Mountain,
-  Map as MapIcon,
+  MapPin,
   Loader2,
-  Navigation,
-  Target
+  Navigation
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { MapMarker } from "@/components/ui/MapMarker";
 import { toast } from "sonner";
 import { useLocation } from "@/hooks/useLocation";
-import { supabase } from "@/integrations/supabase/client";
-import villageBg from "@/assets/bangladesh-village-bg.jpg";
-import mapboxgl from 'mapbox-gl';
-import 'mapbox-gl/dist/mapbox-gl.css';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
+import L from 'leaflet';
+import 'leaflet/dist/leaflet.css';
+
+// Fix for default marker icons in Leaflet with Vite
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+// Fix Leaflet default icon issue
+delete (L.Icon.Default.prototype as any)._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
 
 interface Field {
   id: string;
@@ -38,213 +45,129 @@ const fieldsData: Field[] = [
   { id: "4", name: "পূর্ব জমি", status: "healthy", healthScore: 88, lastScan: "৫ ঘণ্টা আগে", position: { lat: 23.8150, lng: 90.4250 } },
 ];
 
-const mapStyles = [
-  { id: 'streets', name: 'রাস্তা', icon: MapIcon, style: 'mapbox://styles/mapbox/streets-v12' },
-  { id: 'satellite', name: 'স্যাটেলাইট', icon: Satellite, style: 'mapbox://styles/mapbox/satellite-streets-v12' },
-  { id: 'outdoors', name: 'ভূপ্রকৃতি', icon: Mountain, style: 'mapbox://styles/mapbox/outdoors-v12' },
+const tileLayerOptions = [
+  { 
+    id: 'streets', 
+    name: 'রাস্তা', 
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+  },
+  { 
+    id: 'satellite', 
+    name: 'স্যাটেলাইট', 
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: '&copy; Esri'
+  },
+  { 
+    id: 'topo', 
+    name: 'টপোগ্রাফি', 
+    url: 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenTopoMap'
+  },
 ];
+
+// Custom marker icons based on status
+const createCustomIcon = (status: "healthy" | "warning" | "disease") => {
+  const color = status === "healthy" ? "#10b981" : status === "warning" ? "#f59e0b" : "#ef4444";
+  
+  return L.divIcon({
+    className: 'custom-marker',
+    html: `
+      <div style="
+        width: 36px;
+        height: 36px;
+        background: ${color};
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        border: 3px solid white;
+      ">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+          <path d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+          <path d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+        </svg>
+      </div>
+    `,
+    iconSize: [36, 36],
+    iconAnchor: [18, 36],
+    popupAnchor: [0, -36],
+  });
+};
+
+// Component to handle map center updates
+function MapController({ center }: { center: [number, number] }) {
+  const map = useMap();
+  
+  useEffect(() => {
+    map.flyTo(center, 14, { duration: 1 });
+  }, [center, map]);
+  
+  return null;
+}
+
+// Component to handle locate control
+function LocateButton({ onClick }: { onClick: () => void }) {
+  return (
+    <Button 
+      size="icon"
+      className="w-12 h-12 rounded-full glass-strong border border-border/30 shadow-elevated"
+      onClick={onClick}
+    >
+      <Navigation className="w-5 h-5" />
+    </Button>
+  );
+}
 
 export default function MapPage() {
   const [selectedField, setSelectedField] = useState<Field | null>(null);
-  const [mapboxToken, setMapboxToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [mapReady, setMapReady] = useState(false);
-  const [mapError, setMapError] = useState<string | null>(null);
-  const [currentStyle, setCurrentStyle] = useState(0);
+  const [currentTileLayer, setCurrentTileLayer] = useState(0);
   const [showStylePicker, setShowStylePicker] = useState(false);
-  const mapContainer = useRef<HTMLDivElement>(null);
-  const map = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
+  const [mapCenter, setMapCenter] = useState<[number, number]>([23.8103, 90.4125]);
   const location = useLocation();
 
-  // Fetch Mapbox token (do not block late responses)
+  // Update center when location is available
   useEffect(() => {
-    let isMounted = true;
-    const timeoutMs = 2000;
-
-    const timeoutId = window.setTimeout(() => {
-      if (!isMounted) return;
-      console.log("Token fetch is slow, showing fallback while waiting...");
-      setIsLoading(false);
-      setMapError("ম্যাপ লোড হচ্ছে… (ধীর নেটওয়ার্ক) ");
-    }, timeoutMs);
-
-    const fetchToken = async () => {
-      try {
-        console.log("Fetching Mapbox token...");
-        const { data, error } = await supabase.functions.invoke("get-mapbox-token");
-
-        if (!isMounted) return;
-        window.clearTimeout(timeoutId);
-
-        if (error) {
-          console.error("Edge function error:", error);
-          setMapError("টোকেন সার্ভিস ত্রুটি: " + error.message);
-          setIsLoading(false);
-          return;
-        }
-
-        if (data?.token) {
-          console.log("Mapbox token received successfully");
-          setMapError(null);
-          setMapboxToken(data.token);
-          setIsLoading(false);
-          return;
-        }
-
-        const message = data?.error || "টোকেন পাওয়া যায়নি";
-        console.error("Token response invalid:", data);
-        setMapError(message);
-        setIsLoading(false);
-      } catch (error: any) {
-        if (!isMounted) return;
-        window.clearTimeout(timeoutId);
-        console.error("Failed to get Mapbox token:", error);
-        setMapError("ম্যাপ লোড ব্যর্থ: " + (error?.message || "Unknown error"));
-        setIsLoading(false);
-      }
-    };
-
-    fetchToken();
-
-    return () => {
-      isMounted = false;
-      window.clearTimeout(timeoutId);
-    };
-  }, []);
-
-  // Initialize map
-  useEffect(() => {
-    if (!mapContainer.current || !mapboxToken) return;
-
-    setMapReady(false);
-
-    // Clean any previous instances
-    markersRef.current.forEach((m) => m.remove());
-    markersRef.current = [];
-    map.current?.remove();
-    map.current = null;
-
-    try {
-      mapboxgl.accessToken = mapboxToken;
-
-      // Use location data or default to Dhaka area
-      const centerLat = location.latitude || 23.8103;
-      const centerLng = location.longitude || 90.4125;
-
-      const nextMap = new mapboxgl.Map({
-        container: mapContainer.current,
-        style: mapStyles[currentStyle].style,
-        center: [centerLng, centerLat],
-        zoom: 14,
-        pitch: 45,
-      });
-
-      map.current = nextMap;
-
-      nextMap.addControl(
-        new mapboxgl.NavigationControl({ visualizePitch: true }),
-        "top-right"
-      );
-
-      nextMap.addControl(
-        new mapboxgl.GeolocateControl({
-          positionOptions: { enableHighAccuracy: true },
-          trackUserLocation: true,
-          showUserHeading: true,
-        }),
-        "top-right"
-      );
-
-      const onLoad = () => {
-        setMapReady(true);
-
-        // Add markers for fields after style loads
-        fieldsData.forEach((field) => {
-          const el = document.createElement("div");
-          el.className = "field-marker";
-          el.innerHTML = `
-            <div class="w-10 h-10 rounded-full flex items-center justify-center shadow-lg cursor-pointer transform hover:scale-110 transition-transform ${
-              field.status === "healthy"
-                ? "bg-emerald-500"
-                : field.status === "warning"
-                  ? "bg-amber-500"
-                  : "bg-red-500"
-            }">
-              <svg class="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-              </svg>
-            </div>
-          `;
-
-          el.addEventListener("click", () => setSelectedField(field));
-
-          const marker = new mapboxgl.Marker(el)
-            .setLngLat([field.position.lng, field.position.lat])
-            .addTo(nextMap);
-
-          markersRef.current.push(marker);
-        });
-      };
-
-      const onError = (e: any) => {
-        console.error("Mapbox error event:", e);
-        setMapReady(false);
-        setMapboxToken(null);
-        setMapError("ম্যাপ লোড করা যাচ্ছে না (Mapbox error)");
-        setIsLoading(false);
-      };
-
-      nextMap.once("load", onLoad);
-      nextMap.on("error", onError);
-
-      return () => {
-        nextMap.off("error", onError);
-        markersRef.current.forEach((m) => m.remove());
-        markersRef.current = [];
-        nextMap.remove();
-      };
-    } catch (error) {
-      console.error("Map initialization error:", error);
-      setMapReady(false);
-      setMapboxToken(null);
-      setMapError("ম্যাপ ইনিশিয়ালাইজ করতে সমস্যা হয়েছে");
-      toast.error("ম্যাপ ইনিশিয়ালাইজ করতে সমস্যা হয়েছে");
-      setIsLoading(false);
-    }
-  }, [mapboxToken, currentStyle]);
-
-  // Update map center when location changes
-  useEffect(() => {
-    if (map.current && location.latitude && location.longitude && !location.loading) {
-      map.current.flyTo({
-        center: [location.longitude, location.latitude],
-        zoom: 14,
-        duration: 1000
-      });
+    if (location.latitude && location.longitude && !location.loading) {
+      setMapCenter([location.latitude, location.longitude]);
     }
   }, [location.latitude, location.longitude, location.loading]);
 
-  // Update map style
+  // Simulate loading
   useEffect(() => {
-    if (map.current) {
-      map.current.setStyle(mapStyles[currentStyle].style);
-    }
-  }, [currentStyle]);
+    const timer = setTimeout(() => setIsLoading(false), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleCenterOnLocation = () => {
-    if (map.current && location.latitude && location.longitude) {
-      map.current.flyTo({
-        center: [location.longitude, location.latitude],
-        zoom: 15,
-        pitch: 45
-      });
+    if (location.latitude && location.longitude) {
+      setMapCenter([location.latitude, location.longitude]);
+      toast.success("আপনার অবস্থানে ফোকাস করা হয়েছে");
+    } else {
+      toast.error("অবস্থান পাওয়া যায়নি");
     }
   };
 
   const handleRefresh = () => {
     toast.success("ম্যাপ রিফ্রেশ হয়েছে");
+  };
+
+  const getStatusText = (status: "healthy" | "warning" | "disease") => {
+    switch(status) {
+      case "healthy": return "সুস্থ";
+      case "warning": return "সতর্কতা";
+      case "disease": return "রোগাক্রান্ত";
+    }
+  };
+
+  const getStatusColor = (status: "healthy" | "warning" | "disease") => {
+    switch(status) {
+      case "healthy": return "bg-emerald-500/20 text-emerald-400";
+      case "warning": return "bg-amber-500/20 text-amber-400";
+      case "disease": return "bg-red-500/20 text-red-400";
+    }
   };
 
   return (
@@ -257,81 +180,44 @@ export default function MapPage() {
             <p className="text-muted-foreground">ম্যাপ লোড হচ্ছে...</p>
           </div>
         </div>
-      ) : mapboxToken ? (
-        <div className="absolute inset-0">
-          <div ref={mapContainer} className="absolute inset-0" />
-          {!mapReady && (
-            <div className="absolute inset-0 flex items-center justify-center bg-background/60 backdrop-blur-sm">
-              <div className="text-center">
-                <Loader2 className="w-10 h-10 animate-spin text-primary mx-auto mb-3" />
-                <p className="text-muted-foreground">ম্যাপ রেন্ডার হচ্ছে...</p>
-              </div>
-            </div>
-          )}
-        </div>
       ) : (
-        <div className="absolute inset-0 bg-gradient-to-br from-emerald-900/40 via-background to-teal-900/30">
-          {/* Village background with overlay */}
-          <div 
-            className="absolute inset-0 opacity-30"
-            style={{
-              backgroundImage: `url(${villageBg})`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          />
-          
-          {/* Grid pattern for map feel */}
-          <div 
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `
-                linear-gradient(rgba(16, 185, 129, 0.15) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(16, 185, 129, 0.15) 1px, transparent 1px)
-              `,
-              backgroundSize: "50px 50px",
-            }}
-          />
-          
-          {/* Error message if any */}
-          {mapError && (
-            <div className="absolute top-24 left-1/2 transform -translate-x-1/2 z-10">
-              <div className="glass-strong rounded-xl px-4 py-2 text-center border border-amber-500/30 bg-amber-500/10">
-                <p className="text-amber-400 text-xs">{mapError}</p>
-              </div>
-            </div>
-          )}
-          
-          {/* Fallback markers with better visibility */}
-          {fieldsData.map((field, idx) => (
-            <div
-              key={field.id}
-              className="absolute z-10"
-              style={{ 
-                top: `${30 + idx * 12}%`, 
-                left: `${20 + idx * 15}%` 
-              }}
-            >
-              <MapMarker
-                status={field.status}
-                fieldName={field.name}
-                healthScore={field.healthScore}
-                lastScan={field.lastScan}
-                onClick={() => setSelectedField(field)}
-              />
-            </div>
-          ))}
-          
-          {/* Demo label */}
-          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center pointer-events-none">
-            <MapPin className="w-16 h-16 text-primary/30 mx-auto mb-2" />
-            <p className="text-muted-foreground/50 text-sm">ডেমো মোড</p>
-          </div>
+        <div className="absolute inset-0">
+          <MapContainer 
+            center={mapCenter} 
+            zoom={14} 
+            style={{ height: '100%', width: '100%' }}
+            zoomControl={false}
+          >
+            <TileLayer
+              attribution={tileLayerOptions[currentTileLayer].attribution}
+              url={tileLayerOptions[currentTileLayer].url}
+            />
+            <MapController center={mapCenter} />
+            
+            {fieldsData.map((field) => (
+              <Marker 
+                key={field.id}
+                position={[field.position.lat, field.position.lng]}
+                icon={createCustomIcon(field.status)}
+                eventHandlers={{
+                  click: () => setSelectedField(field)
+                }}
+              >
+                <Popup>
+                  <div className="text-center p-1">
+                    <h3 className="font-bold text-sm">{field.name}</h3>
+                    <p className="text-xs text-gray-600">স্বাস্থ্য: {field.healthScore}%</p>
+                    <p className="text-xs text-gray-500">{field.lastScan}</p>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+          </MapContainer>
         </div>
       )}
 
       {/* Header */}
-      <header className="absolute top-0 left-0 right-0 z-20 px-4 pt-6 pb-4">
+      <header className="absolute top-0 left-0 right-0 z-[1000] px-4 pt-6 pb-4">
         <div className="flex items-center justify-between">
           <Link to="/home">
             <Button variant="ghost" size="icon" className="glass-strong border border-border/30 shadow-elevated">
@@ -342,7 +228,7 @@ export default function MapPage() {
             <h1 className="text-lg font-bold text-foreground">জমির মানচিত্র</h1>
             <div className="flex items-center gap-2 text-xs text-muted-foreground">
               <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span>{location.loading ? 'খুঁজছি...' : location.city}</span>
+              <span>{location.loading ? 'খুঁজছি...' : location.city || 'ঢাকা'}</span>
             </div>
           </div>
           <div className="flex gap-2">
@@ -357,19 +243,19 @@ export default function MapPage() {
               </Button>
               {showStylePicker && (
                 <div className="absolute right-0 top-12 glass-strong rounded-xl border border-border/30 p-2 shadow-elevated min-w-[120px]">
-                  {mapStyles.map((style, idx) => (
+                  {tileLayerOptions.map((layer, idx) => (
                     <button
-                      key={style.id}
+                      key={layer.id}
                       onClick={() => {
-                        setCurrentStyle(idx);
+                        setCurrentTileLayer(idx);
                         setShowStylePicker(false);
                       }}
                       className={`w-full flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
-                        currentStyle === idx ? 'bg-primary/20 text-primary' : 'hover:bg-muted/50'
+                        currentTileLayer === idx ? 'bg-primary/20 text-primary' : 'hover:bg-muted/50'
                       }`}
                     >
-                      <style.icon className="w-4 h-4" />
-                      <span>{style.name}</span>
+                      <MapPin className="w-4 h-4" />
+                      <span>{layer.name}</span>
                     </button>
                   ))}
                 </div>
@@ -388,14 +274,8 @@ export default function MapPage() {
       </header>
 
       {/* Bottom Controls */}
-      <div className="absolute bottom-32 right-4 z-20 flex flex-col gap-2">
-        <Button 
-          size="icon"
-          className="w-12 h-12 rounded-full glass-strong border border-border/30 shadow-elevated"
-          onClick={handleCenterOnLocation}
-        >
-          <Navigation className="w-5 h-5" />
-        </Button>
+      <div className="absolute bottom-32 right-4 z-[1000] flex flex-col gap-2">
+        <LocateButton onClick={handleCenterOnLocation} />
         <Button 
           size="icon"
           className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary text-primary-foreground shadow-glow"
@@ -405,7 +285,7 @@ export default function MapPage() {
       </div>
 
       {/* Legend */}
-      <div className="absolute bottom-24 left-4 right-20 z-20">
+      <div className="absolute bottom-24 left-4 right-20 z-[1000]">
         <div className="glass-strong rounded-2xl p-4 border border-border/30 shadow-elevated">
           <h3 className="font-medium text-foreground mb-3">জমির স্বাস্থ্য</h3>
           <div className="flex justify-between">
@@ -427,7 +307,7 @@ export default function MapPage() {
 
       {/* Selected Field Detail */}
       {selectedField && (
-        <div className="fixed inset-0 z-30 flex items-end" onClick={() => setSelectedField(null)}>
+        <div className="fixed inset-0 z-[1001] flex items-end" onClick={() => setSelectedField(null)}>
           <div className="absolute inset-0 bg-background/50 backdrop-blur-sm" />
           <div 
             className="relative w-full p-6 rounded-t-3xl glass-strong border-t border-border/30 animate-slide-up"
@@ -440,41 +320,41 @@ export default function MapPage() {
                 <h2 className="text-xl font-bold text-foreground">{selectedField.name}</h2>
                 <p className="text-sm text-muted-foreground">শেষ স্ক্যান: {selectedField.lastScan}</p>
               </div>
-              <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                selectedField.status === "healthy" 
-                  ? "bg-emerald-500/20 text-emerald-400" 
-                  : selectedField.status === "warning"
-                  ? "bg-amber-500/20 text-amber-400"
-                  : "bg-red-500/20 text-red-400"
-              }`}>
-                {selectedField.status === "healthy" ? "সুস্থ" : selectedField.status === "warning" ? "সতর্কতা" : "রোগাক্রান্ত"}
+              <div className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(selectedField.status)}`}>
+                {getStatusText(selectedField.status)}
               </div>
             </div>
 
             <div className="mb-4">
-              <p className="text-sm text-muted-foreground mb-2">স্বাস্থ্য স্কোর</p>
-              <div className="h-3 bg-muted rounded-full overflow-hidden">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm text-muted-foreground">স্বাস্থ্য স্কোর</span>
+                <span className="text-lg font-bold text-foreground">{selectedField.healthScore}%</span>
+              </div>
+              <div className="h-3 rounded-full bg-muted overflow-hidden">
                 <div 
-                  className={`h-full rounded-full transition-all ${
-                    selectedField.healthScore >= 80 
-                      ? "bg-emerald-500" 
-                      : selectedField.healthScore >= 50
-                      ? "bg-amber-500"
-                      : "bg-red-500"
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    selectedField.status === "healthy" 
+                      ? "bg-gradient-to-r from-emerald-500 to-emerald-400" 
+                      : selectedField.status === "warning"
+                      ? "bg-gradient-to-r from-amber-500 to-amber-400"
+                      : "bg-gradient-to-r from-red-500 to-red-400"
                   }`}
                   style={{ width: `${selectedField.healthScore}%` }}
                 />
               </div>
-              <p className="text-right text-sm text-foreground mt-1">{selectedField.healthScore}%</p>
             </div>
 
-            <div className="flex gap-3">
-              <Button className="flex-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white">
-                বিস্তারিত দেখুন
-              </Button>
-              <Button variant="outline" className="flex-1 border-border/50">
-                স্ক্যান করুন
-              </Button>
+            <div className="grid grid-cols-2 gap-3">
+              <Link to="/camera">
+                <Button className="w-full rounded-xl bg-gradient-to-r from-primary to-primary/80">
+                  নতুন স্ক্যান
+                </Button>
+              </Link>
+              <Link to="/diagnosis">
+                <Button variant="outline" className="w-full rounded-xl border-border/50">
+                  বিস্তারিত দেখুন
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
