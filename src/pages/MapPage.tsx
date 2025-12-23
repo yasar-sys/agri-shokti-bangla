@@ -12,22 +12,12 @@ import {
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useLocation } from "@/hooks/useLocation";
-import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
-import L from 'leaflet';
-import 'leaflet/dist/leaflet.css';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
+import L from "leaflet";
+import "leaflet/dist/leaflet.css";
 
-// Fix for default marker icons in Leaflet with Vite
-import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
-import markerIcon from 'leaflet/dist/images/marker-icon.png';
-import markerShadow from 'leaflet/dist/images/marker-shadow.png';
-
-// Fix Leaflet default icon issue
-delete (L.Icon.Default.prototype as any)._getIconUrl;
-L.Icon.Default.mergeOptions({
-  iconRetinaUrl: markerIcon2x,
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
-});
+// Note: We use custom divIcon markers everywhere, so we don't rely on Leaflet's default PNG assets
+// (this avoids bundler issues with marker-icon.png in some Vite builds).
 
 interface Field {
   id: string;
