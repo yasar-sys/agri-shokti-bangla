@@ -14,6 +14,45 @@ export type Database = {
   }
   public: {
     Tables: {
+      agriculture_contacts: {
+        Row: {
+          address: string | null
+          created_at: string
+          district: string
+          division: string
+          email: string | null
+          id: string
+          office_name: string
+          officer_name: string | null
+          phone: string
+          upazila: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          district: string
+          division: string
+          email?: string | null
+          id?: string
+          office_name: string
+          officer_name?: string | null
+          phone: string
+          upazila: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          district?: string
+          division?: string
+          email?: string | null
+          id?: string
+          office_name?: string
+          officer_name?: string | null
+          phone?: string
+          upazila?: string
+        }
+        Relationships: []
+      }
       chat_messages: {
         Row: {
           content: string
@@ -590,6 +629,51 @@ export type Database = {
         }
         Relationships: []
       }
+      user_calendar_events: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_date: string
+          event_time: string
+          event_type: string
+          id: string
+          location: string | null
+          reminder: boolean | null
+          title: string
+          title_bn: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_date: string
+          event_time?: string
+          event_type?: string
+          id?: string
+          location?: string | null
+          reminder?: boolean | null
+          title: string
+          title_bn: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_date?: string
+          event_time?: string
+          event_type?: string
+          id?: string
+          location?: string | null
+          reminder?: boolean | null
+          title?: string
+          title_bn?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_calendars: {
         Row: {
           created_at: string | null
@@ -649,6 +733,42 @@ export type Database = {
           land_type?: string | null
           location?: string | null
           registry_number?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_settings: {
+        Row: {
+          created_at: string
+          id: string
+          language: string
+          phone_number: string | null
+          push_notifications: boolean | null
+          sms_notifications: boolean | null
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          language?: string
+          phone_number?: string | null
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          language?: string
+          phone_number?: string | null
+          push_notifications?: boolean | null
+          sms_notifications?: boolean | null
+          theme?: string
+          updated_at?: string
           user_id?: string
         }
         Relationships: []
