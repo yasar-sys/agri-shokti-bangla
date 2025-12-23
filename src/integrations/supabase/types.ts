@@ -92,6 +92,39 @@ export type Database = {
         }
         Relationships: []
       }
+      farming_tips: {
+        Row: {
+          category: string | null
+          created_at: string
+          crop_type: string | null
+          display_date: string | null
+          id: string
+          is_active: boolean | null
+          season: string | null
+          tip_text: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          crop_type?: string | null
+          display_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          season?: string | null
+          tip_text: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          crop_type?: string | null
+          display_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          season?: string | null
+          tip_text?: string
+        }
+        Relationships: []
+      }
       forum_answers: {
         Row: {
           author_name: string
@@ -190,6 +223,48 @@ export type Database = {
         }
         Relationships: []
       }
+      government_schemes: {
+        Row: {
+          application_link: string | null
+          benefits: string | null
+          category: string | null
+          contact_phone: string | null
+          created_at: string
+          deadline: string | null
+          description: string
+          eligibility: string | null
+          id: string
+          is_active: boolean | null
+          title: string
+        }
+        Insert: {
+          application_link?: string | null
+          benefits?: string | null
+          category?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          deadline?: string | null
+          description: string
+          eligibility?: string | null
+          id?: string
+          is_active?: boolean | null
+          title: string
+        }
+        Update: {
+          application_link?: string | null
+          benefits?: string | null
+          category?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string
+          eligibility?: string | null
+          id?: string
+          is_active?: boolean | null
+          title?: string
+        }
+        Relationships: []
+      }
       knowledge_base: {
         Row: {
           category: string
@@ -279,6 +354,121 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      market_prices: {
+        Row: {
+          confidence: number | null
+          created_at: string
+          crop_emoji: string | null
+          crop_name: string
+          forecast: string | null
+          forecast_price: number | null
+          id: string
+          market_location: string | null
+          today_price: number
+          unit: string | null
+          updated_at: string
+          weekly_avg: number | null
+          yesterday_price: number
+        }
+        Insert: {
+          confidence?: number | null
+          created_at?: string
+          crop_emoji?: string | null
+          crop_name: string
+          forecast?: string | null
+          forecast_price?: number | null
+          id?: string
+          market_location?: string | null
+          today_price: number
+          unit?: string | null
+          updated_at?: string
+          weekly_avg?: number | null
+          yesterday_price: number
+        }
+        Update: {
+          confidence?: number | null
+          created_at?: string
+          crop_emoji?: string | null
+          crop_name?: string
+          forecast?: string | null
+          forecast_price?: number | null
+          id?: string
+          market_location?: string | null
+          today_price?: number
+          unit?: string | null
+          updated_at?: string
+          weekly_avg?: number | null
+          yesterday_price?: number
+        }
+        Relationships: []
+      }
+      post_comments: {
+        Row: {
+          author_name: string
+          content: string
+          created_at: string
+          id: string
+          is_expert_reply: boolean | null
+          post_id: string
+          user_id: string | null
+        }
+        Insert: {
+          author_name: string
+          content: string
+          created_at?: string
+          id?: string
+          is_expert_reply?: boolean | null
+          post_id: string
+          user_id?: string | null
+        }
+        Update: {
+          author_name?: string
+          content?: string
+          created_at?: string
+          id?: string
+          is_expert_reply?: boolean | null
+          post_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_comments_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      post_likes: {
+        Row: {
+          created_at: string
+          id: string
+          post_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          post_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          post_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "post_likes_post_id_fkey"
+            columns: ["post_id"]
+            isOneToOne: false
+            referencedRelation: "community_posts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -370,6 +560,36 @@ export type Database = {
         }
         Relationships: []
       }
+      user_achievements: {
+        Row: {
+          achievement_name: string
+          achievement_type: string
+          description: string | null
+          earned_at: string
+          id: string
+          user_id: string
+          xp_earned: number | null
+        }
+        Insert: {
+          achievement_name: string
+          achievement_type: string
+          description?: string | null
+          earned_at?: string
+          id?: string
+          user_id: string
+          xp_earned?: number | null
+        }
+        Update: {
+          achievement_name?: string
+          achievement_type?: string
+          description?: string | null
+          earned_at?: string
+          id?: string
+          user_id?: string
+          xp_earned?: number | null
+        }
+        Relationships: []
+      }
       user_calendars: {
         Row: {
           created_at: string | null
@@ -430,6 +650,48 @@ export type Database = {
           location?: string | null
           registry_number?: string | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      weather_alerts: {
+        Row: {
+          advice: string | null
+          alert_type: string
+          created_at: string
+          id: string
+          is_active: boolean | null
+          message: string
+          region: string | null
+          severity: string | null
+          title: string
+          valid_from: string | null
+          valid_until: string | null
+        }
+        Insert: {
+          advice?: string | null
+          alert_type: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          message: string
+          region?: string | null
+          severity?: string | null
+          title: string
+          valid_from?: string | null
+          valid_until?: string | null
+        }
+        Update: {
+          advice?: string | null
+          alert_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          message?: string
+          region?: string | null
+          severity?: string | null
+          title?: string
+          valid_from?: string | null
+          valid_until?: string | null
         }
         Relationships: []
       }
