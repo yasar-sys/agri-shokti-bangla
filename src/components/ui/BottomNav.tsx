@@ -1,19 +1,26 @@
 import { cn } from "@/lib/utils";
-import { Scan, MessageSquare, HeadphonesIcon } from "lucide-react";
+import { Scan, MessageSquare, Home, Mic } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
 const navItems = [
+  { icon: Home, label: "হোম", path: "/home" },
   { icon: Scan, label: "স্ক্যানার", path: "/camera" },
   { icon: MessageSquare, label: "AI চ্যাট", path: "/chat" },
-  { icon: HeadphonesIcon, label: "সাপোর্ট", path: "/support" },
+  { icon: Mic, label: "সাপোর্ট", path: "/support" },
 ];
 
 export function BottomNav() {
   const location = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-card/95 backdrop-blur-lg border-t border-border shadow-lg shadow-background/50">
-      <div className="flex items-center justify-around py-2 px-4">
+    <nav className="fixed bottom-0 left-0 right-0 z-50">
+      {/* Glass background */}
+      <div className="absolute inset-0 bg-card/80 backdrop-blur-xl border-t border-border/30" />
+      
+      {/* Gradient line */}
+      <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-border/50 to-transparent" />
+      
+      <div className="relative flex items-center justify-around py-2 px-2 safe-area-bottom">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
           const Icon = item.icon;
@@ -23,22 +30,32 @@ export function BottomNav() {
               key={item.path}
               to={item.path}
               className={cn(
-                "flex flex-col items-center gap-1 py-2 px-6 rounded-2xl transition-all duration-300",
+                "relative flex flex-col items-center gap-1 py-2 px-5 rounded-2xl transition-all duration-300",
                 isActive
-                  ? "bg-secondary/20 text-secondary scale-105"
-                  : "text-muted-foreground hover:text-foreground hover:bg-muted/30"
+                  ? "text-secondary"
+                  : "text-muted-foreground hover:text-foreground"
               )}
             >
+              {/* Active background */}
+              {isActive && (
+                <div className="absolute inset-0 bg-secondary/10 rounded-2xl border border-secondary/20" />
+              )}
+              
               <div className={cn(
-                "p-2 rounded-xl transition-all",
-                isActive && "bg-secondary text-secondary-foreground shadow-lg shadow-secondary/30"
+                "relative p-2.5 rounded-xl transition-all duration-300",
+                isActive 
+                  ? "bg-gradient-to-br from-secondary to-secondary/80 text-secondary-foreground shadow-lg shadow-secondary/30 scale-105" 
+                  : "hover:bg-muted/50"
               )}>
                 <Icon className="w-5 h-5" />
               </div>
+              
               <span className={cn(
-                "text-[11px] font-medium",
+                "relative text-[10px] font-medium transition-colors",
                 isActive && "text-secondary"
-              )}>{item.label}</span>
+              )}>
+                {item.label}
+              </span>
             </Link>
           );
         })}
