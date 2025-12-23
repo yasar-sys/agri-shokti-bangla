@@ -11,7 +11,9 @@ import {
   Trash2,
   X,
   Globe,
-  Languages
+  Languages,
+  LogIn,
+  Loader2
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import { useLocation } from "@/hooks/useLocation";
+import { useCalendarEvents } from "@/hooks/useCalendarEvents";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 interface FarmEvent {
@@ -80,11 +83,21 @@ const toBengaliNumeral = (num: number): string => {
 export default function CalendarPage() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(new Date());
-  const [events, setEvents] = useState<FarmEvent[]>([]);
+  const [localEvents, setLocalEvents] = useState<FarmEvent[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [language, setLanguage] = useState<"bn" | "en">("bn");
   const [currentTime, setCurrentTime] = useState(new Date());
-  const location = useLocation();
+  const geoLocation = useLocation();
+  
+  // Database calendar events hook
+  const { 
+    events: dbEvents, 
+    loading: eventsLoading, 
+    isLoggedIn,
+    addEvent: addDbEvent,
+    deleteEvent: deleteDbEvent,
+    getEventsForDate: getDbEventsForDate
+  } = useCalendarEvents();
   
   // New event form state
   const [newEvent, setNewEvent] = useState({
@@ -105,46 +118,21 @@ export default function CalendarPage() {
     return () => clearInterval(timer);
   }, []);
 
-  // Sample events
-  useEffect(() => {
-    const today = new Date();
-    const sampleEvents: FarmEvent[] = [
-      {
-        id: "1",
-        title: "Rice Planting",
-        titleBn: "ধান রোপণ",
-        date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 2),
-        time: "06:00",
-        location: "উত্তর জমি",
-        description: "আমন ধান রোপণ করতে হবে",
-        type: "planting",
-        reminder: true
-      },
-      {
-        id: "2",
-        title: "Apply Fertilizer",
-        titleBn: "সার প্রয়োগ",
-        date: new Date(today.getFullYear(), today.getMonth(), today.getDate() + 5),
-        time: "07:30",
-        location: "দক্ষিণ জমি",
-        description: "ইউরিয়া সার দিতে হবে",
-        type: "fertilizer",
-        reminder: true
-      },
-      {
-        id: "3",
-        title: "Irrigation",
-        titleBn: "সেচ দেওয়া",
-        date: new Date(today.getFullYear(), today.getMonth(), today.getDate()),
-        time: "16:00",
-        location: "পশ্চিম জমি",
-        description: "গমে সেচ দিতে হবে",
-        type: "irrigation",
-        reminder: false
-      },
-    ];
-    setEvents(sampleEvents);
-  }, []);
+  // Convert database events to local format
+  const events: FarmEvent[] = [
+    ...dbEvents.map(e => ({
+      id: e.id,
+      title: e.title,
+      titleBn: e.title_bn,
+      date: new Date(e.event_date),
+      time: e.event_time,
+      location: e.location,
+      description: e.description,
+      type: e.event_type as FarmEvent["type"],
+      reminder: e.reminder
+    })),
+    ...localEvents
+  ];
 
   const getDaysInMonth = (date: Date) => {
     const year = date.getFullYear();
@@ -190,19 +178,35 @@ export default function CalendarPage() {
            currentDate.getFullYear() === selectedDate.getFullYear();
   };
 
-  const handleAddEvent = () => {
+  const handleAddEvent = async () => {
     if (!selectedDate || !newEvent.title) {
       toast.error(language === "bn" ? "শিরোনাম দিন" : "Please add a title");
       return;
     }
 
-    const event: FarmEvent = {
-      id: Date.now().toString(),
-      ...newEvent,
-      date: selectedDate,
-    };
+    if (isLoggedIn) {
+      // Save to database for logged-in users
+      await addDbEvent({
+        title: newEvent.title,
+        title_bn: newEvent.titleBn || newEvent.title,
+        event_date: selectedDate.toISOString().split('T')[0],
+        event_time: newEvent.time,
+        event_type: newEvent.type,
+        location: newEvent.location || undefined,
+        description: newEvent.description || undefined,
+        reminder: newEvent.reminder
+      });
+    } else {
+      // Store locally for guests
+      const event: FarmEvent = {
+        id: Date.now().toString(),
+        ...newEvent,
+        date: selectedDate,
+      };
+      setLocalEvents(prev => [...prev, event]);
+      toast.success(language === "bn" ? "ইভেন্ট যোগ হয়েছে! (লগইন করলে সংরক্ষিত থাকবে)" : "Event added! (Login to save permanently)");
+    }
 
-    setEvents(prev => [...prev, event]);
     setNewEvent({
       title: "",
       titleBn: "",
@@ -213,12 +217,15 @@ export default function CalendarPage() {
       reminder: true
     });
     setIsDialogOpen(false);
-    toast.success(language === "bn" ? "ইভেন্ট যোগ হয়েছে!" : "Event added!");
   };
 
-  const handleDeleteEvent = (eventId: string) => {
-    setEvents(prev => prev.filter(e => e.id !== eventId));
-    toast.success(language === "bn" ? "ইভেন্ট মুছে ফেলা হয়েছে" : "Event deleted");
+  const handleDeleteEvent = async (eventId: string) => {
+    if (isLoggedIn) {
+      await deleteDbEvent(eventId);
+    } else {
+      setLocalEvents(prev => prev.filter(e => e.id !== eventId));
+      toast.success(language === "bn" ? "ইভেন্ট মুছে ফেলা হয়েছে" : "Event deleted");
+    }
   };
 
   const selectedDateEvents = selectedDate ? events.filter(event => {
@@ -277,7 +284,7 @@ export default function CalendarPage() {
             </h1>
             <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground mt-1">
               <Globe className="w-3 h-3" />
-              <span>{location.loading ? "..." : location.city}</span>
+              <span>{geoLocation.loading ? "..." : geoLocation.city}</span>
             </div>
           </div>
           <Button 
@@ -305,8 +312,8 @@ export default function CalendarPage() {
               <div className="flex items-center gap-2 text-xs text-muted-foreground">
                 <MapPin className="w-3 h-3" />
                 <span>
-                  {location.loading ? "..." : 
-                    `${location.latitude?.toFixed(2)}°N, ${location.longitude?.toFixed(2)}°E`}
+                  {geoLocation.loading ? "..." : 
+                    `${geoLocation.latitude?.toFixed(2)}°N, ${geoLocation.longitude?.toFixed(2)}°E`}
                 </span>
               </div>
               <p className="text-xs text-primary mt-1">

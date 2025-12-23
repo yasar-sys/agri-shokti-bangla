@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, ArrowLeft, Sparkles, Volume2 } from "lucide-react";
+import { Send, Bot, ArrowLeft, Sparkles, Volume2, VolumeX, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +7,8 @@ import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
 import { useBengaliVoiceInput } from "@/hooks/useBengaliVoiceInput";
 import { VoiceInputButton } from "@/components/ui/VoiceInputButton";
+import { useChatHistory } from "@/hooks/useChatHistory";
+import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 
 interface Message {
   id: string;
@@ -23,18 +25,36 @@ const suggestedQuestions = [
 ];
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "1",
-      content: "আসসালামু আলাইকুম! আমি agriশক্তি AI। আপনার কৃষি সমস্যায় সাহায্য করতে প্রস্তুত। কী জানতে চান? 🌾",
-      sender: "ai",
-      timestamp: "এইমাত্র",
-    },
-  ]);
+  const initialMessage: Message = {
+    id: "1",
+    content: "আসসালামু আলাইকুম! আমি agriশক্তি AI। আপনার কৃষি সমস্যায় সাহায্য করতে প্রস্তুত। কী জানতে চান? 🌾",
+    sender: "ai",
+    timestamp: "এইমাত্র",
+  };
+
+  const [messages, setMessages] = useState<Message[]>([initialMessage]);
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+
+  // Chat History & Text-to-Speech Hooks
+  const { messages: savedMessages, loading: historyLoading, saveMessage, clearHistory } = useChatHistory();
+  const { speak, stop, isSpeaking, isSupported: ttsSupported } = useTextToSpeech();
+
+  // Load chat history on mount
+  useEffect(() => {
+    if (!historyLoading && savedMessages.length > 0) {
+      const loadedMessages: Message[] = savedMessages.map(m => ({
+        id: m.id,
+        content: m.content,
+        sender: m.sender,
+        timestamp: new Date(m.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })
+      }));
+      setMessages([initialMessage, ...loadedMessages]);
+    }
+  }, [historyLoading, savedMessages]);
 
   // Bengali Voice Input Hook
   const {
@@ -115,10 +135,9 @@ export default function ChatPage() {
       
       setMessages((prev) => [...prev, aiMessage]);
 
-      await supabase.from('chat_messages').insert([
-        { content: currentInput, sender: 'user' },
-        { content: aiMessage.content, sender: 'ai' }
-      ]);
+      // Save messages to database for logged-in users
+      await saveMessage(currentInput, 'user');
+      await saveMessage(aiMessage.content, 'ai');
 
     } catch (error) {
       console.error('Chat error:', error);
@@ -142,6 +161,25 @@ export default function ChatPage() {
 
   const handleSuggestionClick = (question: string) => {
     setInputText(question);
+  };
+
+  const handleSpeak = (messageId: string, content: string) => {
+    if (speakingMessageId === messageId && isSpeaking) {
+      stop();
+      setSpeakingMessageId(null);
+    } else {
+      stop();
+      speak(content);
+      setSpeakingMessageId(messageId);
+    }
+  };
+
+  const handleClearHistory = async () => {
+    await clearHistory();
+    setMessages([initialMessage]);
+    toast({
+      title: "✓ চ্যাট ইতিহাস মুছে ফেলা হয়েছে",
+    });
   };
 
   return (
@@ -178,6 +216,19 @@ export default function ChatPage() {
               <p className="text-xs text-muted-foreground">কৃষি বিশেষজ্ঞ সহকারী</p>
             </div>
           </div>
+          
+          {/* Clear History Button */}
+          {messages.length > 1 && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleClearHistory}
+              className="w-11 h-11 rounded-2xl bg-card/80 border border-border/50 hover:bg-destructive/20 hover:border-destructive/30 transition-all"
+              title="চ্যাট ইতিহাস মুছুন"
+            >
+              <Trash2 className="w-4 h-4 text-muted-foreground" />
+            </Button>
+          )}
         </div>
       </header>
 
@@ -206,7 +257,22 @@ export default function ChatPage() {
               )}
             >
               <p className="text-sm leading-relaxed whitespace-pre-wrap">{message.content}</p>
-              <p className="text-[10px] text-muted-foreground mt-2 opacity-70">{message.timestamp}</p>
+              <div className="flex items-center justify-between mt-2">
+                <p className="text-[10px] text-muted-foreground opacity-70">{message.timestamp}</p>
+                {message.sender === "ai" && ttsSupported && (
+                  <button
+                    onClick={() => handleSpeak(message.id, message.content)}
+                    className="p-1 rounded-lg hover:bg-muted/50 transition-colors"
+                    title="শুনুন"
+                  >
+                    {speakingMessageId === message.id && isSpeaking ? (
+                      <VolumeX className="w-3.5 h-3.5 text-destructive" />
+                    ) : (
+                      <Volume2 className="w-3.5 h-3.5 text-muted-foreground hover:text-foreground" />
+                    )}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         ))}
