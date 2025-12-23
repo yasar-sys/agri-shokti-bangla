@@ -81,7 +81,7 @@ Role: Team Lead, Prompt Engineering & AI Integration Specialist
 ### Special Credits
 
 #### 🏆 Prompt Engineering & AI Development
-**Samin Yasar** - As the Prompt Engineering Lead and primary deliverer of all AI prompts, Samin was responsible for:
+**Samin Yasar** - As the Prompt Engineering Lead and primary deliverer of all AI prompts, Samin and his team was responsible for:
 
 - ✅ Designing and optimizing all AI prompts for the platform
 - ✅ Integrating Gemini AI for crop disease detection
@@ -92,11 +92,6 @@ Role: Team Lead, Prompt Engineering & AI Integration Specialist
 - ✅ Database design and API integration
 - ✅ Full-stack development and deployment
 
-### Institution Partners
-- **Mymensingh Engineering College** - Technical Development
-- **Gazipur Agricultural University** - Agricultural Domain Expertise
-
----
 
 ## 3. Technology Stack
 
