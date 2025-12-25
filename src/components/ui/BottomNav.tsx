@@ -1,16 +1,18 @@
 import { cn } from "@/lib/utils";
 import { Scan, MessageSquare, Home, Mic } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
-
-const navItems = [
-  { icon: Home, label: "হোম", path: "/home" },
-  { icon: Scan, label: "স্ক্যানার", path: "/camera" },
-  { icon: MessageSquare, label: "AI চ্যাট", path: "/chat" },
-  { icon: Mic, label: "সাপোর্ট", path: "/support" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function BottomNav() {
   const location = useLocation();
+  const { t } = useLanguage();
+
+  const navItems = [
+    { icon: Home, labelKey: "home", path: "/home" },
+    { icon: Scan, labelKey: "scanner", path: "/camera" },
+    { icon: MessageSquare, labelKey: "aiChat", path: "/chat" },
+    { icon: Mic, labelKey: "support", path: "/support" },
+  ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 z-50">
@@ -54,7 +56,7 @@ export function BottomNav() {
                 "relative text-[10px] font-medium transition-colors",
                 isActive && "text-secondary"
               )}>
-                {item.label}
+                {t(item.labelKey)}
               </span>
             </Link>
           );
