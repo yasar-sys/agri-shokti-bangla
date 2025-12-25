@@ -42,6 +42,7 @@ const DemoPage = lazy(() => import("./pages/DemoPage"));
 const StoragePage = lazy(() => import("./pages/StoragePage"));
 const LandCalculatorPage = lazy(() => import("./pages/LandCalculatorPage"));
 const AdminAnalyticsPage = lazy(() => import("./pages/AdminAnalyticsPage"));
+const ImpactAnalyticsPage = lazy(() => import("./pages/ImpactAnalyticsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Error Boundary Component
@@ -161,6 +162,7 @@ function AppContent() {
             <Route path="/storage" element={<StoragePage />} />
             <Route path="/land-calculator" element={<LandCalculatorPage />} />
             <Route path="/admin" element={<AdminAnalyticsPage />} />
+            <Route path="/impact" element={<ImpactAnalyticsPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
