@@ -3,6 +3,7 @@ import { ArrowLeft, Share2, Download, AlertTriangle, CheckCircle, Leaf, Droplets
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface DiseaseResult {
   diseaseName: string;
@@ -25,6 +26,7 @@ interface DiseaseResult {
 
 export default function DiagnosisPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [diseaseData, setDiseaseData] = useState<DiseaseResult | null>(null);
   const [scannedImage, setScannedImage] = useState<string | null>(null);
 
@@ -57,12 +59,12 @@ export default function DiagnosisPage() {
 
   const getSeverityText = (severity: string) => {
     switch (severity) {
-      case 'critical': return 'অত্যন্ত গুরুতর';
-      case 'high': return 'গুরুতর';
-      case 'medium': return 'মাঝারি';
-      case 'low': return 'হালকা';
-      case 'none': return 'সুস্থ';
-      default: return 'অজানা';
+      case 'critical': return t('critical');
+      case 'high': return t('high');
+      case 'medium': return t('mediumSeverity');
+      case 'low': return t('low');
+      case 'none': return t('healthy');
+      default: return t('unknown');
     }
   };
 
@@ -71,7 +73,7 @@ export default function DiagnosisPage() {
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 rounded-full border-4 border-secondary/30 border-t-secondary animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">লোড হচ্ছে...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -100,10 +102,10 @@ export default function DiagnosisPage() {
             </Link>
             <div>
               <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                রোগ নির্ণয়
+                {t('diagnosisTitle')}
                 <Zap className="w-4 h-4 text-primary" />
               </h1>
-              <p className="text-xs text-muted-foreground">AI বিশ্লেষণ সম্পন্ন</p>
+              <p className="text-xs text-muted-foreground">{t('aiAnalysisComplete')}</p>
             </div>
           </div>
           <div className="flex gap-2">
@@ -178,7 +180,7 @@ export default function DiagnosisPage() {
                 <div className="w-6 h-6 rounded-lg bg-chart-3/20 flex items-center justify-center">
                   <span className="text-xs">🔍</span>
                 </div>
-                লক্ষণসমূহ
+                {t('symptoms')}
               </h3>
               <div className="space-y-2">
                 {diseaseData.symptoms.map((symptom, index) => (
@@ -196,7 +198,7 @@ export default function DiagnosisPage() {
             <div className="mb-5 p-4 rounded-2xl bg-gradient-to-br from-secondary/20 to-secondary/5 border border-secondary/30">
               <h3 className="text-sm font-bold text-foreground mb-2 flex items-center gap-2">
                 <Shield className="w-4 h-4 text-secondary" />
-                চিকিৎসা
+                {t('treatment')}
               </h3>
               <p className="text-sm text-muted-foreground leading-relaxed">{diseaseData.treatment}</p>
             </div>
@@ -208,7 +210,7 @@ export default function DiagnosisPage() {
               <div className="p-4 rounded-2xl bg-gradient-to-br from-destructive/10 to-destructive/5 border border-destructive/30">
                 <div className="flex items-center gap-2 mb-2">
                   <FlaskConical className="w-4 h-4 text-destructive" />
-                  <h3 className="text-sm font-bold text-foreground">রাসায়নিক সমাধান</h3>
+                  <h3 className="text-sm font-bold text-foreground">{t('chemicalSolution')}</h3>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{diseaseData.chemicalSolution}</p>
               </div>
@@ -218,7 +220,7 @@ export default function DiagnosisPage() {
               <div className="p-4 rounded-2xl bg-gradient-to-br from-green-500/10 to-green-500/5 border border-green-500/30">
                 <div className="flex items-center gap-2 mb-2">
                   <Leaf className="w-4 h-4 text-green-500" />
-                  <h3 className="text-sm font-bold text-foreground">জৈব সমাধান</h3>
+                  <h3 className="text-sm font-bold text-foreground">{t('organicSolution')}</h3>
                 </div>
                 <p className="text-xs text-muted-foreground leading-relaxed">{diseaseData.organicSolution}</p>
               </div>
@@ -231,7 +233,7 @@ export default function DiagnosisPage() {
               <div className="p-3 rounded-xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
                 <div className="flex items-center gap-1 mb-1">
                   <span className="text-sm">🌱</span>
-                  <h3 className="text-xs font-bold text-foreground">সার</h3>
+                  <h3 className="text-xs font-bold text-foreground">{t('fertilizer')}</h3>
                 </div>
                 <p className="text-[11px] text-muted-foreground">{diseaseData.fertilizer}</p>
               </div>
@@ -240,7 +242,7 @@ export default function DiagnosisPage() {
               <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/30">
                 <div className="flex items-center gap-1 mb-1">
                   <Droplets className="w-3 h-3 text-blue-500" />
-                  <h3 className="text-xs font-bold text-foreground">সেচ</h3>
+                  <h3 className="text-xs font-bold text-foreground">{t('irrigation')}</h3>
                 </div>
                 <p className="text-[11px] text-muted-foreground">{diseaseData.irrigation}</p>
               </div>
@@ -254,14 +256,14 @@ export default function DiagnosisPage() {
                 <div className="flex-1 p-3 rounded-xl glass-card text-center border border-border/30">
                   <Clock className="w-5 h-5 text-secondary mx-auto mb-1" />
                   <div className="text-lg font-bold text-foreground">{diseaseData.expectedRecoveryDays}</div>
-                  <div className="text-[10px] text-muted-foreground">দিনে সুস্থ</div>
+                  <div className="text-[10px] text-muted-foreground">{t('recoveryDays')}</div>
                 </div>
               )}
               {diseaseData.yieldImpact && (
                 <div className="flex-1 p-3 rounded-xl glass-card text-center border border-border/30">
                   <TrendingDown className="w-5 h-5 text-destructive mx-auto mb-1" />
                   <div className="text-lg font-bold text-foreground">{diseaseData.yieldImpact}</div>
-                  <div className="text-[10px] text-muted-foreground">ফলনে প্রভাব</div>
+                  <div className="text-[10px] text-muted-foreground">{t('yieldImpact')}</div>
                 </div>
               )}
             </div>
@@ -289,7 +291,7 @@ export default function DiagnosisPage() {
             "hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]",
             "transition-all duration-300"
           )}>
-            AI এর সাথে আরও কথা বলুন
+            {t('talkToAI')}
           </Button>
         </Link>
         <Link to="/camera">
@@ -299,7 +301,7 @@ export default function DiagnosisPage() {
             "hover:bg-muted/50 hover:border-secondary/50",
             "transition-all duration-300"
           )}>
-            নতুন স্ক্যান করুন
+            {t('newScan')}
           </Button>
         </Link>
       </section>
@@ -309,7 +311,7 @@ export default function DiagnosisPage() {
         <div className="glass-card p-3 rounded-xl border border-border/30 text-center">
           <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
             <Zap className="w-3 h-3 text-primary" />
-            Gemini Vision AI দ্বারা বিশ্লেষিত
+            {t('analyzedBy')} Gemini Vision AI
           </p>
         </div>
       </section>

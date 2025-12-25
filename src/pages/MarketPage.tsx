@@ -39,13 +39,6 @@ export default function MarketPage() {
       default: return 'text-muted-foreground bg-muted/30 border-border';
     }
   };
-  const handleRefresh = async () => {
-    setRefreshing(true);
-    await refetch();
-    setRefreshing(false);
-  };
-
-  const generateRecommendations = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);

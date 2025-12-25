@@ -1,35 +1,38 @@
 import { TimelineCard } from "@/components/ui/TimelineCard";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
-
-const historyData = [
-  {
-    date: "১০ জানুয়ারি, ২০২৫",
-    cropName: "ধান (বোরো)",
-    result: "healthy" as const,
-    summary: "ফসল সুস্থ অবস্থায় আছে। কোন রোগ পাওয়া যায়নি।",
-  },
-  {
-    date: "৮ জানুয়ারি, ২০২৫",
-    cropName: "গম",
-    result: "disease" as const,
-    summary: "পাতা ঝলসা রোগ শনাক্ত হয়েছে। ছত্রাকনাশক প্রয়োগ করুন।",
-  },
-  {
-    date: "৫ জানুয়ারি, ২০২৫",
-    cropName: "আলু",
-    result: "healthy" as const,
-    summary: "ফসল ভালো অবস্থায় আছে। সেচ দেওয়ার পরামর্শ দেওয়া হয়েছে।",
-  },
-  {
-    date: "২ জানুয়ারি, ২০২৫",
-    cropName: "পেঁয়াজ",
-    result: "disease" as const,
-    summary: "পার্পেল ব্লচ রোগ পাওয়া গেছে। চিকিৎসা প্রদান করা হয়েছে।",
-  },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function HistoryPage() {
+  const { t, language } = useLanguage();
+  
+  const historyData = [
+    {
+      date: language === 'bn' ? "১০ জানুয়ারি, ২০২৫" : "10 January, 2025",
+      cropName: language === 'bn' ? "ধান (বোরো)" : "Rice (Boro)",
+      result: "healthy" as const,
+      summary: language === 'bn' ? "ফসল সুস্থ অবস্থায় আছে। কোন রোগ পাওয়া যায়নি।" : "Crop is healthy. No diseases found.",
+    },
+    {
+      date: language === 'bn' ? "৮ জানুয়ারি, ২০২৫" : "8 January, 2025",
+      cropName: language === 'bn' ? "গম" : "Wheat",
+      result: "disease" as const,
+      summary: language === 'bn' ? "পাতা ঝলসা রোগ শনাক্ত হয়েছে। ছত্রাকনাশক প্রয়োগ করুন।" : "Leaf blight detected. Apply fungicide.",
+    },
+    {
+      date: language === 'bn' ? "৫ জানুয়ারি, ২০২৫" : "5 January, 2025",
+      cropName: language === 'bn' ? "আলু" : "Potato",
+      result: "healthy" as const,
+      summary: language === 'bn' ? "ফসল ভালো অবস্থায় আছে। সেচ দেওয়ার পরামর্শ দেওয়া হয়েছে।" : "Crop is in good condition. Irrigation recommended.",
+    },
+    {
+      date: language === 'bn' ? "২ জানুয়ারি, ২০২৫" : "2 January, 2025",
+      cropName: language === 'bn' ? "পেঁয়াজ" : "Onion",
+      result: "disease" as const,
+      summary: language === 'bn' ? "পার্পেল ব্লচ রোগ পাওয়া গেছে। চিকিৎসা প্রদান করা হয়েছে।" : "Purple blotch disease found. Treatment provided.",
+    },
+  ];
+
   return (
     <div 
       className="mobile-container min-h-screen pb-24"
@@ -50,7 +53,7 @@ export default function HistoryPage() {
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-foreground">স্ক্যান ইতিহাস</h1>
+            <h1 className="text-2xl font-bold text-foreground">{t('scanHistoryTitle')}</h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
               <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
               <span>GET /api/history</span>
