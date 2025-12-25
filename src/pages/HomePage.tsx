@@ -33,7 +33,8 @@ import {
   TrendingDown,
   Compass,
   Map,
-  Shield
+  Shield,
+  BarChart3
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -80,6 +81,7 @@ const services = [
   { icon: UsersRound, label: "কমিউনিটি", to: "/community", gradient: "from-sky-500/20 to-blue-500/20", iconColor: "text-sky-400", borderColor: "border-sky-500/30", description: "কৃষক সংঘ" },
   { icon: PlayCircle, label: "অ্যাপ গাইড", to: "/demo", gradient: "from-pink-500/20 to-rose-500/20", iconColor: "text-pink-400", borderColor: "border-pink-500/30", description: "টিউটোরিয়াল দেখুন" },
   { icon: MapPin, label: "জমি হিসাব", to: "/land-calculator", gradient: "from-emerald-500/20 to-green-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", description: "জমির মাপ ও দাম" },
+  { icon: BarChart3, label: "প্রভাব বিশ্লেষণ", to: "/impact", gradient: "from-gradient-start/20 to-gradient-end/20", iconColor: "text-secondary", borderColor: "border-secondary/30", description: "সমস্যা সমাধান চার্ট" },
 ];
 
 interface Profile {
@@ -179,22 +181,20 @@ export default function HomePage() {
 
   const handleLogout = async () => {
     try {
-      // Clear local state first for immediate UI feedback
-      setSession(null);
-      setProfile(null);
-      setIsAdmin(false);
-      
-      // Then sign out from Supabase with global scope
+      // Sign out from Supabase first
       const { error } = await supabase.auth.signOut({ scope: 'global' });
       
       if (error) {
         console.error('Logout error:', error);
         toast.error("লগআউট করতে সমস্যা হয়েছে");
-        // Re-fetch session if logout failed
-        const { data } = await supabase.auth.getSession();
-        setSession(data.session);
       } else {
+        // Clear local state after successful signout
+        setSession(null);
+        setProfile(null);
+        setIsAdmin(false);
         toast.success("সফলভাবে লগআউট হয়েছে");
+        // Navigate to splash page
+        window.location.href = '/';
       }
     } catch (err) {
       console.error('Logout exception:', err);
