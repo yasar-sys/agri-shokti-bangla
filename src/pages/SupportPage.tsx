@@ -52,7 +52,7 @@ export default function SupportPage() {
                 <div className="p-2 bg-secondary/20 rounded-xl">
                   <Mail className="w-5 h-5 text-secondary" />
                 </div>
-                ইমেইল সাপোর্ট
+                {t('emailSupport')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
@@ -63,7 +63,7 @@ export default function SupportPage() {
                 saminyasarsunny@gmail.com
               </a>
               <p className="text-sm text-muted-foreground mt-2">
-                ইমেইলে লিখুন, ২৪ ঘন্টার মধ্যে উত্তর পাবেন
+                {t('writeEmail')}
               </p>
               <Button 
                 asChild
@@ -72,7 +72,7 @@ export default function SupportPage() {
               >
                 <a href="mailto:saminyasarsunny@gmail.com">
                   <Mail className="w-4 h-4 mr-2" />
-                  ইমেইল পাঠান
+                  {t('sendEmail')}
                 </a>
               </Button>
             </CardContent>
@@ -84,7 +84,7 @@ export default function SupportPage() {
                 <div className="p-2 bg-primary/20 rounded-xl">
                   <Phone className="w-5 h-5 text-primary" />
                 </div>
-                ফোন সাপোর্ট
+                {t('phoneSupport')}
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
@@ -95,7 +95,7 @@ export default function SupportPage() {
                 ০১৮৬৫-২৩৯৩০২
               </a>
               <p className="text-sm text-muted-foreground mt-2">
-                সকাল ৯টা - রাত ১০টা (প্রতিদিন)
+                {t('supportTime')} {t('everyday')}
               </p>
               <Button 
                 asChild
@@ -104,7 +104,7 @@ export default function SupportPage() {
               >
                 <a href="tel:01865239302">
                   <Phone className="w-4 h-4 mr-2" />
-                  কল করুন
+                  {t('callUs')}
                 </a>
               </Button>
             </CardContent>
@@ -116,26 +116,26 @@ export default function SupportPage() {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <MessageCircle className="w-5 h-5 text-secondary" />
-              সচরাচর জিজ্ঞাসা
+              {t('faqTitle')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="p-3 bg-muted/30 rounded-xl">
-              <p className="font-medium text-foreground text-sm">কিভাবে রোগ স্ক্যান করব?</p>
+              <p className="font-medium text-foreground text-sm">{t('faqScan')}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                স্ক্যানার বাটনে ক্লিক করে ফসলের ছবি তুলুন, AI স্বয়ংক্রিয়ভাবে রোগ শনাক্ত করবে।
+                {t('faqScanAnswer')}
               </p>
             </div>
             <div className="p-3 bg-muted/30 rounded-xl">
-              <p className="font-medium text-foreground text-sm">সার ক্যালকুলেটর কিভাবে ব্যবহার করব?</p>
+              <p className="font-medium text-foreground text-sm">{t('faqFertilizer')}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                হোমপেজ থেকে সার ক্যালকুলেটরে গিয়ে জমির পরিমাণ ও ফসল সিলেক্ট করুন।
+                {t('faqFertilizerAnswer')}
               </p>
             </div>
             <div className="p-3 bg-muted/30 rounded-xl">
-              <p className="font-medium text-foreground text-sm">অ্যাকাউন্ট তৈরি করতে টাকা লাগে?</p>
+              <p className="font-medium text-foreground text-sm">{t('faqFree')}</p>
               <p className="text-xs text-muted-foreground mt-1">
-                না, agriশক্তি সম্পূর্ণ বিনামূল্যে ব্যবহার করা যায়।
+                {t('faqFreeAnswer')}
               </p>
             </div>
           </CardContent>
@@ -146,15 +146,15 @@ export default function SupportPage() {
           <Card className="bg-card/80 border-border">
             <CardContent className="pt-4 text-center">
               <Clock className="w-8 h-8 text-secondary mx-auto mb-2" />
-              <p className="text-sm font-medium text-foreground">সাপোর্ট সময়</p>
-              <p className="text-xs text-muted-foreground">সকাল ৯টা - রাত ১০টা</p>
+              <p className="text-sm font-medium text-foreground">{t('supportHours')}</p>
+              <p className="text-xs text-muted-foreground">{t('supportTime')}</p>
             </CardContent>
           </Card>
           <Card className="bg-card/80 border-border">
             <CardContent className="pt-4 text-center">
               <MapPin className="w-8 h-8 text-primary mx-auto mb-2" />
-              <p className="text-sm font-medium text-foreground">অবস্থান</p>
-              <p className="text-xs text-muted-foreground">ময়মনসিংহ, বাংলাদেশ</p>
+              <p className="text-sm font-medium text-foreground">{t('location')}</p>
+              <p className="text-xs text-muted-foreground">Mymensingh, Bangladesh</p>
             </CardContent>
           </Card>
         </div>
@@ -163,7 +163,7 @@ export default function SupportPage() {
         <div className="text-center py-4">
           <p className="text-sm text-muted-foreground flex items-center justify-center gap-1">
             <Heart className="w-4 h-4 text-destructive" />
-            TEAM_NEWBIES দ্বারা তৈরি
+            {t('madeBy')} TEAM_NEWBIES
           </p>
         </div>
       </div>

@@ -172,14 +172,14 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <User className="w-5 h-5 text-secondary" />
-              ব্যক্তিগত তথ্য
+              {t('personalInfo')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
               <Mail className="w-5 h-5 text-muted-foreground" />
               <div>
-                <p className="text-xs text-muted-foreground">ইমেইল</p>
+                <p className="text-xs text-muted-foreground">{t('email')}</p>
                 <p className="text-sm text-foreground">{session?.user?.email}</p>
               </div>
             </div>
@@ -188,7 +188,7 @@ export default function ProfilePage() {
               <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
                 <Droplets className="w-5 h-5 text-destructive" />
                 <div>
-                  <p className="text-xs text-muted-foreground">রক্তের গ্রুপ</p>
+                  <p className="text-xs text-muted-foreground">{t('bloodGroup')}</p>
                   <p className="text-sm text-foreground">{profile.blood_group}</p>
                 </div>
               </div>
@@ -197,8 +197,8 @@ export default function ProfilePage() {
             <div className="flex items-center gap-3 p-3 bg-muted/30 rounded-xl">
               <Globe className="w-5 h-5 text-primary" />
               <div>
-                <p className="text-xs text-muted-foreground">জাতীয়তা</p>
-                <p className="text-sm text-foreground">{profile?.nationality || 'বাংলাদেশী'}</p>
+                <p className="text-xs text-muted-foreground">{t('nationality')}</p>
+                <p className="text-sm text-foreground">{profile?.nationality || t('bangladeshi')}</p>
               </div>
             </div>
           </CardContent>
@@ -209,20 +209,20 @@ export default function ProfilePage() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Award className="w-5 h-5 text-primary" />
-              কার্যক্রম সারসংক্ষেপ
+              {t('activitySummary')}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="flex justify-between items-center p-3 bg-secondary/10 rounded-xl">
-              <span className="text-sm text-foreground">রোগ শনাক্ত করা হয়েছে</span>
+              <span className="text-sm text-foreground">{t('diseasesFound')}</span>
               <span className="font-bold text-secondary">{profile?.diseases_detected || 0}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-primary/10 rounded-xl">
-              <span className="text-sm text-foreground">মোট XP অর্জিত</span>
+              <span className="text-sm text-foreground">{t('totalXpEarned')}</span>
               <span className="font-bold text-primary">{profile?.xp_points || 0}</span>
             </div>
             <div className="flex justify-between items-center p-3 bg-chart-3/10 rounded-xl">
-              <span className="text-sm text-foreground">সক্রিয় দিন</span>
+              <span className="text-sm text-foreground">{t('activeDays')}</span>
               <span className="font-bold text-chart-3">{profile?.days_active || 1}</span>
             </div>
           </CardContent>
@@ -233,13 +233,13 @@ export default function ProfilePage() {
           <Link to="/history">
             <Button variant="outline" className="w-full gap-2">
               <Scan className="w-4 h-4" />
-              স্ক্যান ইতিহাস
+              {t('scanHistory')}
             </Button>
           </Link>
           <Link to="/calendar">
             <Button variant="outline" className="w-full gap-2">
               <Calendar className="w-4 h-4" />
-              আমার ক্যালেন্ডার
+              {t('myCalendar')}
             </Button>
           </Link>
         </div>

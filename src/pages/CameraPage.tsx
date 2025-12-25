@@ -5,9 +5,11 @@ import { useNavigate, Link } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function CameraPage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -18,7 +20,7 @@ export default function CameraPage() {
     const file = e.target.files?.[0];
     if (file) {
       if (file.size > 4 * 1024 * 1024) {
-        toast.error("ছবির সাইজ ৪MB এর বেশি হতে পারবে না");
+        toast.error(t('imageSizeError'));
         return;
       }
       
@@ -35,7 +37,7 @@ export default function CameraPage() {
     
     setIsAnalyzing(true);
     setProgress(0);
-    setStatusText("ছবি প্রক্রিয়াকরণ হচ্ছে...");
+    setStatusText(t('processingImage'));
 
     const progressInterval = setInterval(() => {
       setProgress((prev) => {
@@ -45,7 +47,7 @@ export default function CameraPage() {
     }, 300);
 
     try {
-      setStatusText("AI বিশ্লেষণ করছে...");
+      setStatusText(t('aiAnalyzing'));
       
       const { data, error } = await supabase.functions.invoke('detect-disease', {
         body: { imageBase64: capturedImage }
@@ -55,7 +57,7 @@ export default function CameraPage() {
 
       if (error) {
         console.error('Disease detection error:', error);
-        toast.error("বিশ্লেষণ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।");
+        toast.error(t('analysisError'));
         setIsAnalyzing(false);
         setProgress(0);
         return;
@@ -69,7 +71,7 @@ export default function CameraPage() {
       }
 
       setProgress(100);
-      setStatusText("বিশ্লেষণ সম্পন্ন!");
+      setStatusText(t('analysisComplete'));
 
       sessionStorage.setItem('diseaseResult', JSON.stringify(data.result));
       sessionStorage.setItem('scannedImage', capturedImage);
@@ -81,7 +83,7 @@ export default function CameraPage() {
     } catch (err) {
       console.error('Analysis error:', err);
       clearInterval(progressInterval);
-      toast.error("সার্ভারে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।");
+      toast.error(t('serverError'));
       setIsAnalyzing(false);
       setProgress(0);
     }
@@ -116,10 +118,10 @@ export default function CameraPage() {
           </Link>
           <div className="flex-1">
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              <span className="text-gradient-premium">AI স্ক্যানার</span>
+              <span className="text-gradient-premium">{t('aiScanner')}</span>
               <Zap className="w-5 h-5 text-primary animate-pulse" />
             </h1>
-            <p className="text-xs text-muted-foreground mt-0.5">ফসলের ছবি তুলুন বা আপলোড করুন</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{t('uploadOrTakePhoto')}</p>
           </div>
         </div>
       </header>
@@ -145,7 +147,7 @@ export default function CameraPage() {
                     <Camera className="w-10 h-10 text-secondary" />
                   </div>
                   <p className="text-muted-foreground text-sm leading-relaxed">
-                    ফসলের পাতার পরিষ্কার ছবি তুলুন
+                    {t('takeClearPhoto')}
                   </p>
                 </div>
               </div>
@@ -197,15 +199,15 @@ export default function CameraPage() {
         <div className="grid grid-cols-3 gap-3">
           <div className="glass-card rounded-2xl p-3 text-center border border-border/30">
             <Leaf className="w-5 h-5 text-secondary mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground">১০০+ রোগ</p>
+            <p className="text-[10px] text-muted-foreground">{t('diseases100')}</p>
           </div>
           <div className="glass-card rounded-2xl p-3 text-center border border-border/30">
             <Sparkles className="w-5 h-5 text-primary mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground">৯৫% নির্ভুল</p>
+            <p className="text-[10px] text-muted-foreground">{t('accuracy95')}</p>
           </div>
           <div className="glass-card rounded-2xl p-3 text-center border border-border/30">
             <Shield className="w-5 h-5 text-chart-3 mx-auto mb-1" />
-            <p className="text-[10px] text-muted-foreground">চিকিৎসা সহ</p>
+            <p className="text-[10px] text-muted-foreground">{t('withTreatment')}</p>
           </div>
         </div>
       </section>
@@ -218,9 +220,9 @@ export default function CameraPage() {
               <Sparkles className="w-5 h-5 text-secondary" />
             </div>
             <div>
-              <p className="text-sm text-foreground font-medium mb-1">AI টিপ</p>
+              <p className="text-sm text-foreground font-medium mb-1">{t('aiTip')}</p>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                পাতার পরিষ্কার ছবি তুলুন। ভালো আলোতে তোলা ছবি AI সঠিকভাবে বিশ্লেষণ করতে পারে।
+                {t('aiTipText')}
               </p>
             </div>
           </div>
@@ -256,7 +258,7 @@ export default function CameraPage() {
               )}
             >
               <Camera className="w-6 h-6 mr-3" />
-              ক্যামেরা দিয়ে ছবি তুলুন
+              {t('takePhotoWithCamera')}
             </Button>
 
             <Button
@@ -275,7 +277,7 @@ export default function CameraPage() {
               )}
             >
               <Upload className="w-6 h-6 mr-3" />
-              গ্যালারি থেকে আপলোড
+              {t('uploadFromGallery')}
             </Button>
           </>
         ) : (
@@ -296,7 +298,7 @@ export default function CameraPage() {
             ) : (
               <Sparkles className="w-6 h-6 mr-3" />
             )}
-            {isAnalyzing ? "বিশ্লেষণ হচ্ছে..." : "AI দিয়ে বিশ্লেষণ করুন"}
+            {isAnalyzing ? t('analyzing') : t('analyzeWithAI')}
           </Button>
         )}
       </section>
