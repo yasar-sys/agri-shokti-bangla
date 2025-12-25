@@ -46,6 +46,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import agriBrainLogo from "@/assets/agri-brain-logo.png";
+import farmerAvatar from "@/assets/farmer-avatar.png";
 import { useLocation } from "@/hooks/useLocation";
 import { useWeather } from "@/hooks/useWeather";
 import { useMarketPrices } from "@/hooks/useMarketPrices";
@@ -255,11 +256,8 @@ export default function HomePage() {
                 </div>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
+                <h1 className="text-xl font-bold text-foreground">
                   <span className="text-gradient-premium">agriশক্তি</span>
-                  <span className="text-[10px] font-semibold bg-gradient-to-r from-primary/20 to-secondary/20 text-primary px-2 py-0.5 rounded-full border border-primary/20">
-                    PRO
-                  </span>
                 </h1>
                 <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-primary" />
@@ -281,7 +279,11 @@ export default function HomePage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-3xl">👨‍🌾</span>
+                      <img 
+                        src={farmerAvatar} 
+                        alt="Farmer" 
+                        className="w-full h-full object-cover"
+                      />
                     )}
                   </div>
                   <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-card rounded-full border border-border/50 flex items-center justify-center shadow-soft">
