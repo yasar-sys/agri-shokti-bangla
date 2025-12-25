@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Session } from "@supabase/supabase-js";
 import { toast } from "sonner";
+import { useLanguage } from "@/contexts/LanguageContext";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 interface Profile {
@@ -23,6 +24,7 @@ interface Profile {
 
 export default function ProfilePage() {
   const navigate = useNavigate();
+  const { t } = useLanguage();
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -65,7 +67,7 @@ export default function ProfilePage() {
 
     if (error) {
       console.error('Error fetching profile:', error);
-      toast.error('প্রোফাইল লোড করতে সমস্যা হয়েছে');
+      toast.error(t('error'));
     } else if (data) {
       setProfile(data);
     }
@@ -101,7 +103,7 @@ export default function ProfilePage() {
             <Link to="/home" className="text-muted-foreground hover:text-foreground transition-colors">
               <ArrowLeft className="w-6 h-6" />
             </Link>
-            <h1 className="text-xl font-bold text-foreground">আমার প্রোফাইল</h1>
+            <h1 className="text-xl font-bold text-foreground">{t('myProfile')}</h1>
           </div>
           <Button variant="ghost" size="icon">
             <Edit3 className="w-5 h-5 text-muted-foreground" />
@@ -134,10 +136,10 @@ export default function ProfilePage() {
           </div>
           
           <h2 className="text-xl font-bold text-foreground mt-4">
-            {profile?.full_name || session?.user?.email?.split('@')[0] || 'কৃষক'}
+            {profile?.full_name || session?.user?.email?.split('@')[0] || t('farmer')}
           </h2>
           <p className="text-sm text-muted-foreground">{session?.user?.email}</p>
-          <p className="text-xs text-secondary mt-1">{profile?.rank || 'নতুন কৃষক'}</p>
+          <p className="text-xs text-secondary mt-1">{profile?.rank || t('newFarmer')}</p>
         </div>
 
         {/* Stats Grid */}
@@ -146,21 +148,21 @@ export default function ProfilePage() {
             <CardContent className="pt-4 text-center">
               <Scan className="w-6 h-6 text-secondary mx-auto mb-1" />
               <p className="text-lg font-bold text-foreground">{profile?.total_scans || 0}</p>
-              <p className="text-xs text-muted-foreground">মোট স্ক্যান</p>
+              <p className="text-xs text-muted-foreground">{t('totalScans')}</p>
             </CardContent>
           </Card>
           <Card className="bg-card/80 border-border">
             <CardContent className="pt-4 text-center">
               <Award className="w-6 h-6 text-primary mx-auto mb-1" />
               <p className="text-lg font-bold text-foreground">{profile?.xp_points || 0}</p>
-              <p className="text-xs text-muted-foreground">XP পয়েন্ট</p>
+              <p className="text-xs text-muted-foreground">{t('xpPoints')}</p>
             </CardContent>
           </Card>
           <Card className="bg-card/80 border-border">
             <CardContent className="pt-4 text-center">
               <Calendar className="w-6 h-6 text-chart-3 mx-auto mb-1" />
               <p className="text-lg font-bold text-foreground">{profile?.days_active || 1}</p>
-              <p className="text-xs text-muted-foreground">দিন সক্রিয়</p>
+              <p className="text-xs text-muted-foreground">{t('daysActive')}</p>
             </CardContent>
           </Card>
         </div>

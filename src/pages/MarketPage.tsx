@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useMarketPrices } from "@/hooks/useMarketPrices";
 import { SEOHead } from "@/components/seo/SEOHead";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const getTrendIcon = (change: number) => {
   if (change > 0) return <TrendingUp className="w-4 h-4" />;
@@ -18,25 +19,33 @@ const getTrendColor = (change: number) => {
   return "text-muted-foreground";
 };
 
-const getForecastText = (forecast: string | null) => {
-  switch (forecast) {
-    case 'up': return 'বাড়বে';
-    case 'down': return 'কমবে';
-    default: return 'স্থিতিশীল';
-  }
-};
-
-const getForecastColor = (forecast: string | null) => {
-  switch (forecast) {
-    case 'up': return 'text-secondary bg-secondary/10 border-secondary/30';
-    case 'down': return 'text-destructive bg-destructive/10 border-destructive/30';
-    default: return 'text-muted-foreground bg-muted/30 border-border';
-  }
-};
-
 export default function MarketPage() {
   const { prices, loading, refetch } = useMarketPrices();
   const [refreshing, setRefreshing] = useState(false);
+  const { t, language } = useLanguage();
+
+  const getForecastText = (forecast: string | null) => {
+    switch (forecast) {
+      case 'up': return t('willIncrease');
+      case 'down': return t('willDecrease');
+      default: return t('stable');
+    }
+  };
+
+  const getForecastColor = (forecast: string | null) => {
+    switch (forecast) {
+      case 'up': return 'text-secondary bg-secondary/10 border-secondary/30';
+      case 'down': return 'text-destructive bg-destructive/10 border-destructive/30';
+      default: return 'text-muted-foreground bg-muted/30 border-border';
+    }
+  };
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await refetch();
+    setRefreshing(false);
+  };
+
+  const generateRecommendations = () => {
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -50,22 +59,22 @@ export default function MarketPage() {
       .slice(0, 3)
       .map(p => {
         const change = p.today_price - p.yesterday_price;
-        let action = 'অপেক্ষা করুন';
+        let action = t('watchMarket');
         let reason = '';
         let timing = '';
 
         if (p.forecast === 'up' && change >= 0) {
-          action = 'অপেক্ষা করুন';
-          reason = 'দাম বাড়ার সম্ভাবনা আছে';
-          timing = '১-২ সপ্তাহ পর বিক্রি করুন';
+          action = t('waitSell');
+          reason = t('priceUp');
+          timing = t('sell12Weeks');
         } else if (p.forecast === 'down') {
-          action = 'এখনই বিক্রি করুন';
-          reason = 'দাম কমতে পারে';
-          timing = 'জরুরি';
+          action = t('sellNow');
+          reason = t('priceDown');
+          timing = t('urgent');
         } else {
-          action = 'বাজার পর্যবেক্ষণ করুন';
-          reason = 'দাম স্থিতিশীল থাকবে';
-          timing = 'নিয়মিত আপডেট দেখুন';
+          action = t('watchMarket');
+          reason = t('priceStable');
+          timing = t('checkRegularly');
         }
 
         return {
@@ -84,9 +93,9 @@ export default function MarketPage() {
   return (
     <>
       <SEOHead
-        title="বাজার দর"
-        description="বাংলাদেশের কৃষি পণ্যের আজকের বাজার দর। ধান, আলু, পেঁয়াজ, সবজির দাম এবং AI পূর্বাভাস দেখুন।"
-        keywords="বাজার দর, কৃষি পণ্য দাম, ধানের দাম, আলুর দাম, পেঁয়াজের দাম, বাংলাদেশ কৃষি বাজার"
+        title={t('marketTitle')}
+        description={language === 'bn' ? "বাংলাদেশের কৃষি পণ্যের আজকের বাজার দর। ধান, আলু, পেঁয়াজ, সবজির দাম এবং AI পূর্বাভাস দেখুন।" : "Today's agricultural product prices in Bangladesh. View rice, potato, onion, vegetable prices and AI forecasts."}
+        keywords={language === 'bn' ? "বাজার দর, কৃষি পণ্য দাম, ধানের দাম, আলুর দাম, পেঁয়াজের দাম, বাংলাদেশ কৃষি বাজার" : "market price, agricultural products, rice price, potato price, onion price, Bangladesh agriculture market"}
       />
       <div className="min-h-screen pb-28 relative overflow-hidden bg-background">
         {/* Premium Background */}
@@ -114,10 +123,10 @@ export default function MarketPage() {
                 </div>
                 <div>
                   <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-                    বাজার দর
+                    {t('marketTitle')}
                     <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
                   </h1>
-                  <p className="text-xs text-muted-foreground">লাইভ মূল্য আপডেট</p>
+                  <p className="text-xs text-muted-foreground">{t('livePrice')}</p>
                 </div>
               </div>
             </div>
@@ -138,7 +147,7 @@ export default function MarketPage() {
           <div className="flex items-center justify-center py-16">
             <div className="text-center">
               <div className="w-12 h-12 rounded-full border-4 border-chart-2/30 border-t-chart-2 animate-spin mx-auto mb-4" />
-              <p className="text-muted-foreground text-sm">বাজার দর লোড হচ্ছে...</p>
+              <p className="text-muted-foreground text-sm">{t('loadingMarket')}</p>
             </div>
           </div>
         )}
@@ -150,7 +159,7 @@ export default function MarketPage() {
               <div className="w-8 h-8 rounded-xl bg-primary/20 flex items-center justify-center">
                 <Zap className="w-4 h-4 text-primary" />
               </div>
-              AI বিক্রয় পরামর্শ
+              {t('aiSalesAdvice')}
             </h2>
             <div className="space-y-3">
               {recommendations.map((rec, index) => (
@@ -164,30 +173,30 @@ export default function MarketPage() {
                   )}
                   style={{ animationDelay: `${index * 60}ms` }}
                 >
-                  <div className="flex items-start gap-3">
-                    <span className="text-3xl">{rec.emoji}</span>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <h3 className="font-bold text-foreground">{rec.crop}</h3>
-                        <span className={cn(
-                          "text-xs px-2.5 py-1 rounded-full font-semibold border",
-                          rec.action === 'এখনই বিক্রি করুন' 
-                            ? "bg-destructive/10 text-destructive border-destructive/30" 
-                            : rec.action === 'অপেক্ষা করুন' 
-                              ? "bg-secondary/10 text-secondary border-secondary/30" 
-                              : "bg-muted text-muted-foreground border-border"
-                        )}>
-                          {rec.action}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground">{rec.reason}</p>
-                      <div className="flex items-center justify-between mt-2">
-                        <span className="text-[11px] text-muted-foreground">{rec.timing}</span>
-                        <span className="text-[11px] text-primary font-medium">{rec.confidence}% আত্মবিশ্বাস</span>
+                    <div className="flex items-start gap-3">
+                      <span className="text-3xl">{rec.emoji}</span>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <h3 className="font-bold text-foreground">{rec.crop}</h3>
+                          <span className={cn(
+                            "text-xs px-2.5 py-1 rounded-full font-semibold border",
+                            rec.action === t('sellNow') 
+                              ? "bg-destructive/10 text-destructive border-destructive/30" 
+                              : rec.action === t('waitSell') 
+                                ? "bg-secondary/10 text-secondary border-secondary/30" 
+                                : "bg-muted text-muted-foreground border-border"
+                          )}>
+                            {rec.action}
+                          </span>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{rec.reason}</p>
+                        <div className="flex items-center justify-between mt-2">
+                          <span className="text-[11px] text-muted-foreground">{rec.timing}</span>
+                          <span className="text-[11px] text-primary font-medium">{rec.confidence}% {t('confidence')}</span>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
               ))}
             </div>
           </section>
@@ -200,15 +209,15 @@ export default function MarketPage() {
               <div className="w-8 h-8 rounded-xl bg-chart-2/20 flex items-center justify-center">
                 <TrendingUp className="w-4 h-4 text-chart-2" />
               </div>
-              আজকের বাজার দর
+              {t('todayMarketPrice')}
             </h2>
             
             {prices.length === 0 && (
               <div className="glass-card rounded-2xl p-8 text-center border border-border/30">
                 <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-3" />
-                <p className="text-muted-foreground mb-4">বাজার দর লোড করতে সমস্যা হয়েছে</p>
+                <p className="text-muted-foreground mb-4">{t('marketLoadError')}</p>
                 <Button onClick={handleRefresh} variant="outline" className="rounded-xl">
-                  আবার চেষ্টা করুন
+                  {t('tryAgain')}
                 </Button>
               </div>
             )}
@@ -256,14 +265,14 @@ export default function MarketPage() {
                     {/* Additional Info */}
                     <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
                       <span className="text-xs text-muted-foreground">
-                        সা. গড়: ৳{(item.weekly_avg || item.today_price).toLocaleString('bn-BD')}
+                        {t('weekAvg')}: ৳{(item.weekly_avg || item.today_price).toLocaleString('bn-BD')}
                       </span>
                       {item.forecast && (
                         <span className={cn(
                           "text-xs px-2.5 py-1 rounded-full font-medium border",
                           getForecastColor(item.forecast)
                         )}>
-                          পূর্বাভাস: {getForecastText(item.forecast)}
+                          {t('forecast')}: {getForecastText(item.forecast)}
                         </span>
                       )}
                     </div>
@@ -283,13 +292,12 @@ export default function MarketPage() {
                   <Sparkles className="w-5 h-5 text-primary" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-foreground mb-2">বাজার বিশ্লেষণ</h3>
+                  <h3 className="font-bold text-foreground mb-2">{t('marketAnalysis')}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    বর্তমানে ধান ও পাটের দাম বাড়ার প্রবণতা দেখা যাচ্ছে। আলুর দাম শীতকালে স্বাভাবিকভাবেই কমতে পারে। 
-                    পেঁয়াজের দাম স্থিতিশীল থাকবে বলে ধারণা করা হচ্ছে।
+                    {t('marketAnalysisText')}
                   </p>
                   <p className="text-[10px] text-muted-foreground mt-3">
-                    সর্বশেষ আপডেট: {new Date().toLocaleDateString('bn-BD')}
+                    {t('lastUpdate')}: {new Date().toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-US')}
                   </p>
                 </div>
               </div>
