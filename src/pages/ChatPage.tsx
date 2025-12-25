@@ -9,6 +9,7 @@ import { useBengaliVoiceInput } from "@/hooks/useBengaliVoiceInput";
 import { VoiceInputButton } from "@/components/ui/VoiceInputButton";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface Message {
   id: string;
@@ -17,19 +18,21 @@ interface Message {
   timestamp: string;
 }
 
-const suggestedQuestions = [
-  "ধানের পাতা হলুদ হয়ে যাচ্ছে কেন?",
-  "কখন সার দেওয়া উচিত?",
-  "বৃষ্টিতে ফসল রক্ষা করব কীভাবে?",
-  "পোকামাকড় দমন করব কীভাবে?",
-];
-
 export default function ChatPage() {
+  const { t, language } = useLanguage();
+  
+  const suggestedQuestions = [
+    t('chatQuestion1'),
+    t('chatQuestion2'),
+    t('chatQuestion3'),
+    t('chatQuestion4'),
+  ];
+
   const initialMessage: Message = {
     id: "1",
-    content: "আসসালামু আলাইকুম! আমি agriশক্তি AI। আপনার কৃষি সমস্যায় সাহায্য করতে প্রস্তুত। কী জানতে চান? 🌾",
+    content: t('chatGreeting'),
     sender: "ai",
-    timestamp: "এইমাত্র",
+    timestamp: t('justNow'),
   };
 
   const [messages, setMessages] = useState<Message[]>([initialMessage]);
@@ -43,6 +46,13 @@ export default function ChatPage() {
   const { messages: savedMessages, loading: historyLoading, saveMessage, clearHistory } = useChatHistory();
   const { speak, stop, isSpeaking, isSupported: ttsSupported } = useTextToSpeech();
 
+  // Update initial message when language changes
+  useEffect(() => {
+    setMessages(prev => prev.map(msg => 
+      msg.id === "1" ? { ...msg, content: t('chatGreeting'), timestamp: t('justNow') } : msg
+    ));
+  }, [language, t]);
+
   // Load chat history on mount
   useEffect(() => {
     if (!historyLoading && savedMessages.length > 0) {
@@ -50,7 +60,7 @@ export default function ChatPage() {
         id: m.id,
         content: m.content,
         sender: m.sender,
-        timestamp: new Date(m.created_at).toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })
+        timestamp: new Date(m.created_at).toLocaleTimeString(language === 'en' ? 'en-US' : 'bn-BD', { hour: '2-digit', minute: '2-digit' })
       }));
       setMessages([initialMessage, ...loadedMessages]);
     }
@@ -67,14 +77,14 @@ export default function ChatPage() {
     onResult: (finalTranscript) => {
       setInputText(finalTranscript);
       toast({
-        title: "✓ কথা শোনা হয়েছে",
+        title: `✓ ${t('voiceHeard')}`,
         description: finalTranscript.slice(0, 50) + (finalTranscript.length > 50 ? '...' : ''),
       });
     },
     onError: (error) => {
       toast({
         variant: "destructive",
-        title: "ভয়েস ত্রুটি",
+        title: t('voiceError'),
         description: error,
       });
     },
@@ -102,7 +112,7 @@ export default function ChatPage() {
       id: Date.now().toString(),
       content: inputText,
       sender: "user",
-      timestamp: "এইমাত্র",
+      timestamp: t('justNow'),
     };
 
     setMessages((prev) => [...prev, userMessage]);
@@ -128,9 +138,9 @@ export default function ChatPage() {
 
       const aiMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: data.response || "দুঃখিত, উত্তর দিতে পারছি না।",
+        content: data.response || t('sorryCantAnswer'),
         sender: "ai",
-        timestamp: "এইমাত্র",
+        timestamp: t('justNow'),
       };
       
       setMessages((prev) => [...prev, aiMessage]);
@@ -143,15 +153,15 @@ export default function ChatPage() {
       console.error('Chat error:', error);
       toast({
         variant: "destructive",
-        title: "ত্রুটি",
-        description: "উত্তর পেতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+        title: t('error'),
+        description: t('errorGettingAnswer'),
       });
       
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
-        content: "দুঃখিত, সাময়িক সমস্যা হয়েছে। আবার চেষ্টা করুন।",
+        content: t('sorryTempProblem'),
         sender: "ai",
-        timestamp: "এইমাত্র",
+        timestamp: t('justNow'),
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {
@@ -178,7 +188,7 @@ export default function ChatPage() {
     await clearHistory();
     setMessages([initialMessage]);
     toast({
-      title: "✓ চ্যাট ইতিহাস মুছে ফেলা হয়েছে",
+      title: `✓ ${t('chatHistoryCleared')}`,
     });
   };
 
@@ -210,10 +220,10 @@ export default function ChatPage() {
             </div>
             <div>
               <h1 className="text-lg font-bold text-foreground flex items-center gap-2">
-                agriশক্তি AI
+                {t('appName')} AI
                 <Sparkles className="w-4 h-4 text-primary" />
               </h1>
-              <p className="text-xs text-muted-foreground">কৃষি বিশেষজ্ঞ সহকারী</p>
+              <p className="text-xs text-muted-foreground">{t('agriExpert')}</p>
             </div>
           </div>
           
@@ -224,7 +234,7 @@ export default function ChatPage() {
               size="icon"
               onClick={handleClearHistory}
               className="w-11 h-11 rounded-2xl bg-card/80 border border-border/50 hover:bg-destructive/20 hover:border-destructive/30 transition-all"
-              title="চ্যাট ইতিহাস মুছুন"
+              title={t('clearChatHistory')}
             >
               <Trash2 className="w-4 h-4 text-muted-foreground" />
             </Button>
@@ -263,7 +273,7 @@ export default function ChatPage() {
                   <button
                     onClick={() => handleSpeak(message.id, message.content)}
                     className="p-1 rounded-lg hover:bg-muted/50 transition-colors"
-                    title="শুনুন"
+                    title={t('listen')}
                   >
                     {speakingMessageId === message.id && isSpeaking ? (
                       <VolumeX className="w-3.5 h-3.5 text-destructive" />
@@ -303,7 +313,7 @@ export default function ChatPage() {
       <section className="px-4 py-3 border-t border-border/30 bg-card/30 backdrop-blur-xl">
         <p className="text-xs text-muted-foreground mb-2 flex items-center gap-1">
           <Sparkles className="w-3 h-3" />
-          প্রস্তাবিত প্রশ্ন
+          {t('suggestedQuestions')}
         </p>
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {suggestedQuestions.map((question, index) => (
@@ -324,7 +334,7 @@ export default function ChatPage() {
           <div className="flex items-center justify-center gap-2 text-destructive">
             <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
             <p className="text-sm font-medium animate-pulse">
-              🎤 শুনছি... বাংলায় কথা বলুন
+              🎤 {t('listening')} {t('speakBengali')}
             </p>
           </div>
           {transcript && (
@@ -353,7 +363,7 @@ export default function ChatPage() {
               value={inputText}
               onChange={(e) => setInputText(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && handleSend()}
-              placeholder={isListening ? "শুনছি..." : "বাংলায় লিখুন বা বলুন..."}
+              placeholder={isListening ? `${t('listening')}` : t('typeOrSpeak')}
               disabled={isLoading}
               className={cn(
                 "w-full h-12 px-5 rounded-2xl",
@@ -388,7 +398,7 @@ export default function ChatPage() {
         {isSupported && !isListening && (
           <p className="text-[10px] text-center text-muted-foreground mt-2 flex items-center justify-center gap-1">
             <Volume2 className="w-3 h-3" />
-            মাইক বাটনে ক্লিক করে বাংলায় কথা বলুন
+            {t('clickMicToSpeak')}
           </p>
         )}
       </section>

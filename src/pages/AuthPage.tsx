@@ -11,20 +11,23 @@ import { toast } from "sonner";
 import { ArrowLeft, Mail, Lock, UserPlus, LogIn, Loader2, User, Droplets, Globe, Camera } from "lucide-react";
 import { Link } from "react-router-dom";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];
-const nationalities = ["বাংলাদেশী", "ভারতীয়", "অন্যান্য"];
 
 export default function AuthPage() {
   const navigate = useNavigate();
+  const { t, language } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
-  const [nationality, setNationality] = useState("বাংলাদেশী");
+  const [nationality, setNationality] = useState(t('bangladeshi'));
   const [avatarUrl, setAvatarUrl] = useState("");
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const nationalities = [t('bangladeshi'), t('indian'), t('other')];
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -61,7 +64,7 @@ export default function AuthPage() {
     e.preventDefault();
     
     if (!email || !password) {
-      toast.error("সব তথ্য পূরণ করুন");
+      toast.error(t('fillAllFields'));
       return;
     }
 
@@ -76,17 +79,17 @@ export default function AuthPage() {
       if (error) {
         setLoading(false);
         if (error.message.includes("Invalid login credentials")) {
-          toast.error("ইমেইল বা পাসওয়ার্ড ভুল হয়েছে");
+          toast.error(t('wrongEmailPass'));
         } else {
           toast.error(error.message);
         }
       } else {
-        toast.success("সফলভাবে লগইন হয়েছে!");
+        toast.success(t('loginSuccess'));
         // Navigation will happen via onAuthStateChange
       }
     } catch (err) {
       setLoading(false);
-      toast.error("কিছু সমস্যা হয়েছে, আবার চেষ্টা করুন");
+      toast.error(t('somethingWrong'));
     }
   };
 
@@ -94,12 +97,12 @@ export default function AuthPage() {
     e.preventDefault();
     
     if (!email || !password || !fullName) {
-      toast.error("নাম, ইমেইল এবং পাসওয়ার্ড পূরণ করুন");
+      toast.error(t('fillNameEmailPass'));
       return;
     }
 
     if (password.length < 6) {
-      toast.error("পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে");
+      toast.error(language === 'en' ? "Password must be at least 6 characters" : "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে");
       return;
     }
 
@@ -125,21 +128,21 @@ export default function AuthPage() {
       if (error) {
         setLoading(false);
         if (error.message.includes("already registered")) {
-          toast.error("এই ইমেইল দিয়ে আগে অ্যাকাউন্ট খোলা হয়েছে");
+          toast.error(t('emailAlreadyUsed'));
         } else {
           toast.error(error.message);
         }
       } else if (data.session) {
-        toast.success("সফলভাবে অ্যাকাউন্ট তৈরি হয়েছে!");
+        toast.success(t('accountCreated'));
         // Navigation will happen via onAuthStateChange
       } else {
         setLoading(false);
-        toast.success("সফলভাবে অ্যাকাউন্ট তৈরি হয়েছে!");
+        toast.success(t('accountCreated'));
         navigate("/home");
       }
     } catch (err) {
       setLoading(false);
-      toast.error("কিছু সমস্যা হয়েছে, আবার চেষ্টা করুন");
+      toast.error(t('somethingWrong'));
     }
   };
 
@@ -162,14 +165,14 @@ export default function AuthPage() {
         {/* Back Button */}
         <Link to="/home" className="inline-flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors">
           <ArrowLeft className="w-4 h-4" />
-          <span className="text-sm">ফিরে যান</span>
+          <span className="text-sm">{t('back')}</span>
         </Link>
 
         {/* Logo */}
         <div className="text-center mb-6">
           <div className="text-6xl mb-2">👨‍🌾</div>
-          <h1 className="text-2xl font-bold text-primary">agriশক্তি</h1>
-          <p className="text-sm text-muted-foreground mt-1">বাংলার কৃষকের AI সহকারী</p>
+          <h1 className="text-2xl font-bold text-primary">{t('appName')}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('aiAssistantFull')}</p>
         </div>
 
         <Card className="bg-card/90 backdrop-blur-sm border-border">
@@ -178,11 +181,11 @@ export default function AuthPage() {
               <TabsList className="grid w-full grid-cols-2 bg-muted/50">
                 <TabsTrigger value="login" className="gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                   <LogIn className="w-4 h-4" />
-                  লগইন
+                  {t('loginTitle')}
                 </TabsTrigger>
                 <TabsTrigger value="signup" className="gap-1 data-[state=active]:bg-secondary data-[state=active]:text-secondary-foreground">
                   <UserPlus className="w-4 h-4" />
-                  সাইনআপ
+                  {t('registerTitle')}
                 </TabsTrigger>
               </TabsList>
             </CardHeader>
@@ -190,19 +193,19 @@ export default function AuthPage() {
             <CardContent>
               {/* Login Tab */}
               <TabsContent value="login">
-                <CardTitle className="text-lg mb-1">স্বাগতম!</CardTitle>
-                <CardDescription className="mb-4">আপনার অ্যাকাউন্টে লগইন করুন</CardDescription>
+                <CardTitle className="text-lg mb-1">{t('welcomeBack')}</CardTitle>
+                <CardDescription className="mb-4">{t('loginToAccount')}</CardDescription>
                 
                 <form onSubmit={handleLogin} className="space-y-4">
                   <div className="space-y-2">
                     <Label htmlFor="login-email" className="flex items-center gap-2 text-muted-foreground">
                       <Mail className="w-4 h-4" />
-                      ইমেইল
+                      {t('email')}
                     </Label>
                     <Input
                       id="login-email"
                       type="email"
-                      placeholder="আপনার ইমেইল"
+                      placeholder={t('yourEmail')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}
@@ -212,12 +215,12 @@ export default function AuthPage() {
                   <div className="space-y-2">
                     <Label htmlFor="login-password" className="flex items-center gap-2 text-muted-foreground">
                       <Lock className="w-4 h-4" />
-                      পাসওয়ার্ড
+                      {t('password')}
                     </Label>
                     <Input
                       id="login-password"
                       type="password"
-                      placeholder="আপনার পাসওয়ার্ড"
+                      placeholder={t('yourPassword')}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={loading}
@@ -232,12 +235,12 @@ export default function AuthPage() {
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        অপেক্ষা করুন...
+                        {t('wait')}
                       </>
                     ) : (
                       <>
                         <LogIn className="w-4 h-4 mr-2" />
-                        লগইন করুন
+                        {t('loginBtn')}
                       </>
                     )}
                   </Button>
@@ -246,8 +249,8 @@ export default function AuthPage() {
 
               {/* Signup Tab */}
               <TabsContent value="signup">
-                <CardTitle className="text-lg mb-1">অ্যাকাউন্ট খুলুন</CardTitle>
-                <CardDescription className="mb-4">নতুন অ্যাকাউন্ট তৈরি করুন</CardDescription>
+                <CardTitle className="text-lg mb-1">{t('openAccount')}</CardTitle>
+                <CardDescription className="mb-4">{t('createNewAccount')}</CardDescription>
                 
                 <form onSubmit={handleSignup} className="space-y-3">
                   {/* Avatar Upload */}
@@ -266,19 +269,19 @@ export default function AuthPage() {
                         onChange={handleImageUpload}
                         className="hidden"
                       />
-                      <p className="text-xs text-muted-foreground text-center mt-1">ছবি আপলোড</p>
+                      <p className="text-xs text-muted-foreground text-center mt-1">{t('uploadPhoto')}</p>
                     </label>
                   </div>
 
                   <div className="space-y-2">
                     <Label htmlFor="full-name" className="flex items-center gap-2 text-muted-foreground">
                       <User className="w-4 h-4" />
-                      পূর্ণ নাম
+                      {t('fullName')}
                     </Label>
                     <Input
                       id="full-name"
                       type="text"
-                      placeholder="আপনার পূর্ণ নাম"
+                      placeholder={t('yourFullName')}
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
                       disabled={loading}
@@ -289,12 +292,12 @@ export default function AuthPage() {
                   <div className="space-y-2">
                     <Label htmlFor="signup-email" className="flex items-center gap-2 text-muted-foreground">
                       <Mail className="w-4 h-4" />
-                      ইমেইল
+                      {t('email')}
                     </Label>
                     <Input
                       id="signup-email"
                       type="email"
-                      placeholder="আপনার ইমেইল"
+                      placeholder={t('yourEmail')}
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       disabled={loading}
@@ -305,12 +308,12 @@ export default function AuthPage() {
                   <div className="space-y-2">
                     <Label htmlFor="signup-password" className="flex items-center gap-2 text-muted-foreground">
                       <Lock className="w-4 h-4" />
-                      পাসওয়ার্ড
+                      {t('password')}
                     </Label>
                     <Input
                       id="signup-password"
                       type="password"
-                      placeholder="কমপক্ষে ৬ অক্ষর"
+                      placeholder={t('minPassword')}
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       disabled={loading}
@@ -322,11 +325,11 @@ export default function AuthPage() {
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2 text-muted-foreground">
                         <Droplets className="w-4 h-4" />
-                        রক্তের গ্রুপ
+                        {t('bloodGroup')}
                       </Label>
                       <Select value={bloodGroup} onValueChange={setBloodGroup}>
                         <SelectTrigger className="bg-background/50">
-                          <SelectValue placeholder="নির্বাচন" />
+                          <SelectValue placeholder={t('select')} />
                         </SelectTrigger>
                         <SelectContent>
                           {bloodGroups.map((group) => (
@@ -339,11 +342,11 @@ export default function AuthPage() {
                     <div className="space-y-2">
                       <Label className="flex items-center gap-2 text-muted-foreground">
                         <Globe className="w-4 h-4" />
-                        জাতীয়তা
+                        {t('nationality')}
                       </Label>
                       <Select value={nationality} onValueChange={setNationality}>
                         <SelectTrigger className="bg-background/50">
-                          <SelectValue placeholder="নির্বাচন" />
+                          <SelectValue placeholder={t('select')} />
                         </SelectTrigger>
                         <SelectContent>
                           {nationalities.map((nat) => (
@@ -362,12 +365,12 @@ export default function AuthPage() {
                     {loading ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                        অপেক্ষা করুন...
+                        {t('wait')}
                       </>
                     ) : (
                       <>
                         <UserPlus className="w-4 h-4 mr-2" />
-                        সাইনআপ করুন
+                        {t('signupBtn')}
                       </>
                     )}
                   </Button>
@@ -379,7 +382,7 @@ export default function AuthPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground mt-6">
-          Created by TEAM_NEWBIES
+          {t('createdBy')}
         </p>
       </div>
     </div>

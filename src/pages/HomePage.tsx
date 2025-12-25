@@ -50,6 +50,7 @@ import farmerAvatar from "@/assets/farmer-avatar.png";
 import { useLocation } from "@/hooks/useLocation";
 import { useWeather } from "@/hooks/useWeather";
 import { useMarketPrices } from "@/hooks/useMarketPrices";
+import { useLanguage } from "@/contexts/LanguageContext";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -57,33 +58,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-
-const services = [
-  { icon: Scan, label: "রোগ শনাক্তকরণ", to: "/camera", gradient: "from-emerald-500/20 to-teal-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", description: "ফসলের রোগ চিনুন" },
-  { icon: ScanSearch, label: "সার স্ক্যান", to: "/fertilizer-scan", gradient: "from-rose-500/20 to-pink-500/20", iconColor: "text-rose-400", borderColor: "border-rose-500/30", description: "সার যাচাই করুন" },
-  { icon: Bug, label: "পোকার ম্যাপ", to: "/pest-map", gradient: "from-amber-500/20 to-orange-500/20", iconColor: "text-amber-400", borderColor: "border-amber-500/30", description: "এলাকার পোকা দেখুন" },
-  { icon: MessageSquare, label: "AI সহায়ক", to: "/chat", gradient: "from-cyan-500/20 to-sky-500/20", iconColor: "text-cyan-400", borderColor: "border-cyan-500/30", description: "কৃষি পরামর্শ নিন" },
-  { icon: TrendingUp, label: "বাজার দর", to: "/market", gradient: "from-green-500/20 to-emerald-500/20", iconColor: "text-green-400", borderColor: "border-green-500/30", description: "বাজার মূল্য দেখুন" },
-  { icon: Cloud, label: "আবহাওয়া", to: "/weather", gradient: "from-blue-500/20 to-indigo-500/20", iconColor: "text-blue-400", borderColor: "border-blue-500/30", description: "আবহাওয়া পূর্বাভাস" },
-  { icon: Calendar, label: "ক্যালেন্ডার", to: "/farmer-calendar", gradient: "from-fuchsia-500/20 to-pink-500/20", iconColor: "text-fuchsia-400", borderColor: "border-fuchsia-500/30", description: "বাংলা/ইংরেজি ক্যালেন্ডার" },
-  { icon: Compass, label: "কম্পাস", to: "/compass", gradient: "from-cyan-500/20 to-teal-500/20", iconColor: "text-cyan-400", borderColor: "border-cyan-500/30", description: "দিক নির্ণয়" },
-  { icon: Map, label: "জমির ম্যাপ", to: "/map", gradient: "from-indigo-500/20 to-violet-500/20", iconColor: "text-indigo-400", borderColor: "border-indigo-500/30", description: "স্যাটেলাইট ম্যাপ" },
-  { icon: Satellite, label: "স্যাটেলাইট ভিশন", to: "/satellite", gradient: "from-violet-500/20 to-purple-500/20", iconColor: "text-violet-400", borderColor: "border-violet-500/30", description: "NDVI ম্যাপ দেখুন" },
-  { icon: Calendar, label: "ফার্মিং ক্যালেন্ডার", to: "/calendar", gradient: "from-orange-500/20 to-amber-500/20", iconColor: "text-orange-400", borderColor: "border-orange-500/30", description: "ফসলের সময়সূচী" },
-  { icon: Tractor, label: "যন্ত্র অপ্টিমাইজার", to: "/machine", gradient: "from-orange-500/20 to-red-500/20", iconColor: "text-orange-400", borderColor: "border-orange-500/30", description: "ট্রাক্টর/টিলার গাইড" },
-  { icon: Calculator, label: "সার ক্যালকুলেটর", to: "/npk-calculator", gradient: "from-lime-500/20 to-green-500/20", iconColor: "text-lime-400", borderColor: "border-lime-500/30", description: "NPK ডোজ হিসাব" },
-  { icon: CloudLightning, label: "জলবায়ু সতর্কতা", to: "/climate-alert", gradient: "from-red-500/20 to-rose-500/20", iconColor: "text-red-400", borderColor: "border-red-500/30", description: "দুর্যোগ সতর্কতা" },
-  { icon: Landmark, label: "সরকারি সেবা", to: "/gov-services", gradient: "from-teal-500/20 to-cyan-500/20", iconColor: "text-teal-400", borderColor: "border-teal-500/30", description: "ভর্তুকি ও ঋণ" },
-  { icon: Warehouse, label: "গুদাম ব্যবস্থাপনা", to: "/storage", gradient: "from-slate-500/20 to-gray-500/20", iconColor: "text-slate-400", borderColor: "border-slate-500/30", description: "ফসল সংরক্ষণ" },
-  { icon: History, label: "ফসল ইতিহাস", to: "/history", gradient: "from-zinc-500/20 to-stone-500/20", iconColor: "text-zinc-400", borderColor: "border-zinc-500/30", description: "আগের স্ক্যান দেখুন" },
-  { icon: Award, label: "পুরস্কার", to: "/gamification", gradient: "from-yellow-500/20 to-amber-500/20", iconColor: "text-yellow-400", borderColor: "border-yellow-500/30", description: "ব্যাজ ও পয়েন্ট" },
-  { icon: Beaker, label: "সার পরামর্শ", to: "/fertilizer", gradient: "from-indigo-500/20 to-blue-500/20", iconColor: "text-indigo-400", borderColor: "border-indigo-500/30", description: "সার সুপারিশ" },
-  { icon: GraduationCap, label: "কৃষি জ্ঞান", to: "/knowledge", gradient: "from-purple-500/20 to-violet-500/20", iconColor: "text-purple-400", borderColor: "border-purple-500/30", description: "শিখুন ও জানুন" },
-  { icon: UsersRound, label: "কমিউনিটি", to: "/community", gradient: "from-sky-500/20 to-blue-500/20", iconColor: "text-sky-400", borderColor: "border-sky-500/30", description: "কৃষক সংঘ" },
-  { icon: PlayCircle, label: "অ্যাপ গাইড", to: "/demo", gradient: "from-pink-500/20 to-rose-500/20", iconColor: "text-pink-400", borderColor: "border-pink-500/30", description: "টিউটোরিয়াল দেখুন" },
-  { icon: MapPin, label: "জমি হিসাব", to: "/land-calculator", gradient: "from-emerald-500/20 to-green-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", description: "জমির মাপ ও দাম" },
-  { icon: BarChart3, label: "প্রভাব বিশ্লেষণ", to: "/impact", gradient: "from-gradient-start/20 to-gradient-end/20", iconColor: "text-secondary", borderColor: "border-secondary/30", description: "সমস্যা সমাধান চার্ট" },
-];
 
 interface Profile {
   full_name: string | null;
@@ -105,6 +79,41 @@ export default function HomePage() {
   const weather = useWeather(location.latitude, location.longitude);
   const { prices: marketPrices, loading: marketLoading } = useMarketPrices();
   const { trackPageView, trackFeatureUse } = useAnalyticsTracker();
+  const { t, language } = useLanguage();
+
+  // Services array with translation keys
+  const services = [
+    { icon: Scan, labelKey: "diseaseDetection", to: "/camera", gradient: "from-emerald-500/20 to-teal-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", descKey: "diseaseDesc" },
+    { icon: ScanSearch, labelKey: "fertilizerScan", to: "/fertilizer-scan", gradient: "from-rose-500/20 to-pink-500/20", iconColor: "text-rose-400", borderColor: "border-rose-500/30", descKey: "fertilizerDesc" },
+    { icon: Bug, labelKey: "pestMap", to: "/pest-map", gradient: "from-amber-500/20 to-orange-500/20", iconColor: "text-amber-400", borderColor: "border-amber-500/30", descKey: "pestDesc" },
+    { icon: MessageSquare, labelKey: "aiAssistant", to: "/chat", gradient: "from-cyan-500/20 to-sky-500/20", iconColor: "text-cyan-400", borderColor: "border-cyan-500/30", descKey: "aiDesc" },
+    { icon: TrendingUp, labelKey: "marketPrice", to: "/market", gradient: "from-green-500/20 to-emerald-500/20", iconColor: "text-green-400", borderColor: "border-green-500/30", descKey: "marketDesc" },
+    { icon: Cloud, labelKey: "weather", to: "/weather", gradient: "from-blue-500/20 to-indigo-500/20", iconColor: "text-blue-400", borderColor: "border-blue-500/30", descKey: "weatherDesc" },
+    { icon: Calendar, labelKey: "calendar", to: "/farmer-calendar", gradient: "from-fuchsia-500/20 to-pink-500/20", iconColor: "text-fuchsia-400", borderColor: "border-fuchsia-500/30", descKey: "calendarBanglaEng" },
+    { icon: Compass, labelKey: "compass", to: "/compass", gradient: "from-cyan-500/20 to-teal-500/20", iconColor: "text-cyan-400", borderColor: "border-cyan-500/30", descKey: "compassDesc" },
+    { icon: Map, labelKey: "landMap", to: "/map", gradient: "from-indigo-500/20 to-violet-500/20", iconColor: "text-indigo-400", borderColor: "border-indigo-500/30", descKey: "landMapDesc" },
+    { icon: Satellite, labelKey: "satellite", to: "/satellite", gradient: "from-violet-500/20 to-purple-500/20", iconColor: "text-violet-400", borderColor: "border-violet-500/30", descKey: "satelliteDesc" },
+    { icon: Calendar, labelKey: "calendar", to: "/calendar", gradient: "from-orange-500/20 to-amber-500/20", iconColor: "text-orange-400", borderColor: "border-orange-500/30", descKey: "cropSchedule" },
+    { icon: Tractor, labelKey: "machine", to: "/machine", gradient: "from-orange-500/20 to-red-500/20", iconColor: "text-orange-400", borderColor: "border-orange-500/30", descKey: "machineDesc" },
+    { icon: Calculator, labelKey: "npkCalculator", to: "/npk-calculator", gradient: "from-lime-500/20 to-green-500/20", iconColor: "text-lime-400", borderColor: "border-lime-500/30", descKey: "npkDesc" },
+    { icon: CloudLightning, labelKey: "climateAlert", to: "/climate-alert", gradient: "from-red-500/20 to-rose-500/20", iconColor: "text-red-400", borderColor: "border-red-500/30", descKey: "climateDesc" },
+    { icon: Landmark, labelKey: "govServices", to: "/gov-services", gradient: "from-teal-500/20 to-cyan-500/20", iconColor: "text-teal-400", borderColor: "border-teal-500/30", descKey: "govDesc" },
+    { icon: Warehouse, labelKey: "storage", to: "/storage", gradient: "from-slate-500/20 to-gray-500/20", iconColor: "text-slate-400", borderColor: "border-slate-500/30", descKey: "storageDesc" },
+    { icon: History, labelKey: "history", to: "/history", gradient: "from-zinc-500/20 to-stone-500/20", iconColor: "text-zinc-400", borderColor: "border-zinc-500/30", descKey: "historyDesc" },
+    { icon: Award, labelKey: "rewards", to: "/gamification", gradient: "from-yellow-500/20 to-amber-500/20", iconColor: "text-yellow-400", borderColor: "border-yellow-500/30", descKey: "rewardsDesc" },
+    { icon: Beaker, labelKey: "fertilizerAdvice", to: "/fertilizer", gradient: "from-indigo-500/20 to-blue-500/20", iconColor: "text-indigo-400", borderColor: "border-indigo-500/30", descKey: "fertAdviceDesc" },
+    { icon: GraduationCap, labelKey: "knowledge", to: "/knowledge", gradient: "from-purple-500/20 to-violet-500/20", iconColor: "text-purple-400", borderColor: "border-purple-500/30", descKey: "knowledgeDesc" },
+    { icon: UsersRound, labelKey: "community", to: "/community", gradient: "from-sky-500/20 to-blue-500/20", iconColor: "text-sky-400", borderColor: "border-sky-500/30", descKey: "communityDesc" },
+    { icon: PlayCircle, labelKey: "appGuide", to: "/demo", gradient: "from-pink-500/20 to-rose-500/20", iconColor: "text-pink-400", borderColor: "border-pink-500/30", descKey: "guideDesc" },
+    { icon: MapPin, labelKey: "landCalculator", to: "/land-calculator", gradient: "from-emerald-500/20 to-green-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", descKey: "landDesc" },
+    { icon: BarChart3, labelKey: "impactAnalytics", to: "/impact", gradient: "from-gradient-start/20 to-gradient-end/20", iconColor: "text-secondary", borderColor: "border-secondary/30", descKey: "impactDesc" },
+  ];
+
+  const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
+  const currentServices = services.slice(
+    currentPage * SERVICES_PER_PAGE,
+    (currentPage + 1) * SERVICES_PER_PAGE
+  );
 
   // Track page view on mount
   useEffect(() => {
@@ -125,14 +134,8 @@ export default function HomePage() {
     weeklyAvg: p.weekly_avg ? `৳${p.weekly_avg.toLocaleString('bn-BD')}` : null,
     change: p.today_price - p.yesterday_price,
     positive: p.today_price >= p.yesterday_price,
-    unit: p.unit || 'টাকা/কেজি'
+    unit: p.unit || t('perKg')
   }));
-
-  const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
-  const currentServices = services.slice(
-    currentPage * SERVICES_PER_PAGE,
-    (currentPage + 1) * SERVICES_PER_PAGE
-  );
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -187,19 +190,19 @@ export default function HomePage() {
       
       if (error) {
         console.error('Logout error:', error);
-        toast.error("লগআউট করতে সমস্যা হয়েছে");
+        toast.error(t('logoutError'));
       } else {
         // Clear local state after successful signout
         setSession(null);
         setProfile(null);
         setIsAdmin(false);
-        toast.success("সফলভাবে লগআউট হয়েছে");
+        toast.success(t('logoutSuccess'));
         // Navigate to splash page
         window.location.href = '/';
       }
     } catch (err) {
       console.error('Logout exception:', err);
-      toast.error("লগআউট করতে সমস্যা হয়েছে");
+      toast.error(t('logoutError'));
     }
   };
 
@@ -214,6 +217,17 @@ export default function HomePage() {
   const getUserLevel = () => {
     if (!profile) return 1;
     return Math.floor(profile.xp_points / 100) + 1;
+  };
+
+  // Get localized date/time
+  const getLocalizedTime = () => {
+    const locale = language === 'en' ? 'en-US' : 'bn-BD';
+    return currentTime.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  };
+
+  const getLocalizedDate = () => {
+    const locale = language === 'en' ? 'en-US' : 'bn-BD';
+    return currentTime.toLocaleDateString(locale, { weekday: 'long', day: 'numeric', month: 'long' });
   };
 
   return (
@@ -257,11 +271,11 @@ export default function HomePage() {
               </div>
               <div>
                 <h1 className="text-xl font-bold text-foreground">
-                  <span className="text-gradient-premium">agriশক্তি</span>
+                  <span className="text-gradient-premium">{t('appName')}</span>
                 </h1>
                 <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
                   <Sparkles className="w-3 h-3 text-primary" />
-                  কৃষির নতুন শক্তি
+                  {t('taglineShort')}
                 </p>
               </div>
             </div>
@@ -298,7 +312,7 @@ export default function HomePage() {
                 {session ? (
                   <>
                     <div className="px-3 py-3 border-b border-border/50">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">অ্যাকাউন্ট</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('account')}</p>
                       <p className="text-sm font-semibold text-foreground truncate mt-0.5">
                         {profile?.full_name || session.user.email?.split('@')[0]}
                       </p>
@@ -306,20 +320,20 @@ export default function HomePage() {
                     <DropdownMenuItem asChild>
                       <Link to="/profile" className="cursor-pointer gap-3 py-2.5">
                         <User className="w-4 h-4 text-muted-foreground" />
-                        <span>প্রোফাইল</span>
+                        <span>{t('profile')}</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/settings" className="cursor-pointer gap-3 py-2.5">
                         <Settings className="w-4 h-4 text-muted-foreground" />
-                        <span>সেটিংস</span>
+                        <span>{t('settings')}</span>
                       </Link>
                     </DropdownMenuItem>
                     {isAdmin && (
                       <DropdownMenuItem asChild>
                         <Link to="/admin" className="cursor-pointer gap-3 py-2.5">
                           <Shield className="w-4 h-4 text-primary" />
-                          <span>অ্যাডমিন ড্যাশবোর্ড</span>
+                          <span>{t('adminDashboard')}</span>
                         </Link>
                       </DropdownMenuItem>
                     )}
@@ -329,25 +343,25 @@ export default function HomePage() {
                       className="cursor-pointer gap-3 py-2.5 text-destructive focus:text-destructive"
                     >
                       <LogOut className="w-4 h-4" />
-                      <span>লগআউট</span>
+                      <span>{t('logout')}</span>
                     </DropdownMenuItem>
                   </>
                 ) : (
                   <>
                     <div className="px-3 py-3 border-b border-border/50">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">স্বাগতম!</p>
-                      <p className="text-sm font-semibold text-foreground mt-0.5">শুরু করুন</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('welcome')}</p>
+                      <p className="text-sm font-semibold text-foreground mt-0.5">{t('getStarted')}</p>
                     </div>
                     <DropdownMenuItem asChild>
                       <Link to="/auth" className="cursor-pointer gap-3 py-2.5">
                         <LogIn className="w-4 h-4 text-muted-foreground" />
-                        <span>লগইন / রেজিস্টার</span>
+                        <span>{t('login')}</span>
                       </Link>
                     </DropdownMenuItem>
                     <DropdownMenuItem asChild>
                       <Link to="/settings" className="cursor-pointer gap-3 py-2.5">
                         <Settings className="w-4 h-4 text-muted-foreground" />
-                        <span>সেটিংস</span>
+                        <span>{t('settings')}</span>
                       </Link>
                     </DropdownMenuItem>
                   </>
@@ -371,7 +385,7 @@ export default function HomePage() {
                 )}
                 <div>
                   <span className="text-sm font-medium text-foreground block">
-                    {location.loading ? 'খুঁজছি...' : location.city}
+                    {location.loading ? t('findingLocation') : location.city}
                   </span>
                   <span className="text-[10px] text-muted-foreground">{location.country}</span>
                 </div>
@@ -396,12 +410,12 @@ export default function HomePage() {
             <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <span className="text-2xl font-mono font-bold text-gradient-premium">
-                  {currentTime.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                  {getLocalizedTime()}
                 </span>
               </div>
               <div className="text-right">
                 <span className="text-xs text-muted-foreground">
-                  {currentTime.toLocaleDateString('bn-BD', { weekday: 'long', day: 'numeric', month: 'long' })}
+                  {getLocalizedDate()}
                 </span>
               </div>
             </div>
@@ -418,14 +432,14 @@ export default function HomePage() {
             <span className="relative text-2xl font-bold text-gradient-mint block">
               {profile ? String(profile.total_scans).padStart(2, '0') : '00'}
             </span>
-            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">স্ক্যান</p>
+            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">{t('scans')}</p>
           </div>
           
           {/* Level */}
           <div className="group relative overflow-hidden glass-card rounded-2xl p-4 text-center border border-border/30 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-glow-gold">
             <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/10 group-hover:to-transparent transition-all duration-500" />
             <span className="relative text-2xl font-bold text-gradient-gold block">{getUserLevel()}</span>
-            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">লেভেল</p>
+            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">{t('level')}</p>
           </div>
           
           {/* Weather Quick */}
@@ -461,10 +475,12 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="text-white font-bold text-base flex items-center gap-2">
-                    AI রোগ নির্ণয়
+                    {language === 'en' ? 'AI Disease Diagnosis' : 'AI রোগ নির্ণয়'}
                     <Zap className="w-4 h-4 text-yellow-300 animate-pulse" />
                   </h3>
-                  <p className="text-white/80 text-xs mt-0.5">ফসলের ছবি তুলুন, AI বিশ্লেষণ করবে</p>
+                  <p className="text-white/80 text-xs mt-0.5">
+                    {language === 'en' ? 'Take crop photo, AI will analyze' : 'ফসলের ছবি তুলুন, AI বিশ্লেষণ করবে'}
+                  </p>
                 </div>
               </div>
               <ArrowRight className="w-6 h-6 text-white group-hover:translate-x-1 transition-transform" />
@@ -486,10 +502,13 @@ export default function HomePage() {
             <div className="flex-1 min-w-0">
               <h3 className="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                আজকের কৃষি টিপস
+                {t('todayTip')}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দিন, বিকেলে কীটনাশক স্প্রে করবেন না। ধানের চারা রোপণের সেরা সময়।
+                {language === 'en' 
+                  ? "60% chance of rain. Irrigate in the morning, don't spray pesticides in the afternoon. Best time for rice seedling transplantation."
+                  : "বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দিন, বিকেলে কীটনাশক স্প্রে করবেন না। ধানের চারা রোপণের সেরা সময়।"
+                }
               </p>
             </div>
           </div>
@@ -501,7 +520,7 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            সেবা সমূহ
+            {language === 'en' ? 'Services' : 'সেবা সমূহ'}
           </h2>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-full">
@@ -566,7 +585,7 @@ export default function HomePage() {
               
               {/* Label */}
               <span className="relative text-xs text-foreground text-center font-semibold leading-tight group-hover:text-primary transition-colors">
-                {service.label}
+                {t(service.labelKey)}
               </span>
             </Link>
           ))}
@@ -594,11 +613,11 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-secondary" />
-            আজকের বাজার দর
+            {language === 'en' ? "Today's Market Price" : "আজকের বাজার দর"}
             {marketLoading && <Loader2 className="w-3 h-3 animate-spin" />}
           </h2>
           <Link to="/market" className="text-xs text-secondary font-medium flex items-center gap-1 hover:underline">
-            সব দেখুন
+            {t('viewAll')}
             <ArrowRight className="w-3 h-3" />
           </Link>
         </div>
@@ -624,7 +643,7 @@ export default function HomePage() {
                     {item.name}
                   </span>
                   <span className="text-[11px] text-muted-foreground">
-                    {item.weeklyAvg ? `সা. গড়: ${item.weeklyAvg}` : item.unit}
+                    {item.weeklyAvg ? `${t('weeklyAvg')}: ${item.weeklyAvg}` : item.unit}
                   </span>
                 </div>
               </div>
@@ -643,7 +662,7 @@ export default function HomePage() {
             </div>
           )) : (
             <div className="glass-card rounded-2xl p-6 text-center border border-border/30">
-              <p className="text-muted-foreground text-sm">বাজার দর লোড হচ্ছে...</p>
+              <p className="text-muted-foreground text-sm">{t('loading')}</p>
             </div>
           )}
         </div>
@@ -655,7 +674,10 @@ export default function HomePage() {
           <div className="flex items-center justify-center gap-2 text-sm">
             <UsersRound className="w-4 h-4 text-secondary" />
             <p className="text-muted-foreground">
-              আপনার গ্রামে <span className="text-secondary font-bold">১২৫ জন</span> কৃষক agriশক্তি ব্যবহার করছেন!
+              {language === 'en' 
+                ? <>In your village <span className="text-secondary font-bold">125</span> farmers are using agriShokti!</>
+                : <>আপনার গ্রামে <span className="text-secondary font-bold">১২৫ জন</span> কৃষক agriশক্তি ব্যবহার করছেন!</>
+              }
             </p>
           </div>
         </div>
