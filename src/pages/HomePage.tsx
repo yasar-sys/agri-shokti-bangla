@@ -475,11 +475,11 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h3 className="text-white font-bold text-base flex items-center gap-2">
-                    {language === 'en' ? 'AI Disease Diagnosis' : 'AI রোগ নির্ণয়'}
+                    {t('aiDiseaseDiagnosis')}
                     <Zap className="w-4 h-4 text-yellow-300 animate-pulse" />
                   </h3>
                   <p className="text-white/80 text-xs mt-0.5">
-                    {language === 'en' ? 'Take crop photo, AI will analyze' : 'ফসলের ছবি তুলুন, AI বিশ্লেষণ করবে'}
+                    {t('takeCropPhotoAI')}
                   </p>
                 </div>
               </div>
@@ -505,10 +505,7 @@ export default function HomePage() {
                 {t('todayTip')}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {language === 'en' 
-                  ? "60% chance of rain. Irrigate in the morning, don't spray pesticides in the afternoon. Best time for rice seedling transplantation."
-                  : "বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দিন, বিকেলে কীটনাশক স্প্রে করবেন না। ধানের চারা রোপণের সেরা সময়।"
-                }
+                {t('todayTipText')}
               </p>
             </div>
           </div>
@@ -520,7 +517,7 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-primary" />
-            {language === 'en' ? 'Services' : 'সেবা সমূহ'}
+            {t('services')}
           </h2>
           <div className="flex items-center gap-3">
             <span className="text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-full">
@@ -613,7 +610,7 @@ export default function HomePage() {
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-base font-bold text-foreground flex items-center gap-2">
             <TrendingUp className="w-4 h-4 text-secondary" />
-            {language === 'en' ? "Today's Market Price" : "আজকের বাজার দর"}
+            {t('todayMarketPrice')}
             {marketLoading && <Loader2 className="w-3 h-3 animate-spin" />}
           </h2>
           <Link to="/market" className="text-xs text-secondary font-medium flex items-center gap-1 hover:underline">
@@ -674,10 +671,7 @@ export default function HomePage() {
           <div className="flex items-center justify-center gap-2 text-sm">
             <UsersRound className="w-4 h-4 text-secondary" />
             <p className="text-muted-foreground">
-              {language === 'en' 
-                ? <>In your village <span className="text-secondary font-bold">125</span> farmers are using agriShokti!</>
-                : <>আপনার গ্রামে <span className="text-secondary font-bold">১২৫ জন</span> কৃষক agriশক্তি ব্যবহার করছেন!</>
-              }
+              {t('farmersUsingApp')} <span className="text-secondary font-bold">{t('farmersCount')}</span> {t('farmersUsingSuffix')}
             </p>
           </div>
         </div>
