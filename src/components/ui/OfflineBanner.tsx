@@ -1,9 +1,11 @@
 import { WifiOff } from "lucide-react";
+import { useLanguageSafe } from "@/contexts/LanguageContext";
 import { useOfflineStatus } from "@/hooks/useOfflineStatus";
 import { cn } from "@/lib/utils";
 
 export function OfflineBanner() {
   const isOffline = useOfflineStatus();
+  const { t } = useLanguageSafe();
 
   if (!isOffline) return null;
 
@@ -19,7 +21,7 @@ export function OfflineBanner() {
       )}
     >
       <WifiOff className="w-4 h-4" />
-      <span>ইন্টারনেট নেই। সীমিত সুবিধা পাবেন।</span>
+      <span>{t("offlineMessage")}</span>
     </div>
   );
 }
