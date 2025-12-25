@@ -2,9 +2,11 @@ import { ArrowLeft, Mail, Phone, MessageCircle, Clock, MapPin, Heart } from "luc
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 export default function SupportPage() {
+  const { t } = useLanguage();
   return (
     <div className="min-h-screen pb-24 relative">
       {/* Background */}
@@ -26,8 +28,8 @@ export default function SupportPage() {
             <ArrowLeft className="w-6 h-6" />
           </Link>
           <div>
-            <h1 className="text-xl font-bold text-foreground">সাপোর্ট সেন্টার</h1>
-            <p className="text-sm text-muted-foreground">আমাদের সাথে যোগাযোগ করুন</p>
+            <h1 className="text-xl font-bold text-foreground">{t('supportCenter')}</h1>
+            <p className="text-sm text-muted-foreground">{t('contactUs')}</p>
           </div>
         </div>
       </header>
@@ -38,8 +40,8 @@ export default function SupportPage() {
           <div className="w-20 h-20 bg-secondary/20 rounded-full flex items-center justify-center mx-auto mb-4">
             <HeadphonesIcon className="w-10 h-10 text-secondary" />
           </div>
-          <h2 className="text-2xl font-bold text-foreground mb-2">আমরা আপনার পাশে আছি</h2>
-          <p className="text-muted-foreground">যেকোনো সমস্যায় আমাদের সাথে যোগাযোগ করুন</p>
+          <h2 className="text-2xl font-bold text-foreground mb-2">{t('weAreHere')}</h2>
+          <p className="text-muted-foreground">{t('contactAnytime')}</p>
         </div>
 
         {/* Contact Cards */}

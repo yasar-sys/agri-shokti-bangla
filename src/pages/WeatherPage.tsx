@@ -3,11 +3,13 @@ import { Droplets, Wind, Sun, Thermometer, Gauge, MapPin, ArrowLeft, Loader2, Cl
 import { Link } from "react-router-dom";
 import { useLocation } from "@/hooks/useLocation";
 import { useWeather } from "@/hooks/useWeather";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { cn } from "@/lib/utils";
 
 export default function WeatherPage() {
   const location = useLocation();
   const weather = useWeather(location.latitude, location.longitude);
+  const { t, language } = useLanguage();
   
   const [forecast, setForecast] = useState<any[]>([]);
   const [forecastLoading, setForecastLoading] = useState(true);
@@ -26,7 +28,7 @@ export default function WeatherPage() {
           80: '🌦️', 81: '🌦️', 82: '⛈️', 95: '⛈️', 96: '🌨️', 99: '🌨️',
         };
         
-        const days = ['আজ', 'আগামী', 'পরশু', '৩ দিন', '৪ দিন'];
+        const days = [t('today'), t('tomorrow'), t('dayAfter'), t('days3'), t('days4')];
         
         const forecastData = data.daily.time.slice(0, 5).map((date: string, i: number) => ({
           day: days[i],
@@ -51,8 +53,8 @@ export default function WeatherPage() {
   const soilData = {
     moisture: 65,
     ph: 6.5,
-    nitrogen: "মধ্যম",
-    recommendation: "মাটিতে আর্দ্রতা পর্যাপ্ত। সেচের প্রয়োজন নেই।",
+    nitrogen: t('medium'),
+    recommendation: t('soilRecommendation'),
   };
 
   return (
@@ -77,12 +79,12 @@ export default function WeatherPage() {
           </Link>
           <div className="flex-1">
             <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
-              আবহাওয়া
+              {t('weatherTitle')}
               <Cloud className="w-5 h-5 text-chart-3" />
             </h1>
             <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
               <MapPin className="w-3 h-3 text-destructive" />
-              {location.loading ? 'লোকেশন খুঁজছি...' : `${location.city}, ${location.country}`}
+              {location.loading ? t('findingLocation') : `${location.city}, ${location.country}`}
             </p>
           </div>
         </div>
@@ -97,7 +99,7 @@ export default function WeatherPage() {
           <div className="relative p-6">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-4">
               <div className="w-2 h-2 rounded-full bg-chart-3 animate-pulse" />
-              <span>রিয়েল-টাইম আবহাওয়া</span>
+              <span>{t('realTimeWeather')}</span>
             </div>
 
             {weather.loading ? (
@@ -123,7 +125,7 @@ export default function WeatherPage() {
                       <Droplets className="w-5 h-5 text-blue-400" />
                     </div>
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">আর্দ্রতা</p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('humidity')}</p>
                       <p className="font-bold text-foreground text-lg">{weather.humidity}%</p>
                     </div>
                   </div>
@@ -132,8 +134,8 @@ export default function WeatherPage() {
                       <Wind className="w-5 h-5 text-cyan-400" />
                     </div>
                     <div>
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">বাতাস</p>
-                      <p className="font-bold text-foreground text-lg">{weather.wind} <span className="text-xs font-normal">কি.মি./ঘ.</span></p>
+                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('wind')}</p>
+                      <p className="font-bold text-foreground text-lg">{weather.wind} <span className="text-xs font-normal">{t('kmh')}</span></p>
                     </div>
                   </div>
                 </div>
@@ -147,7 +149,7 @@ export default function WeatherPage() {
       <section className="px-5 mb-6">
         <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
           <CloudRain className="w-4 h-4 text-chart-3" />
-          আগামী দিনের পূর্বাভাস
+          {t('forecastTitle')}
         </h2>
         {forecastLoading ? (
           <div className="flex items-center justify-center py-8">
@@ -183,13 +185,13 @@ export default function WeatherPage() {
       <section className="px-5">
         <h2 className="text-base font-bold text-foreground mb-4 flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-primary" />
-          মাটির তথ্য
+          {t('soilData')}
         </h2>
         <div className="glass-card rounded-3xl p-5 border border-border/50">
           <div className="grid grid-cols-3 gap-3 mb-5">
             <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/30">
               <Droplets className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-              <p className="text-[10px] text-muted-foreground uppercase">আর্দ্রতা</p>
+              <p className="text-[10px] text-muted-foreground uppercase">{t('moisture')}</p>
               <p className="font-bold text-foreground text-lg">{soilData.moisture}%</p>
             </div>
             <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
@@ -199,7 +201,7 @@ export default function WeatherPage() {
             </div>
             <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/30">
               <Thermometer className="w-6 h-6 text-secondary mx-auto mb-2" />
-              <p className="text-[10px] text-muted-foreground uppercase">নাইট্রোজেন</p>
+              <p className="text-[10px] text-muted-foreground uppercase">{t('nitrogen')}</p>
               <p className="font-bold text-foreground text-lg">{soilData.nitrogen}</p>
             </div>
           </div>
@@ -210,7 +212,7 @@ export default function WeatherPage() {
                 <Zap className="w-5 h-5 text-secondary" />
               </div>
               <div>
-                <p className="text-sm font-bold text-foreground mb-1">AI পরামর্শ</p>
+                <p className="text-sm font-bold text-foreground mb-1">{t('aiAdvice')}</p>
                 <p className="text-xs text-muted-foreground leading-relaxed">{soilData.recommendation}</p>
               </div>
             </div>
