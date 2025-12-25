@@ -1553,3 +1553,27 @@ export function useLanguage() {
   }
   return context;
 }
+
+// Safe version that returns fallback instead of throwing
+export function useLanguageSafe() {
+  const context = useContext(LanguageContext);
+  
+  if (context === undefined) {
+    // Return fallback functions when context is not available
+    return {
+      language: "bn" as Language,
+      setLanguage: () => {},
+      t: (key: string): string => {
+        // Basic fallback translations for critical UI elements
+        const fallbacks: Record<string, string> = {
+          offlineMessage: "ইন্টারনেট নেই। সীমিত সুবিধা পাবেন।",
+          loading: "লোড হচ্ছে...",
+          error: "ত্রুটি হয়েছে"
+        };
+        return fallbacks[key] || key;
+      }
+    };
+  }
+  
+  return context;
+}
