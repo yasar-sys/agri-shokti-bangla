@@ -127,15 +127,17 @@ export default function HomePage() {
   }, []);
 
   // Get top 3 market prices for display
-  const topMarketPrices = marketPrices.slice(0, 3).map(p => ({
-    emoji: p.crop_emoji || '🌾',
-    name: p.crop_name,
-    price: `৳${p.today_price.toLocaleString('bn-BD')}`,
-    weeklyAvg: p.weekly_avg ? `৳${p.weekly_avg.toLocaleString('bn-BD')}` : null,
-    change: p.today_price - p.yesterday_price,
-    positive: p.today_price >= p.yesterday_price,
-    unit: p.unit || t('perKg')
-  }));
+  const topMarketPrices = marketPrices && marketPrices.length > 0 
+    ? marketPrices.slice(0, 3).map(p => ({
+        emoji: p.crop_emoji || '🌾',
+        name: p.crop_name,
+        price: `৳${p.today_price?.toLocaleString('bn-BD') || '0'}`,
+        weeklyAvg: p.weekly_avg ? `৳${p.weekly_avg.toLocaleString('bn-BD')}` : null,
+        change: (p.today_price || 0) - (p.yesterday_price || 0),
+        positive: (p.today_price || 0) >= (p.yesterday_price || 0),
+        unit: p.unit || t('perKg')
+      }))
+    : [];
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
@@ -185,24 +187,28 @@ export default function HomePage() {
 
   const handleLogout = async () => {
     try {
-      // Sign out from Supabase first
-      const { error } = await supabase.auth.signOut({ scope: 'global' });
+      // Clear local state first to ensure UI updates immediately
+      setSession(null);
+      setProfile(null);
+      setIsAdmin(false);
+      
+      // Sign out from Supabase (local scope is more reliable)
+      const { error } = await supabase.auth.signOut();
       
       if (error) {
         console.error('Logout error:', error);
         toast.error(t('logoutError'));
       } else {
-        // Clear local state after successful signout
-        setSession(null);
-        setProfile(null);
-        setIsAdmin(false);
         toast.success(t('logoutSuccess'));
-        // Navigate to splash page
-        window.location.href = '/';
       }
+      
+      // Always navigate to splash page
+      window.location.href = '/';
     } catch (err) {
       console.error('Logout exception:', err);
       toast.error(t('logoutError'));
+      // Still navigate even on error
+      window.location.href = '/';
     }
   };
 
