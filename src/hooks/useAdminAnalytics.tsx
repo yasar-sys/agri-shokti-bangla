@@ -61,28 +61,47 @@ export function useAdminAnalytics() {
   const [recentPosts, setRecentPosts] = useState<CommunityPost[]>([]);
   const [dailyActivity, setDailyActivity] = useState<DailyActivity[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
 
+  // Listen for auth state changes
   useEffect(() => {
-    checkAdminAndFetchData();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setUserId(session?.user?.id || null);
+      }
+    );
+
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setUserId(session?.user?.id || null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const checkAdminAndFetchData = async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
-        setError('লগইন করুন');
-        setLoading(false);
-        return;
-      }
+  // Fetch data when userId changes
+  useEffect(() => {
+    if (userId) {
+      checkAdminAndFetchData(userId);
+    } else {
+      setLoading(false);
+      setError('লগইন করুন');
+    }
+  }, [userId]);
 
-      // Check if user is admin
+  const checkAdminAndFetchData = async (currentUserId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      // Check if user is admin using the passed userId
       const { data: roleData, error: roleError } = await supabase
         .from('user_roles')
         .select('role')
-        .eq('user_id', session.user.id)
+        .eq('user_id', currentUserId)
         .eq('role', 'admin')
         .maybeSingle();
+      
+      console.log('Admin check for user:', currentUserId, 'Result:', roleData, 'Error:', roleError);
 
       if (roleError || !roleData) {
         setError('আপনার অ্যাডমিন অ্যাক্সেস নেই');
@@ -173,8 +192,9 @@ export function useAdminAnalytics() {
   };
 
   const refetch = () => {
-    setLoading(true);
-    checkAdminAndFetchData();
+    if (userId) {
+      checkAdminAndFetchData(userId);
+    }
   };
 
   return {
