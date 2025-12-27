@@ -337,6 +337,7 @@ export type Database = {
           content: string
           created_at: string
           crop_type: string | null
+          embedding: string | null
           id: string
           is_active: boolean | null
           keywords: string[] | null
@@ -351,6 +352,7 @@ export type Database = {
           content: string
           created_at?: string
           crop_type?: string | null
+          embedding?: string | null
           id?: string
           is_active?: boolean | null
           keywords?: string[] | null
@@ -365,6 +367,7 @@ export type Database = {
           content?: string
           created_at?: string
           crop_type?: string | null
+          embedding?: string | null
           id?: string
           is_active?: boolean | null
           keywords?: string[] | null
@@ -584,6 +587,54 @@ export type Database = {
           updated_at?: string | null
           user_id?: string
           xp_points?: number | null
+        }
+        Relationships: []
+      }
+      rag_interactions: {
+        Row: {
+          created_at: string
+          feedback_rating: number | null
+          id: string
+          model_used: string | null
+          query: string
+          response: string
+          response_time_ms: number | null
+          retrieved_context: string | null
+          retrieved_doc_ids: string[] | null
+          session_id: string
+          sources: string | null
+          tokens_used: number | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          feedback_rating?: number | null
+          id?: string
+          model_used?: string | null
+          query: string
+          response: string
+          response_time_ms?: number | null
+          retrieved_context?: string | null
+          retrieved_doc_ids?: string[] | null
+          session_id?: string
+          sources?: string | null
+          tokens_used?: number | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          feedback_rating?: number | null
+          id?: string
+          model_used?: string | null
+          query?: string
+          response?: string
+          response_time_ms?: number | null
+          retrieved_context?: string | null
+          retrieved_doc_ids?: string[] | null
+          session_id?: string
+          sources?: string | null
+          tokens_used?: number | null
+          user_id?: string | null
         }
         Relationships: []
       }
@@ -901,6 +952,27 @@ export type Database = {
           _user_id: string
         }
         Returns: boolean
+      }
+      match_documents: {
+        Args: {
+          match_count?: number
+          match_threshold?: number
+          query_embedding: string
+        }
+        Returns: {
+          category: string
+          content: string
+          crop_type: string
+          id: string
+          season: string
+          similarity: number
+          source: string
+          title: string
+        }[]
+      }
+      update_document_embedding: {
+        Args: { doc_id: string; new_embedding: string }
+        Returns: undefined
       }
     }
     Enums: {
