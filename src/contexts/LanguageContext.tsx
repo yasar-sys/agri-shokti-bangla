@@ -79,6 +79,10 @@ const translations: Record<Language, Record<string, string>> = {
     landDesc: "জমির মাপ ও দাম",
     impactAnalytics: "প্রভাব বিশ্লেষণ",
     impactDesc: "সমস্যা সমাধান চার্ট",
+    cropBarter: "ফসল বিনিময়",
+    barterDesc: "সরাসরি ফসল বিনিময়",
+    demoScript: "ডেমো স্ক্রিপ্ট",
+    demoScriptDesc: "ভিডিও স্ক্রিপ্ট",
     
     // Bottom Nav
     scanner: "স্ক্যানার",
@@ -455,6 +459,10 @@ const translations: Record<Language, Record<string, string>> = {
     landDesc: "Land measurement & price",
     impactAnalytics: "Impact Analytics",
     impactDesc: "Problem solving charts",
+    cropBarter: "Crop Barter",
+    barterDesc: "Direct crop exchange",
+    demoScript: "Demo Script",
+    demoScriptDesc: "Video script",
     
     // Bottom Nav
     scanner: "Scanner",
