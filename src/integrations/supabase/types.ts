@@ -158,6 +158,57 @@ export type Database = {
         }
         Relationships: []
       }
+      crop_listings: {
+        Row: {
+          created_at: string
+          crop_name: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_available: boolean | null
+          location: string | null
+          quality_grade: string | null
+          quantity: number
+          unit: string
+          updated_at: string
+          user_id: string
+          views_count: number | null
+          wanted_crops: string[] | null
+        }
+        Insert: {
+          created_at?: string
+          crop_name: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          location?: string | null
+          quality_grade?: string | null
+          quantity: number
+          unit?: string
+          updated_at?: string
+          user_id: string
+          views_count?: number | null
+          wanted_crops?: string[] | null
+        }
+        Update: {
+          created_at?: string
+          crop_name?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_available?: boolean | null
+          location?: string | null
+          quality_grade?: string | null
+          quantity?: number
+          unit?: string
+          updated_at?: string
+          user_id?: string
+          views_count?: number | null
+          wanted_crops?: string[] | null
+        }
+        Relationships: []
+      }
       farming_tips: {
         Row: {
           category: string | null
@@ -676,6 +727,59 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: []
+      }
+      trade_requests: {
+        Row: {
+          created_at: string
+          id: string
+          listing_id: string
+          message: string | null
+          offered_crop: string
+          offered_quantity: number
+          offered_unit: string
+          requester_id: string
+          requester_name: string | null
+          requester_phone: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          listing_id: string
+          message?: string | null
+          offered_crop: string
+          offered_quantity: number
+          offered_unit?: string
+          requester_id: string
+          requester_name?: string | null
+          requester_phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          listing_id?: string
+          message?: string | null
+          offered_crop?: string
+          offered_quantity?: number
+          offered_unit?: string
+          requester_id?: string
+          requester_name?: string | null
+          requester_phone?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trade_requests_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "crop_listings"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_achievements: {
         Row: {
