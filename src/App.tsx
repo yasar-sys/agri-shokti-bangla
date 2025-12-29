@@ -46,6 +46,8 @@ const ImpactAnalyticsPage = lazy(() => import("./pages/ImpactAnalyticsPage"));
 const KnowledgeManagementPage = lazy(() => import("./pages/KnowledgeManagementPage"));
 const RAGHistoryPage = lazy(() => import("./pages/RAGHistoryPage"));
 const SubmissionPage = lazy(() => import("./pages/SubmissionPage"));
+const BarterPage = lazy(() => import("./pages/BarterPage"));
+const DemoScriptPage = lazy(() => import("./pages/DemoScriptPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Error Boundary Component
@@ -169,6 +171,8 @@ function AppContent() {
             <Route path="/knowledge-management" element={<KnowledgeManagementPage />} />
             <Route path="/rag-history" element={<RAGHistoryPage />} />
             <Route path="/submission" element={<SubmissionPage />} />
+            <Route path="/barter" element={<BarterPage />} />
+            <Route path="/demo-script" element={<DemoScriptPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
