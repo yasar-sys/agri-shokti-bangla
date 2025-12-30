@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo } from 'react';
-import { Loader2, Satellite, AlertTriangle, RefreshCw, ZoomIn, ZoomOut } from 'lucide-react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { Loader2, Satellite, AlertTriangle, RefreshCw, ZoomIn, ZoomOut, WifiOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -19,15 +19,13 @@ interface NASASatelliteMapProps {
 
 type TileProvider = 'satellite' | 'terrain' | 'osm';
 
-// Alternative satellite tile sources (more reliable than NASA GIBS for direct browser access)
-const TILE_PROVIDERS = {
-  // Esri World Imagery - high quality satellite imagery
-  satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  // Esri Topo Map
-  terrain: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
-  // OpenStreetMap for reference
-  osm: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
-};
+// Get the Supabase URL for edge function calls
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+
+// Build proxied tile URL through our edge function (solves CORS issues)
+function buildProxiedTileUrl(provider: TileProvider, z: number, x: number, y: number): string {
+  return `${SUPABASE_URL}/functions/v1/satellite-tiles?provider=${provider}&z=${z}&x=${x}&y=${y}`;
+}
 
 // Calculate tile coordinates from lat/lng
 function latLngToTile(lat: number, lng: number, zoom: number) {
@@ -36,14 +34,6 @@ function latLngToTile(lat: number, lng: number, zoom: number) {
   const latRad = lat * Math.PI / 180;
   const y = Math.floor((1 - Math.log(Math.tan(latRad) + 1 / Math.cos(latRad)) / Math.PI) / 2 * n);
   return { x, y, z: zoom };
-}
-
-// Build tile URL based on provider
-function buildTileUrl(provider: TileProvider, z: number, x: number, y: number): string {
-  return TILE_PROVIDERS[provider]
-    .replace('{z}', z.toString())
-    .replace('{x}', x.toString())
-    .replace('{y}', y.toString());
 }
 
 export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zones = [], onZoneClick }: NASASatelliteMapProps) {
@@ -71,13 +61,35 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
     return tiles;
   }, [latitude, longitude, zoom]);
 
-  // Build tile URLs for current layer
+  // Build tile URLs through our proxy edge function
   const tileUrls = useMemo(() => {
     return tileGrid.map(tile => ({
       ...tile,
-      url: buildTileUrl(activeLayer, tile.z, tile.x, tile.y)
+      url: buildProxiedTileUrl(activeLayer, tile.z, tile.x, tile.y)
     }));
   }, [tileGrid, activeLayer]);
+
+  // Handle tile load error with automatic fallback
+  const handleTileError = useCallback((e: React.SyntheticEvent<HTMLImageElement>, tile: { z: number; x: number; y: number }) => {
+    const target = e.target as HTMLImageElement;
+    
+    // Try fallback providers in order: satellite -> terrain -> osm
+    if (!target.dataset.fallback1 && activeLayer === 'satellite') {
+      target.dataset.fallback1 = 'true';
+      target.src = buildProxiedTileUrl('terrain', tile.z, tile.x, tile.y);
+      console.log('[SatelliteMap] Falling back to terrain tiles');
+    } else if (!target.dataset.fallback2) {
+      target.dataset.fallback2 = 'true';
+      target.src = buildProxiedTileUrl('osm', tile.z, tile.x, tile.y);
+      console.log('[SatelliteMap] Falling back to OSM tiles');
+    } else if (!target.dataset.failed) {
+      target.dataset.failed = 'true';
+      target.style.opacity = '0.3';
+      target.style.background = 'hsl(var(--muted))';
+      setTilesLoaded(prev => prev + 1);
+      setTileError(true);
+    }
+  }, [activeLayer]);
 
   useEffect(() => {
     fetchAnalysis();
@@ -192,25 +204,20 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
           }}
         >
           {tileUrls.map((tile, idx) => (
-            <div key={tile.key} className="relative overflow-hidden">
+            <div key={tile.key} className="relative overflow-hidden bg-muted">
               <img
                 src={tile.url}
                 alt={`Satellite tile ${idx + 1}`}
-                className="w-full h-full object-cover"
-                onLoad={() => setTilesLoaded(prev => prev + 1)}
-                onError={(e) => {
+                className="w-full h-full object-cover transition-opacity duration-300"
+                onLoad={(e) => {
                   const target = e.target as HTMLImageElement;
-                  // Try fallback to a different provider
-                  if (activeLayer === 'satellite' && !target.dataset.fallback) {
-                    target.dataset.fallback = 'true';
-                    target.src = buildTileUrl('terrain', tile.z, tile.x, tile.y);
-                  } else if (!target.dataset.failed) {
-                    target.dataset.failed = 'true';
-                    target.style.opacity = '0.5';
-                    setTilesLoaded(prev => prev + 1); // Count as loaded to prevent infinite loading
-                  }
+                  target.style.opacity = '1';
+                  setTilesLoaded(prev => prev + 1);
                 }}
+                onError={(e) => handleTileError(e, tile)}
                 loading="eager"
+                style={{ opacity: 0 }}
+                crossOrigin="anonymous"
               />
             </div>
           ))}
@@ -347,14 +354,16 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
         </div>
       </div>
 
-      {/* Tile error fallback */}
-      {tileError && (
-        <div className="absolute inset-0 flex items-center justify-center bg-muted/80 backdrop-blur-sm z-30">
-          <div className="text-center p-4">
-            <Satellite className="w-10 h-10 text-muted-foreground mx-auto mb-2" />
-            <p className="text-sm text-muted-foreground">স্যাটেলাইট টাইল লোড হয়নি</p>
-            <Button size="sm" variant="outline" onClick={handleRefresh} className="mt-2">
-              আবার চেষ্টা করুন
+      {/* Tile error notification - non-blocking */}
+      {tileError && tilesLoaded < 3 && (
+        <div className="absolute bottom-16 left-2 right-2 z-30">
+          <div className="bg-destructive/90 backdrop-blur-sm rounded-lg px-3 py-2 flex items-center justify-between shadow-lg">
+            <div className="flex items-center gap-2">
+              <WifiOff className="w-4 h-4 text-destructive-foreground" />
+              <span className="text-xs text-destructive-foreground">কিছু টাইল লোড হয়নি</span>
+            </div>
+            <Button size="sm" variant="ghost" onClick={handleRefresh} className="h-6 text-xs text-destructive-foreground hover:bg-destructive-foreground/20">
+              রিফ্রেশ
             </Button>
           </div>
         </div>

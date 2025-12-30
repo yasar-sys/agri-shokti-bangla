@@ -26,3 +26,6 @@ verify_jwt = false
 
 [functions.nasa-ndvi]
 verify_jwt = false
+
+[functions.satellite-tiles]
+verify_jwt = false
