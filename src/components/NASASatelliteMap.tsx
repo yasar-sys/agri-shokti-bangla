@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback, useRef } from 'react';
 import { Loader2, Satellite, AlertTriangle, RefreshCw, ZoomIn, ZoomOut, WifiOff, Radio, Leaf } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
@@ -79,6 +79,7 @@ export function NASASatelliteMap({
   const [analysis, setAnalysis] = useState<any>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [tilesLoaded, setTilesLoaded] = useState(0);
+  const tilesLoadedRef = useRef(0);
   const [liveZones, setLiveZones] = useState<FieldZone[]>(zones);
   const [heatmapVisible, setHeatmapVisible] = useState(showHeatmap);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
@@ -174,7 +175,11 @@ export function NASASatelliteMap({
     } else if (!target.dataset.failed) {
       target.dataset.failed = 'true';
       target.style.opacity = '0.3';
-      setTilesLoaded(prev => prev + 1);
+      setTilesLoaded(prev => {
+        const next = prev + 1;
+        tilesLoadedRef.current = next;
+        return next;
+      });
       setTileError(true);
     }
   }, [activeLayer]);
@@ -183,7 +188,22 @@ export function NASASatelliteMap({
     fetchAnalysis();
     setLoading(true);
     setTilesLoaded(0);
+    tilesLoadedRef.current = 0;
     setTileError(false);
+
+    // Production-safety: never stay stuck in loading forever
+    const t = window.setTimeout(() => {
+      const loadedNow = tilesLoadedRef.current;
+      setLoading(false);
+      // If nothing loaded, switch layer and show error banner
+      if (loadedNow === 0) {
+        setTileError(true);
+        setActiveLayer((prev) => (prev === 'satellite' ? 'terrain' : prev));
+      }
+    }, 6500);
+
+    return () => window.clearTimeout(t);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [latitude, longitude, activeLayer, zoom]);
 
   useEffect(() => {
@@ -319,7 +339,11 @@ export function NASASatelliteMap({
                 onLoad={(e) => {
                   const target = e.target as HTMLImageElement;
                   target.style.opacity = '1';
-                  setTilesLoaded(prev => prev + 1);
+      setTilesLoaded(prev => {
+        const next = prev + 1;
+        tilesLoadedRef.current = next;
+        return next;
+      });
                 }}
                 onError={(e) => handleTileError(e, tile)}
                 loading="eager"
