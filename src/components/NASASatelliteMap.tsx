@@ -17,14 +17,16 @@ interface NASASatelliteMapProps {
   onZoneClick?: (zoneId: string) => void;
 }
 
-type LayerType = 'ndvi' | 'truecolor' | 'modis';
+type TileProvider = 'satellite' | 'terrain' | 'osm';
 
-// NASA GIBS WMTS Configuration
-const GIBS_BASE = 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best';
-const LAYERS = {
-  ndvi: 'MODIS_Terra_NDVI_8Day',
-  truecolor: 'MODIS_Terra_CorrectedReflectance_TrueColor',
-  modis: 'VIIRS_NOAA20_CorrectedReflectance_TrueColor'
+// Alternative satellite tile sources (more reliable than NASA GIBS for direct browser access)
+const TILE_PROVIDERS = {
+  // Esri World Imagery - high quality satellite imagery
+  satellite: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+  // Esri Topo Map
+  terrain: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+  // OpenStreetMap for reference
+  osm: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png'
 };
 
 // Calculate tile coordinates from lat/lng
@@ -36,26 +38,22 @@ function latLngToTile(lat: number, lng: number, zoom: number) {
   return { x, y, z: zoom };
 }
 
-// Get date string for NASA GIBS (format: YYYY-MM-DD)
-function getGIBSDate(daysAgo: number = 1): string {
-  const date = new Date();
-  date.setDate(date.getDate() - daysAgo);
-  return date.toISOString().split('T')[0];
-}
-
-// Build NASA GIBS tile URL
-function buildGIBSTileUrl(layer: string, date: string, z: number, x: number, y: number): string {
-  return `${GIBS_BASE}/${layer}/default/${date}/GoogleMapsCompatible_Level${z}/${z}/${y}/${x}.png`;
+// Build tile URL based on provider
+function buildTileUrl(provider: TileProvider, z: number, x: number, y: number): string {
+  return TILE_PROVIDERS[provider]
+    .replace('{z}', z.toString())
+    .replace('{x}', x.toString())
+    .replace('{y}', y.toString());
 }
 
 export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zones = [], onZoneClick }: NASASatelliteMapProps) {
   const [loading, setLoading] = useState(true);
-  const [activeLayer, setActiveLayer] = useState<LayerType>('truecolor');
-  const [zoom, setZoom] = useState(6);
+  const [activeLayer, setActiveLayer] = useState<TileProvider>('satellite');
+  const [zoom, setZoom] = useState(8);
   const [tileError, setTileError] = useState(false);
   const [analysis, setAnalysis] = useState<any>(null);
-  const [currentDate, setCurrentDate] = useState(getGIBSDate(1));
   const [refreshing, setRefreshing] = useState(false);
+  const [tilesLoaded, setTilesLoaded] = useState(0);
 
   // Generate tile grid for the view (3x3 grid centered on location)
   const tileGrid = useMemo(() => {
@@ -75,20 +73,26 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
 
   // Build tile URLs for current layer
   const tileUrls = useMemo(() => {
-    const layerName = LAYERS[activeLayer];
     return tileGrid.map(tile => ({
       ...tile,
-      url: buildGIBSTileUrl(layerName, currentDate, tile.z, tile.x, tile.y)
+      url: buildTileUrl(activeLayer, tile.z, tile.x, tile.y)
     }));
-  }, [tileGrid, activeLayer, currentDate]);
+  }, [tileGrid, activeLayer]);
 
   useEffect(() => {
     fetchAnalysis();
-    // Simulate loading delay for tiles
+    // Reset loading state when tiles change
     setLoading(true);
-    const timer = setTimeout(() => setLoading(false), 800);
-    return () => clearTimeout(timer);
-  }, [latitude, longitude]);
+    setTilesLoaded(0);
+    setTileError(false);
+  }, [latitude, longitude, activeLayer, zoom]);
+
+  useEffect(() => {
+    // Consider loaded when most tiles are ready
+    if (tilesLoaded >= 5) {
+      setLoading(false);
+    }
+  }, [tilesLoaded]);
 
   const fetchAnalysis = async () => {
     try {
@@ -106,21 +110,22 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    setCurrentDate(getGIBSDate(1));
+    setTileError(false);
+    setTilesLoaded(0);
     await fetchAnalysis();
     setTimeout(() => setRefreshing(false), 1000);
   };
 
-  const handleZoomIn = () => setZoom(prev => Math.min(prev + 1, 9));
-  const handleZoomOut = () => setZoom(prev => Math.max(prev - 1, 3));
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 1, 12));
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 1, 4));
 
   if (loading) {
     return (
       <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border border-border">
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">NASA স্যাটেলাইট ডেটা লোড হচ্ছে...</p>
-          <p className="text-xs text-muted-foreground mt-1">MODIS/VIIRS Imagery</p>
+          <p className="text-sm text-muted-foreground">স্যাটেলাইট ডেটা লোড হচ্ছে...</p>
+          <p className="text-xs text-muted-foreground mt-1">Esri World Imagery</p>
         </div>
       </div>
     );
@@ -132,27 +137,27 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
       <div className="absolute top-2 left-2 z-20 flex gap-1 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
         <Button
           size="sm"
-          variant={activeLayer === 'truecolor' ? 'default' : 'ghost'}
-          onClick={() => setActiveLayer('truecolor')}
+          variant={activeLayer === 'satellite' ? 'default' : 'ghost'}
+          onClick={() => setActiveLayer('satellite')}
           className="h-7 text-xs"
         >
-          🛰️ রঙিন
+          🛰️ স্যাটেলাইট
         </Button>
         <Button
           size="sm"
-          variant={activeLayer === 'ndvi' ? 'default' : 'ghost'}
-          onClick={() => setActiveLayer('ndvi')}
+          variant={activeLayer === 'terrain' ? 'default' : 'ghost'}
+          onClick={() => setActiveLayer('terrain')}
           className="h-7 text-xs"
         >
-          🌿 NDVI
+          🗺️ ম্যাপ
         </Button>
         <Button
           size="sm"
-          variant={activeLayer === 'modis' ? 'default' : 'ghost'}
-          onClick={() => setActiveLayer('modis')}
+          variant={activeLayer === 'osm' ? 'default' : 'ghost'}
+          onClick={() => setActiveLayer('osm')}
           className="h-7 text-xs"
         >
-          🌍 VIIRS
+          🌍 OSM
         </Button>
       </div>
 
@@ -160,7 +165,9 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
       <div className="absolute top-2 right-2 z-20 flex flex-col gap-1">
         <div className="bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-lg flex items-center gap-1">
           <Satellite className="w-3 h-3 text-chart-4 ml-1" />
-          <span className="text-xs text-muted-foreground pr-1">NASA GIBS</span>
+          <span className="text-xs text-muted-foreground pr-1">
+            {activeLayer === 'satellite' ? 'Esri Imagery' : activeLayer === 'terrain' ? 'Topo Map' : 'OpenStreetMap'}
+          </span>
         </div>
         <div className="bg-background/90 backdrop-blur-sm rounded-lg shadow-lg flex flex-col">
           <Button size="sm" variant="ghost" onClick={handleZoomIn} className="h-7 w-7 p-0">
@@ -175,7 +182,7 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
         </div>
       </div>
 
-      {/* NASA GIBS Satellite Tile Grid */}
+      {/* Satellite Tile Grid */}
       <div className="aspect-video relative overflow-hidden">
         <div 
           className="absolute inset-0 grid grid-cols-3 grid-rows-3"
@@ -190,17 +197,20 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
                 src={tile.url}
                 alt={`Satellite tile ${idx + 1}`}
                 className="w-full h-full object-cover"
+                onLoad={() => setTilesLoaded(prev => prev + 1)}
                 onError={(e) => {
-                  // Fallback to previous date if current fails
                   const target = e.target as HTMLImageElement;
-                  const fallbackDate = getGIBSDate(3);
-                  if (!target.src.includes(fallbackDate)) {
-                    target.src = buildGIBSTileUrl(LAYERS[activeLayer], fallbackDate, tile.z, tile.x, tile.y);
-                  } else {
-                    setTileError(true);
+                  // Try fallback to a different provider
+                  if (activeLayer === 'satellite' && !target.dataset.fallback) {
+                    target.dataset.fallback = 'true';
+                    target.src = buildTileUrl('terrain', tile.z, tile.x, tile.y);
+                  } else if (!target.dataset.failed) {
+                    target.dataset.failed = 'true';
+                    target.style.opacity = '0.5';
+                    setTilesLoaded(prev => prev + 1); // Count as loaded to prevent infinite loading
                   }
                 }}
-                loading="lazy"
+                loading="eager"
               />
             </div>
           ))}
@@ -209,7 +219,7 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
         {/* NDVI Color Overlay for field zones */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="w-full h-full grid grid-cols-2 grid-rows-2 gap-1 p-3">
-            {zones.slice(0, 4).map((zone, idx) => {
+            {zones.slice(0, 4).map((zone) => {
               const health = zone.health_score;
               const overlayColor = health >= 0.7 
                 ? 'hsla(142, 70%, 40%, 0.35)' 
@@ -246,7 +256,7 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
                         {(health * 100).toFixed(0)}%
                       </p>
                       <p className="text-[10px] text-muted-foreground text-center">
-                        {activeLayer === 'ndvi' ? 'NDVI স্কোর' : 'স্বাস্থ্য স্কোর'}
+                        স্বাস্থ্য স্কোর
                       </p>
                     </div>
                   </div>
@@ -327,13 +337,13 @@ export function NASASatelliteMap({ latitude = 23.8103, longitude = 90.4125, zone
       <div className="absolute bottom-2 left-2 right-2 z-10 flex justify-between items-center">
         <div className="bg-background/80 backdrop-blur-sm rounded px-2 py-1 flex items-center gap-2">
           <span className="text-[10px] text-muted-foreground">
-            {activeLayer === 'ndvi' ? 'MODIS Terra NDVI 8-Day' : 
-             activeLayer === 'truecolor' ? 'MODIS Terra True Color' : 
-             'VIIRS NOAA-20'}
+            {activeLayer === 'satellite' ? 'Esri World Imagery' : 
+             activeLayer === 'terrain' ? 'World Topo Map' : 
+             'OpenStreetMap'}
           </span>
         </div>
         <div className="bg-background/80 backdrop-blur-sm rounded px-2 py-1">
-          <span className="text-[10px] text-muted-foreground">📅 {currentDate}</span>
+          <span className="text-[10px] text-muted-foreground">📍 {latitude.toFixed(2)}°N, {longitude.toFixed(2)}°E</span>
         </div>
       </div>
 
