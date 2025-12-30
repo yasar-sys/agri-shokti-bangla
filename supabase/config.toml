@@ -17,3 +17,9 @@ verify_jwt = false
 
 [functions.embed-document]
 verify_jwt = false
+
+[functions.ndvi-scan]
+verify_jwt = false
+
+[functions.optimize-drone-route]
+verify_jwt = false

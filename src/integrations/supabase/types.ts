@@ -209,6 +209,77 @@ export type Database = {
         }
         Relationships: []
       }
+      drone_routes: {
+        Row: {
+          area_acres: number
+          completed_at: string | null
+          coverage_percentage: number | null
+          created_at: string
+          estimated_time_mins: number
+          field_zone_id: string | null
+          id: string
+          optimized_path: Json | null
+          priority: number | null
+          spray_type: string | null
+          started_at: string | null
+          status: string
+          status_bn: string
+          task: string
+          task_bn: string
+          updated_at: string
+          user_id: string
+          waypoints: Json | null
+        }
+        Insert: {
+          area_acres: number
+          completed_at?: string | null
+          coverage_percentage?: number | null
+          created_at?: string
+          estimated_time_mins: number
+          field_zone_id?: string | null
+          id?: string
+          optimized_path?: Json | null
+          priority?: number | null
+          spray_type?: string | null
+          started_at?: string | null
+          status?: string
+          status_bn?: string
+          task: string
+          task_bn: string
+          updated_at?: string
+          user_id: string
+          waypoints?: Json | null
+        }
+        Update: {
+          area_acres?: number
+          completed_at?: string | null
+          coverage_percentage?: number | null
+          created_at?: string
+          estimated_time_mins?: number
+          field_zone_id?: string | null
+          id?: string
+          optimized_path?: Json | null
+          priority?: number | null
+          spray_type?: string | null
+          started_at?: string | null
+          status?: string
+          status_bn?: string
+          task?: string
+          task_bn?: string
+          updated_at?: string
+          user_id?: string
+          waypoints?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "drone_routes_field_zone_id_fkey"
+            columns: ["field_zone_id"]
+            isOneToOne: false
+            referencedRelation: "field_zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       farming_tips: {
         Row: {
           category: string | null
@@ -239,6 +310,57 @@ export type Database = {
           is_active?: boolean | null
           season?: string | null
           tip_text?: string
+        }
+        Relationships: []
+      }
+      field_zones: {
+        Row: {
+          area_acres: number | null
+          created_at: string
+          health_score: number
+          id: string
+          last_scan_at: string | null
+          latitude: number | null
+          longitude: number | null
+          name: string
+          name_bn: string
+          ndvi_data: Json | null
+          status: string
+          status_bn: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          area_acres?: number | null
+          created_at?: string
+          health_score?: number
+          id?: string
+          last_scan_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name: string
+          name_bn: string
+          ndvi_data?: Json | null
+          status?: string
+          status_bn?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          area_acres?: number | null
+          created_at?: string
+          health_score?: number
+          id?: string
+          last_scan_at?: string | null
+          latitude?: number | null
+          longitude?: number | null
+          name?: string
+          name_bn?: string
+          ndvi_data?: Json | null
+          status?: string
+          status_bn?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -522,6 +644,56 @@ export type Database = {
           yesterday_price?: number
         }
         Relationships: []
+      }
+      ndvi_scans: {
+        Row: {
+          created_at: string
+          field_zone_id: string | null
+          health_score: number
+          id: string
+          moisture_level: number | null
+          raw_data: Json | null
+          scan_source: string | null
+          scanned_at: string
+          stress_level: number | null
+          user_id: string
+          vegetation_index: number | null
+        }
+        Insert: {
+          created_at?: string
+          field_zone_id?: string | null
+          health_score: number
+          id?: string
+          moisture_level?: number | null
+          raw_data?: Json | null
+          scan_source?: string | null
+          scanned_at?: string
+          stress_level?: number | null
+          user_id: string
+          vegetation_index?: number | null
+        }
+        Update: {
+          created_at?: string
+          field_zone_id?: string | null
+          health_score?: number
+          id?: string
+          moisture_level?: number | null
+          raw_data?: Json | null
+          scan_source?: string | null
+          scanned_at?: string
+          stress_level?: number | null
+          user_id?: string
+          vegetation_index?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ndvi_scans_field_zone_id_fkey"
+            columns: ["field_zone_id"]
+            isOneToOne: false
+            referencedRelation: "field_zones"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       post_comments: {
         Row: {
