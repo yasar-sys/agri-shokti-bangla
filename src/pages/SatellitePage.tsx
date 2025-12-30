@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, useMemo } from "react";
-import { ArrowLeft, Satellite, Plane, MapPin, Leaf, AlertTriangle, RefreshCw, Plus, Loader2 } from "lucide-react";
+import { ArrowLeft, Satellite, Plane, MapPin, Leaf, AlertTriangle, RefreshCw, Plus, Loader2, BarChart3 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -10,6 +10,8 @@ import { useDroneRoutes } from "@/hooks/useDroneRoutes";
 import { supabase } from "@/integrations/supabase/client";
 import { formatDistanceToNow } from "date-fns";
 import { bn } from "date-fns/locale";
+import { NASASatelliteMap } from "@/components/NASASatelliteMap";
+import { NDVIHistoryChart } from "@/components/NDVIHistoryChart";
 
 // Default demo zones for when no data exists
 const defaultZones = [
@@ -203,113 +205,38 @@ export default function SatellitePage() {
         </div>
       )}
 
-      {/* Interactive Map */}
+      {/* Interactive NASA Satellite Map */}
       <section className="px-4 py-4">
-        <div className="bg-card border border-border rounded-xl overflow-hidden">
-          <div 
-            ref={mapContainerRef}
-            className="aspect-video relative"
-          >
-            {isLoading ? (
-              <div className="absolute inset-0 flex items-center justify-center bg-muted">
-                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              /* NDVI Satellite Map Visualization with Crop Health Imagery */
-              <div className="absolute inset-0">
-                {/* Base satellite imagery layer - simulated farmland */}
-                <div 
-                  className="absolute inset-0"
-                  style={{
-                    background: `
-                      linear-gradient(135deg, 
-                        hsl(142, 50%, 25%) 0%, 
-                        hsl(85, 45%, 30%) 25%, 
-                        hsl(55, 60%, 35%) 50%, 
-                        hsl(120, 55%, 28%) 75%, 
-                        hsl(95, 50%, 22%) 100%
-                      )
-                    `
-                  }}
-                />
-                
-                {/* Field texture overlay */}
-                <svg className="absolute inset-0 w-full h-full opacity-40" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
-                  <defs>
-                    <pattern id="fieldRows" patternUnits="userSpaceOnUse" width="20" height="10">
-                      <path d="M0 5 Q5 2 10 5 Q15 8 20 5" stroke="hsl(120, 30%, 20%)" strokeWidth="0.5" fill="none" />
-                    </pattern>
-                    <filter id="noise">
-                      <feTurbulence type="fractalNoise" baseFrequency="0.8" numOctaves="4" />
-                      <feColorMatrix type="saturate" values="0" />
-                    </filter>
-                  </defs>
-                  <rect width="100%" height="100%" fill="url(#fieldRows)" />
-                </svg>
+        <NASASatelliteMap
+          latitude={location.lat || 23.8103}
+          longitude={location.lng || 90.4125}
+          zones={displayZones.slice(0, 4).map(z => ({
+            id: z.id,
+            name_bn: z.name_bn,
+            health_score: z.health_score
+          }))}
+        />
+        <div className="mt-2 p-3 bg-card/80 backdrop-blur-sm border border-border rounded-xl flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-destructive" />
+            <span className="text-sm text-foreground">
+              {location.loading ? "লোকেশন খোঁজা হচ্ছে..." : `${location.city}, ${location.country}`}
+            </span>
+          </div>
+          <span className="text-xs text-muted-foreground">আপডেট: {lastScanTime}</span>
+        </div>
+      </section>
 
-                {/* NDVI Heatmap zones with crop stress detection */}
-                <div className="absolute inset-0 grid grid-cols-2 grid-rows-2 gap-0.5 p-1">
-                  {displayZones.slice(0, 4).map((zone, idx) => {
-                    const healthPct = zone.health_score * 100;
-                    // NDVI color mapping: Red (stress) -> Yellow (moderate) -> Green (healthy)
-                    const getHealthColor = (score: number) => {
-                      if (score >= 0.8) return { bg: 'hsl(142, 70%, 35%)', glow: 'hsl(142, 70%, 45%)' };
-                      if (score >= 0.6) return { bg: 'hsl(55, 80%, 40%)', glow: 'hsl(55, 80%, 50%)' };
-                      if (score >= 0.4) return { bg: 'hsl(35, 85%, 45%)', glow: 'hsl(35, 85%, 55%)' };
-                      return { bg: 'hsl(0, 70%, 40%)', glow: 'hsl(0, 70%, 50%)' };
-                    };
-                    const colors = getHealthColor(zone.health_score);
-                    
-                    return (
-                      <div 
-                        key={zone.id}
-                        className="relative overflow-hidden rounded-sm transition-transform duration-300 hover:scale-[1.02] cursor-pointer"
-                        style={{ background: colors.bg }}
-                      >
-                        {/* Crop pattern overlay */}
-                        <svg className="absolute inset-0 w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                          {/* Field rows */}
-                          {Array.from({ length: 12 }).map((_, i) => (
-                            <g key={`row-${i}`}>
-                              <line 
-                                x1="0" y1={8 + i * 8} x2="100" y2={8 + i * 8}
-                                stroke="hsla(0, 0%, 0%, 0.15)"
-                                strokeWidth="0.3"
-                              />
-                              {/* Crop plants along rows */}
-                              {Array.from({ length: 15 }).map((_, j) => {
-                                const x = 3 + j * 6.5 + (i % 2) * 3;
-                                const y = 8 + i * 8;
-                                const plantHealth = zone.health_score * (0.85 + Math.random() * 0.3);
-                                const plantColor = plantHealth > 0.7 
-                                  ? `hsl(${100 + Math.random() * 40}, ${50 + Math.random() * 30}%, ${35 + Math.random() * 15}%)`
-                                  : plantHealth > 0.4
-                                    ? `hsl(${40 + Math.random() * 30}, ${60 + Math.random() * 30}%, ${40 + Math.random() * 15}%)`
-                                    : `hsl(${Math.random() * 30}, ${50 + Math.random() * 30}%, ${35 + Math.random() * 15}%)`;
-                                return (
-                                  <circle
-                                    key={`plant-${i}-${j}`}
-                                    cx={x}
-                                    cy={y}
-                                    r={1.2 + Math.random() * 0.8}
-                                    fill={plantColor}
-                                    opacity={0.7 + Math.random() * 0.3}
-                                  />
-                                );
-                              })}
-                            </g>
-                          ))}
-                          
-                          {/* Stress/disease detection spots */}
-                          {zone.health_score < 0.7 && Array.from({ length: Math.floor((1 - zone.health_score) * 10) }).map((_, i) => (
-                            <g key={`stress-${i}`}>
-                              <circle
-                                cx={15 + Math.random() * 70}
-                                cy={15 + Math.random() * 70}
-                                r={3 + Math.random() * 5}
-                                fill="hsl(0, 70%, 45%)"
-                                opacity={0.4 + Math.random() * 0.3}
-                              />
+      {/* NDVI History Chart */}
+      <section className="px-4 mb-4">
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
+            <BarChart3 className="w-4 h-4 text-chart-4" />
+            NDVI ট্রেন্ড চার্ট
+          </h2>
+        </div>
+        <NDVIHistoryChart userId={userId} showAllZones={true} days={60} />
+      </section>
                               {/* Pulsing alert for severe stress */}
                               {zone.health_score < 0.5 && (
                                 <circle

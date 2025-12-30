@@ -23,3 +23,6 @@ verify_jwt = false
 
 [functions.optimize-drone-route]
 verify_jwt = false
+
+[functions.nasa-ndvi]
+verify_jwt = false
