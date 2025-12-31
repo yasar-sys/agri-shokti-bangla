@@ -9,6 +9,7 @@ import { toast } from "sonner";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import { useLanguage, Language } from "@/contexts/LanguageContext";
 import { useTheme } from "@/contexts/ThemeContext";
+import { NotificationToggle } from "@/components/ui/PushNotificationPrompt";
 import {
   Dialog,
   DialogContent,
@@ -198,17 +199,9 @@ export default function SettingsPage() {
         <div className="rounded-2xl bg-card border border-border overflow-hidden">
           <h3 className="px-4 pt-4 text-sm font-medium text-muted-foreground">{t("notifications")}</h3>
           
-          <div className="p-4 flex items-center justify-between border-b border-border">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary/20 flex items-center justify-center">
-                <Bell className="w-5 h-5 text-primary" />
-              </div>
-              <div>
-                <p className="font-medium text-foreground">{t("pushNotifications")}</p>
-                <p className="text-sm text-muted-foreground">{t("weatherMarketUpdate")}</p>
-              </div>
-            </div>
-            <Switch checked={pushEnabled} onCheckedChange={setPushEnabled} />
+          {/* Real Push Notifications Toggle */}
+          <div className="p-4 border-b border-border">
+            <NotificationToggle />
           </div>
 
           <Dialog open={showSmsDialog} onOpenChange={setShowSmsDialog}>
@@ -298,7 +291,7 @@ export default function SettingsPage() {
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
           </Link>
 
-          <div className="p-4 flex items-center justify-between">
+          <Link to="/about" className="p-4 flex items-center justify-between hover:bg-muted/20 transition-colors">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-muted flex items-center justify-center">
                 <Info className="w-5 h-5 text-foreground" />
@@ -309,7 +302,7 @@ export default function SettingsPage() {
               </div>
             </div>
             <ChevronRight className="w-5 h-5 text-muted-foreground" />
-          </div>
+          </Link>
         </div>
       </section>
 

@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import { useLiveWeatherAlerts } from "@/hooks/useLiveWeatherAlerts";
+import { PushNotificationPrompt } from "@/components/ui/PushNotificationPrompt";
 import { format } from "date-fns";
 
 const iconMap = {
@@ -79,6 +80,11 @@ export default function ClimateAlertPage() {
           </Button>
         </div>
       </header>
+
+      {/* Push Notification Prompt */}
+      <div className="px-4 py-2">
+        <PushNotificationPrompt variant="banner" />
+      </div>
 
       {/* Live Status Banner */}
       <div className="px-4 py-2">
