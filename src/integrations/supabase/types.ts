@@ -746,6 +746,66 @@ export type Database = {
           },
         ]
       }
+      pest_reports: {
+        Row: {
+          created_at: string
+          crop_type: string
+          description: string | null
+          district: string
+          humidity: number | null
+          id: string
+          image_url: string | null
+          is_verified: boolean | null
+          latitude: number
+          longitude: number
+          pest_name: string
+          pest_name_bn: string
+          severity: string
+          temperature: number | null
+          upazila: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          crop_type: string
+          description?: string | null
+          district: string
+          humidity?: number | null
+          id?: string
+          image_url?: string | null
+          is_verified?: boolean | null
+          latitude: number
+          longitude: number
+          pest_name: string
+          pest_name_bn: string
+          severity?: string
+          temperature?: number | null
+          upazila?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          crop_type?: string
+          description?: string | null
+          district?: string
+          humidity?: number | null
+          id?: string
+          image_url?: string | null
+          is_verified?: boolean | null
+          latitude?: number
+          longitude?: number
+          pest_name?: string
+          pest_name_bn?: string
+          severity?: string
+          temperature?: number | null
+          upazila?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       post_comments: {
         Row: {
           author_name: string
