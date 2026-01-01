@@ -59,6 +59,76 @@ const fertilizerData: FertilizerData[] = [
     tips: "ভুট্টায় জিংক খুব জরুরি। জিংকের অভাবে পাতা সাদা হয়ে যায়।"
   },
   {
+    crop: "পাট",
+    category: "grains",
+    emoji: "🌿",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "১০০-১২০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "৫০-৬০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "৪০-৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "পাটে নাইট্রোজেন বেশি লাগে। তবে অতিরিক্ত দিলে গাছ নরম হয়ে পড়ে যায়।"
+  },
+  {
+    crop: "সরিষা",
+    category: "grains",
+    emoji: "🌻",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "২৫০-৩০০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "১৭০-১৮০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "৮৫-১০০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "জিপসাম", amount: "১৫০-১৮০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "বোরন", amount: "১০-১২ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "সরিষায় সালফার ও বোরন অত্যন্ত জরুরি। ফুল ও বীজ গঠনে সাহায্য করে।"
+  },
+  {
+    crop: "মসুর",
+    category: "grains",
+    emoji: "🫘",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৪০-৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "TSP", amount: "৮০-১০০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "৩০-৪০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "ডাল জাতীয় ফসল নাইট্রোজেন সংবন্ধন করে, তাই ইউরিয়া কম লাগে।"
+  },
+  {
+    crop: "ছোলা",
+    category: "grains",
+    emoji: "🫘",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৪০-৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "TSP", amount: "১০০-১২০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "৪০-৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "মলিবডেনাম", amount: "১ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "ছোলায় মলিবডেনাম নাইট্রোজেন সংবন্ধনে সাহায্য করে।"
+  },
+  {
+    crop: "মুগ",
+    category: "grains",
+    emoji: "🫛",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৩০-৪০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "TSP", amount: "৮০-১০০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "৩০-৪০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "মুগ ডালে রাইজোবিয়াম ইনোকুলেশন করলে ফলন ভালো হয়।"
+  },
+  {
+    crop: "আখ",
+    category: "grains",
+    emoji: "🎋",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৩০০-৩৫০ কেজি/হেক্টর", timing: "৩ কিস্তিতে" },
+      { name: "TSP", amount: "২০০-২৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "২০০-২৫০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+      { name: "জিপসাম", amount: "১৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "আখে পটাশ চিনির পরিমাণ বাড়ায়। নিয়মিত সেচ দিন।"
+  },
+  {
     crop: "আলু",
     category: "vegetables",
     emoji: "🥔",
@@ -131,6 +201,18 @@ const fertilizerData: FertilizerData[] = [
     tips: "বোরনের অভাবে ফুলকপির মাথা বাদামি হয় ও ফাঁপা হয়ে যায়।"
   },
   {
+    crop: "বাঁধাকপি",
+    category: "vegetables",
+    emoji: "🥬",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "২৮০-৩২০ কেজি/হেক্টর", timing: "৩ কিস্তিতে" },
+      { name: "TSP", amount: "১৮০-২০০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "১৫০-১৮০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+      { name: "বোরন", amount: "১০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "বাঁধাকপিতে নাইট্রোজেন বেশি দিলে মাথা ঢিলা হয়ে যায়।"
+  },
+  {
     crop: "মরিচ",
     category: "vegetables",
     emoji: "🌶️",
@@ -140,6 +222,105 @@ const fertilizerData: FertilizerData[] = [
       { name: "MoP", amount: "১৫০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
     ],
     tips: "ফুল ও ফল আসার সময় পটাশ দিলে ফলন বাড়ে।"
+  },
+  {
+    crop: "লাউ",
+    category: "vegetables",
+    emoji: "🥒",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "২২০-২৫০ কেজি/হেক্টর", timing: "৩ কিস্তিতে" },
+      { name: "TSP", amount: "১৫০-১৮০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "১২০-১৫০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+    ],
+    tips: "লাউয়ে প্রচুর পানি ও জৈব সার দিলে ফলন ভালো হয়।"
+  },
+  {
+    crop: "কুমড়া",
+    category: "vegetables",
+    emoji: "🎃",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "২০০-২৫০ কেজি/হেক্টর", timing: "৩ কিস্তিতে" },
+      { name: "TSP", amount: "১৫০-২০০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "১৫০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+    ],
+    tips: "কুমড়ায় ফুল ফোটার সময় পটাশ স্প্রে করলে ফল বড় হয়।"
+  },
+  {
+    crop: "শসা",
+    category: "vegetables",
+    emoji: "🥒",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "১৮০-২২০ কেজি/হেক্টর", timing: "৩ কিস্তিতে" },
+      { name: "TSP", amount: "১২০-১৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "১২০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+    ],
+    tips: "শসায় নিয়মিত সেচ ও সার দিলে দীর্ঘদিন ফল পাওয়া যায়।"
+  },
+  {
+    crop: "করলা",
+    category: "vegetables",
+    emoji: "🥒",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "২০০-২৫০ কেজি/হেক্টর", timing: "৩ কিস্তিতে" },
+      { name: "TSP", amount: "১৫০-১৮০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "১২০-১৫০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+    ],
+    tips: "করলায় জৈব সার দিলে তিক্ততা কমে ও স্বাদ ভালো হয়।"
+  },
+  {
+    crop: "ঢেঁড়স",
+    category: "vegetables",
+    emoji: "🌿",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "১৫০-১৮০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "১০০-১২০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "১০০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "ঢেঁড়সে নিয়মিত ফল তুললে নতুন ফুল ও ফল আসে।"
+  },
+  {
+    crop: "পালং শাক",
+    category: "vegetables",
+    emoji: "🥬",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "১৫০-২০০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "১০০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "৮০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "পালং শাকে নাইট্রোজেন বেশি দিলে পাতা বড় ও সবুজ হয়।"
+  },
+  {
+    crop: "লাল শাক",
+    category: "vegetables",
+    emoji: "🥬",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "১২০-১৫০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "৮০-১০০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "৬০-৮০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "লাল শাক দ্রুত বাড়ে, তাই হালকা সার দিলেই যথেষ্ট।"
+  },
+  {
+    crop: "মূলা",
+    category: "vegetables",
+    emoji: "🥕",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "১৫০-১৮০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "১২০-১৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "১০০-১২০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "মূলায় অতিরিক্ত নাইট্রোজেন দিলে মূল ফেটে যায়।"
+  },
+  {
+    crop: "গাজর",
+    category: "vegetables",
+    emoji: "🥕",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "১৫০-১৮০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "১৫০-১৮০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "১২০-১৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+    ],
+    tips: "গাজরে পটাশ দিলে রঙ উজ্জ্বল ও মিষ্টি হয়।"
   },
   {
     crop: "আম",
@@ -152,6 +333,17 @@ const fertilizerData: FertilizerData[] = [
       { name: "বোরন", amount: "২০ গ্রাম/গাছ", timing: "মুকুল আসার আগে" },
     ],
     tips: "ফল ঝরে পড়া রোধে বোরন ও পটাশ স্প্রে করুন।"
+  },
+  {
+    crop: "কাঁঠাল",
+    category: "fruits",
+    emoji: "🍈",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৫০০-৭০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+      { name: "TSP", amount: "৩০০-৪০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+      { name: "MoP", amount: "৪০০-৫০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+    ],
+    tips: "কাঁঠালে জৈব সার ব্যবহার করলে ফল বড় ও মিষ্টি হয়।"
   },
   {
     crop: "কলা",
@@ -174,6 +366,84 @@ const fertilizerData: FertilizerData[] = [
       { name: "MoP", amount: "৪০০ গ্রাম/গাছ/বছর", timing: "৪ কিস্তিতে" },
     ],
     tips: "প্রতি ৩ মাস পর পর সার দিন। নিয়মিত সার দিলে সারা বছর ফল পাবেন।"
+  },
+  {
+    crop: "পেয়ারা",
+    category: "fruits",
+    emoji: "🍐",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৪০০-৫০০ গ্রাম/গাছ/বছর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "২৫০-৩০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+      { name: "MoP", amount: "৪০০ গ্রাম/গাছ/বছর", timing: "২ কিস্তিতে" },
+    ],
+    tips: "পেয়ারায় প্রুনিং করলে ফলন বাড়ে। ফল আসার আগে পটাশ দিন।"
+  },
+  {
+    crop: "লিচু",
+    category: "fruits",
+    emoji: "🍒",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৬০০-৮০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+      { name: "TSP", amount: "৪০০-৫০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+      { name: "MoP", amount: "৫০০-৬০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+      { name: "জিংক সালফেট", amount: "৫০ গ্রাম/গাছ", timing: "বর্ষার পর" },
+    ],
+    tips: "লিচুতে জিংক ফল ফাটা রোধ করে। শীতে সেচ বন্ধ রাখুন।"
+  },
+  {
+    crop: "জাম",
+    category: "fruits",
+    emoji: "🫐",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৪০০-৫০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+      { name: "TSP", amount: "২৫০-৩০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+      { name: "MoP", amount: "৩০০-৪০০ গ্রাম/গাছ/বছর", timing: "বর্ষার পর" },
+    ],
+    tips: "জাম গাছে খুব কম সার লাগে। অতিরিক্ত সার ক্ষতিকর।"
+  },
+  {
+    crop: "নারিকেল",
+    category: "fruits",
+    emoji: "🥥",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৫০০-৬০০ গ্রাম/গাছ/বছর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "৪০০ গ্রাম/গাছ/বছর", timing: "বর্ষার আগে" },
+      { name: "MoP", amount: "১০০০-১২০০ গ্রাম/গাছ/বছর", timing: "২ কিস্তিতে" },
+    ],
+    tips: "নারিকেলে পটাশ সবচেয়ে বেশি লাগে। নিয়মিত MoP দিন।"
+  },
+  {
+    crop: "সুপারি",
+    category: "fruits",
+    emoji: "🌴",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "৩০০-৪০০ গ্রাম/গাছ/বছর", timing: "২ কিস্তিতে" },
+      { name: "TSP", amount: "২০০-২৫০ গ্রাম/গাছ/বছর", timing: "বর্ষার আগে" },
+      { name: "MoP", amount: "৫০০-৬০০ গ্রাম/গাছ/বছর", timing: "২ কিস্তিতে" },
+    ],
+    tips: "সুপারিতে পটাশ ফল পাকানোতে সাহায্য করে।"
+  },
+  {
+    crop: "তরমুজ",
+    category: "fruits",
+    emoji: "🍉",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "২৫০-৩০০ কেজি/হেক্টর", timing: "৩ কিস্তিতে" },
+      { name: "TSP", amount: "২০০-২৫০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "২০০-২৫০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+    ],
+    tips: "তরমুজে ফল বড় হলে নাইট্রোজেন বন্ধ করুন, পটাশ দিন।"
+  },
+  {
+    crop: "বাঙ্গি",
+    category: "fruits",
+    emoji: "🍈",
+    fertilizers: [
+      { name: "ইউরিয়া", amount: "২০০-২৫০ কেজি/হেক্টর", timing: "৩ কিস্তিতে" },
+      { name: "TSP", amount: "১৮০-২২০ কেজি/হেক্টর", timing: "বেসাল ডোজ" },
+      { name: "MoP", amount: "১৮০-২০০ কেজি/হেক্টর", timing: "২ কিস্তিতে" },
+    ],
+    tips: "বাঙ্গিতে পটাশ মিষ্টতা বাড়ায়। পাকার সময় সেচ কমান।"
   },
 ];
 

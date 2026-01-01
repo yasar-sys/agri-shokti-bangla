@@ -209,6 +209,57 @@ export type Database = {
         }
         Relationships: []
       }
+      crop_storage: {
+        Row: {
+          condition: string
+          created_at: string
+          crop_name: string
+          id: string
+          location: string
+          moisture: string | null
+          notes: string | null
+          quantity: string
+          storage_type: string
+          stored_date: string
+          temperature: string | null
+          unit: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          condition?: string
+          created_at?: string
+          crop_name: string
+          id?: string
+          location: string
+          moisture?: string | null
+          notes?: string | null
+          quantity: string
+          storage_type?: string
+          stored_date?: string
+          temperature?: string | null
+          unit?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          condition?: string
+          created_at?: string
+          crop_name?: string
+          id?: string
+          location?: string
+          moisture?: string | null
+          notes?: string | null
+          quantity?: string
+          storage_type?: string
+          stored_date?: string
+          temperature?: string | null
+          unit?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       drone_routes: {
         Row: {
           area_acres: number

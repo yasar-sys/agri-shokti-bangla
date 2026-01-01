@@ -110,7 +110,6 @@ export default function HomePage() {
     { icon: MapPin, labelKey: "landCalculator", to: "/land-calculator", gradient: "from-emerald-500/20 to-green-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", descKey: "landDesc" },
     { icon: BarChart3, labelKey: "impactAnalytics", to: "/impact", gradient: "from-gradient-start/20 to-gradient-end/20", iconColor: "text-secondary", borderColor: "border-secondary/30", descKey: "impactDesc" },
     { icon: ArrowLeftRight, labelKey: "cropBarter", to: "/barter", gradient: "from-yellow-500/20 to-orange-500/20", iconColor: "text-yellow-400", borderColor: "border-yellow-500/30", descKey: "barterDesc" },
-    { icon: Video, labelKey: "demoScript", to: "/demo-script", gradient: "from-purple-500/20 to-pink-500/20", iconColor: "text-purple-400", borderColor: "border-purple-500/30", descKey: "demoScriptDesc" },
   ];
 
   const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
