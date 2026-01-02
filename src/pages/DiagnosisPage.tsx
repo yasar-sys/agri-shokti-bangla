@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Share2, Download, AlertTriangle, CheckCircle, Leaf, Droplets, FlaskConical, Zap, Shield, Clock, TrendingDown } from "lucide-react";
+import { ArrowLeft, Share2, Download, AlertTriangle, CheckCircle, Leaf, Droplets, FlaskConical, Zap, Shield, Clock, TrendingDown, FileText, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { toast } from "sonner";
 
 interface DiseaseResult {
   diseaseName: string;
@@ -29,6 +30,7 @@ export default function DiagnosisPage() {
   const { t } = useLanguage();
   const [diseaseData, setDiseaseData] = useState<DiseaseResult | null>(null);
   const [scannedImage, setScannedImage] = useState<string | null>(null);
+  const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
     const storedResult = sessionStorage.getItem('diseaseResult');
@@ -45,6 +47,294 @@ export default function DiagnosisPage() {
       navigate('/camera');
     }
   }, [navigate]);
+
+  // Generate and download PDF report
+  const handleDownloadReport = async () => {
+    if (!diseaseData) return;
+    
+    setIsDownloading(true);
+    
+    try {
+      const reportDate = new Date().toLocaleDateString('bn-BD', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
+      const severityText = {
+        'critical': 'সঙ্কটজনক',
+        'high': 'উচ্চ',
+        'medium': 'মাঝারি',
+        'low': 'নিম্ন',
+        'none': 'সুস্থ'
+      }[diseaseData.severity] || 'অজানা';
+
+      // Create HTML content for the report
+      const reportHTML = `
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8">
+  <title>রোগ নির্ণয় রিপোর্ট - ${diseaseData.diseaseName}</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:wght@400;600;700&display=swap');
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { 
+      font-family: 'Noto Sans Bengali', sans-serif; 
+      background: #fff; 
+      color: #1a1a2e;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    .header { 
+      text-align: center; 
+      margin-bottom: 30px;
+      padding-bottom: 20px;
+      border-bottom: 3px solid #16a34a;
+    }
+    .logo { font-size: 28px; font-weight: bold; color: #16a34a; margin-bottom: 8px; }
+    .subtitle { color: #666; font-size: 14px; }
+    .report-meta { 
+      display: flex; 
+      justify-content: space-between; 
+      background: #f0fdf4;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .meta-item { text-align: center; }
+    .meta-label { font-size: 12px; color: #666; }
+    .meta-value { font-size: 16px; font-weight: 600; color: #16a34a; }
+    .section { margin-bottom: 25px; }
+    .section-title { 
+      font-size: 18px; 
+      font-weight: 600; 
+      color: #1a1a2e;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .section-title::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: #16a34a;
+      border-radius: 2px;
+    }
+    .result-box {
+      background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+      border: 2px solid #16a34a;
+      border-radius: 12px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+    .result-box.warning {
+      background: linear-gradient(135deg, #fef3c7, #fde68a);
+      border-color: #f59e0b;
+    }
+    .result-box.danger {
+      background: linear-gradient(135deg, #fee2e2, #fecaca);
+      border-color: #ef4444;
+    }
+    .disease-name { font-size: 24px; font-weight: 700; margin-bottom: 8px; }
+    .confidence { font-size: 14px; color: #666; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+    .info-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 15px;
+    }
+    .info-label { font-size: 12px; color: #666; margin-bottom: 4px; }
+    .info-value { font-size: 14px; font-weight: 500; }
+    .list-item {
+      padding: 8px 12px;
+      background: #f8fafc;
+      border-left: 3px solid #16a34a;
+      margin-bottom: 8px;
+      border-radius: 0 8px 8px 0;
+    }
+    .treatment-box {
+      background: #ecfdf5;
+      border: 1px solid #10b981;
+      border-radius: 12px;
+      padding: 20px;
+    }
+    .solution-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .solution-card {
+      padding: 15px;
+      border-radius: 8px;
+    }
+    .solution-card.organic {
+      background: #f0fdf4;
+      border: 1px solid #22c55e;
+    }
+    .solution-card.chemical {
+      background: #fef2f2;
+      border: 1px solid #ef4444;
+    }
+    .solution-label { font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+    .footer {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid #e2e8f0;
+      text-align: center;
+      color: #666;
+      font-size: 12px;
+    }
+    .stats-row { display: flex; gap: 15px; margin-top: 15px; }
+    .stat-item {
+      flex: 1;
+      text-align: center;
+      padding: 15px;
+      background: #f8fafc;
+      border-radius: 8px;
+    }
+    .stat-value { font-size: 24px; font-weight: 700; color: #16a34a; }
+    .stat-label { font-size: 12px; color: #666; margin-top: 4px; }
+    @media print {
+      body { padding: 20px; }
+      .header { page-break-after: avoid; }
+      .section { page-break-inside: avoid; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo">🌿 কৃষি মিত্র - AgriBrain</div>
+    <div class="subtitle">AI-চালিত ফসল রোগ নির্ণয় রিপোর্ট</div>
+  </div>
+
+  <div class="report-meta">
+    <div class="meta-item">
+      <div class="meta-label">তারিখ ও সময়</div>
+      <div class="meta-value">${reportDate}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">ফসলের ধরন</div>
+      <div class="meta-value">${diseaseData.cropType}</div>
+    </div>
+    <div class="meta-item">
+      <div class="meta-label">AI নির্ভুলতা</div>
+      <div class="meta-value">${diseaseData.confidence}%</div>
+    </div>
+  </div>
+
+  <div class="result-box ${diseaseData.severity === 'critical' || diseaseData.severity === 'high' ? 'danger' : diseaseData.severity === 'medium' ? 'warning' : ''}">
+    <div class="disease-name">${diseaseData.isHealthy ? '✅ সুস্থ ফসল' : '⚠️ ' + diseaseData.diseaseName}</div>
+    <div class="confidence">তীব্রতা: ${severityText} | সনাক্তকরণ আত্মবিশ্বাস: ${diseaseData.confidence}%</div>
+  </div>
+
+  ${diseaseData.symptoms.length > 0 ? `
+  <div class="section">
+    <div class="section-title">🔍 লক্ষণসমূহ</div>
+    ${diseaseData.symptoms.map(s => `<div class="list-item">${s}</div>`).join('')}
+  </div>
+  ` : ''}
+
+  ${diseaseData.treatment ? `
+  <div class="section">
+    <div class="section-title">💊 চিকিৎসা ও প্রতিকার</div>
+    <div class="treatment-box">
+      <p>${diseaseData.treatment}</p>
+      
+      <div class="solution-grid">
+        ${diseaseData.organicSolution ? `
+        <div class="solution-card organic">
+          <div class="solution-label">🌱 জৈব সমাধান</div>
+          <p>${diseaseData.organicSolution}</p>
+        </div>
+        ` : ''}
+        ${diseaseData.chemicalSolution ? `
+        <div class="solution-card chemical">
+          <div class="solution-label">🧪 রাসায়নিক সমাধান</div>
+          <p>${diseaseData.chemicalSolution}</p>
+        </div>
+        ` : ''}
+      </div>
+    </div>
+  </div>
+  ` : ''}
+
+  <div class="section">
+    <div class="section-title">📊 সার ও সেচ পরামর্শ</div>
+    <div class="info-grid">
+      ${diseaseData.fertilizer ? `
+      <div class="info-card">
+        <div class="info-label">🌱 সার পরামর্শ</div>
+        <div class="info-value">${diseaseData.fertilizer}</div>
+      </div>
+      ` : ''}
+      ${diseaseData.irrigation ? `
+      <div class="info-card">
+        <div class="info-label">💧 সেচ পরামর্শ</div>
+        <div class="info-value">${diseaseData.irrigation}</div>
+      </div>
+      ` : ''}
+    </div>
+  </div>
+
+  ${diseaseData.expectedRecoveryDays > 0 || diseaseData.yieldImpact ? `
+  <div class="section">
+    <div class="section-title">📈 পূর্বাভাস</div>
+    <div class="stats-row">
+      ${diseaseData.expectedRecoveryDays > 0 ? `
+      <div class="stat-item">
+        <div class="stat-value">${diseaseData.expectedRecoveryDays}</div>
+        <div class="stat-label">দিনে আরোগ্য সম্ভব</div>
+      </div>
+      ` : ''}
+      ${diseaseData.yieldImpact ? `
+      <div class="stat-item">
+        <div class="stat-value">${diseaseData.yieldImpact}</div>
+        <div class="stat-label">ফলন প্রভাব</div>
+      </div>
+      ` : ''}
+    </div>
+  </div>
+  ` : ''}
+
+  ${diseaseData.additionalNotes ? `
+  <div class="section">
+    <div class="section-title">💡 অতিরিক্ত পরামর্শ</div>
+    <div class="list-item">${diseaseData.additionalNotes}</div>
+  </div>
+  ` : ''}
+
+  <div class="footer">
+    <p>এই রিপোর্টটি Gemini Vision AI দ্বারা বিশ্লেষিত</p>
+    <p>© ${new Date().getFullYear()} কৃষি মিত্র - AgriBrain | সকল অধিকার সংরক্ষিত</p>
+    <p style="margin-top: 8px; font-size: 11px; color: #999;">
+      এই রিপোর্টটি শুধুমাত্র তথ্যমূলক উদ্দেশ্যে। গুরুতর সমস্যার জন্য স্থানীয় কৃষি বিশেষজ্ঞের পরামর্শ নিন।
+    </p>
+  </div>
+</body>
+</html>
+      `;
+
+      // Create blob and download
+      const blob = new Blob([reportHTML], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `রোগ-নির্ণয়-রিপোর্ট-${diseaseData.diseaseName.replace(/\s+/g, '-')}-${new Date().toISOString().split('T')[0]}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      toast.success('রিপোর্ট সফলভাবে ডাউনলোড হয়েছে');
+    } catch (error) {
+      console.error('Error generating report:', error);
+      toast.error('রিপোর্ট তৈরি করতে সমস্যা হয়েছে');
+    } finally {
+      setIsDownloading(false);
+    }
+  };
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
@@ -112,8 +402,16 @@ export default function DiagnosisPage() {
             <button className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center border border-border/50 hover:border-secondary/50 transition-all">
               <Share2 className="w-5 h-5 text-foreground" />
             </button>
-            <button className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center border border-border/50 hover:border-secondary/50 transition-all">
-              <Download className="w-5 h-5 text-foreground" />
+            <button 
+              onClick={handleDownloadReport}
+              disabled={isDownloading}
+              className="w-11 h-11 rounded-2xl glass-card flex items-center justify-center border border-border/50 hover:border-secondary/50 transition-all disabled:opacity-50"
+            >
+              {isDownloading ? (
+                <Loader2 className="w-5 h-5 text-foreground animate-spin" />
+              ) : (
+                <Download className="w-5 h-5 text-foreground" />
+              )}
             </button>
           </div>
         </div>
@@ -283,6 +581,24 @@ export default function DiagnosisPage() {
 
       {/* Action Buttons */}
       <section className="px-5 space-y-3">
+        <Button 
+          onClick={handleDownloadReport}
+          disabled={isDownloading}
+          className={cn(
+            "w-full h-13 font-bold rounded-2xl",
+            "bg-gradient-to-r from-primary to-primary/80",
+            "text-primary-foreground shadow-glow",
+            "hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]",
+            "transition-all duration-300"
+          )}
+        >
+          {isDownloading ? (
+            <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+          ) : (
+            <FileText className="w-5 h-5 mr-2" />
+          )}
+          রিপোর্ট ডাউনলোড করুন
+        </Button>
         <Link to="/chat">
           <Button className={cn(
             "w-full h-13 font-bold rounded-2xl",

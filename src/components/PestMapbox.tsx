@@ -23,20 +23,29 @@ const PestMapbox: React.FC<PestMapboxProps> = ({
   const [error, setError] = useState<string | null>(null);
   const [mapboxToken, setMapboxToken] = useState<string | null>(null);
 
-  // Fetch Mapbox token
+  // Fetch Mapbox token with timeout
   useEffect(() => {
     const fetchToken = async () => {
       try {
-        const { data, error } = await supabase.functions.invoke('get-mapbox-token');
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 5000)
+        );
+        
+        const fetchPromise = supabase.functions.invoke('get-mapbox-token');
+        const { data, error } = await Promise.race([fetchPromise, timeoutPromise]) as any;
+        
         if (error) throw error;
         if (data?.token) {
           setMapboxToken(data.token);
         } else {
-          setError('Mapbox token not configured');
+          // Use fallback - show static map visualization
+          setError('fallback');
+          setLoading(false);
         }
       } catch (err) {
         console.error('Error fetching Mapbox token:', err);
-        setError('Failed to load map configuration');
+        setError('fallback');
+        setLoading(false);
       }
     };
     fetchToken();
@@ -273,6 +282,53 @@ const PestMapbox: React.FC<PestMapboxProps> = ({
       document.head.removeChild(style);
     };
   }, []);
+
+  // Fallback static map when Mapbox fails
+  if (error === 'fallback') {
+    return (
+      <div className="relative w-full h-[300px] rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-green-900/30 to-blue-900/30">
+        <div className="absolute inset-0 flex flex-col items-center justify-center p-4">
+          <div className="text-center mb-4">
+            <p className="text-sm text-muted-foreground mb-2">বাংলাদেশ পোকা ম্যাপ</p>
+            <div className="grid grid-cols-3 gap-2 max-w-xs">
+              {districtStats.slice(0, 6).map((d) => (
+                <div 
+                  key={d.district}
+                  onClick={() => onDistrictClick?.(d)}
+                  className={`p-2 rounded-lg cursor-pointer transition-all hover:scale-105 ${
+                    d.riskLevel === 'high' ? 'bg-destructive/30 border-destructive/50' :
+                    d.riskLevel === 'medium' ? 'bg-primary/30 border-primary/50' :
+                    'bg-secondary/30 border-secondary/50'
+                  } border`}
+                >
+                  <p className="text-xs font-medium text-foreground truncate">{d.district_bn}</p>
+                  <p className="text-[10px] text-muted-foreground">{d.reports} রিপোর্ট</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+        
+        {/* Legend */}
+        <div className="absolute bottom-3 left-3 bg-background/90 backdrop-blur-sm rounded-lg p-2 z-10 border border-border">
+          <div className="flex items-center gap-3 text-[10px]">
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full bg-destructive" />
+              <span className="text-muted-foreground">উচ্চ</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full bg-primary" />
+              <span className="text-muted-foreground">মাঝারি</span>
+            </div>
+            <div className="flex items-center gap-1">
+              <div className="w-3 h-3 rounded-full bg-secondary" />
+              <span className="text-muted-foreground">কম</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (error) {
     return (
