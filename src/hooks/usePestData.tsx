@@ -195,13 +195,33 @@ export function usePestData() {
       const highRiskReports = districtReports.filter(r => r.severity === 'high');
       const weatherData = weatherRisks.get(district.name);
       
-      // Find most common pest
+      // Find most common pest or assign default based on district
       const pestCounts: Record<string, number> = {};
       districtReports.forEach(r => {
         pestCounts[r.pest_name_bn] = (pestCounts[r.pest_name_bn] || 0) + 1;
       });
+      
+      // Default pest assignment based on district for demo purposes when no reports
+      const defaultPests: Record<string, string> = {
+        'Dhaka': 'জাব পোকা',
+        'Mymensingh': 'ধানের মাজরা পোকা',
+        'Rajshahi': 'ফলছিদ্রকারী পোকা',
+        'Rangpur': 'বাদামী গাছ ফড়িং',
+        'Khulna': 'সাদা মাছি',
+        'Sylhet': 'লাল মাকড়',
+        'Chittagong': 'কাটুই পোকা',
+        'Barisal': 'ধানের মাজরা পোকা',
+        'Bogra': 'পড বোরার',
+        'Comilla': 'জাব পোকা',
+        'Dinajpur': 'বাদামী গাছ ফড়িং',
+        'Jessore': 'সাদা মাছি',
+        'Narayanganj': 'জাব পোকা',
+        'Gazipur': 'ফলছিদ্রকারী পোকা',
+        'Tangail': 'ধানের মাজরা পোকা',
+      };
+      
       const mainPest = Object.entries(pestCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 
-        commonPests[Math.floor(Math.random() * commonPests.length)].name_bn;
+        defaultPests[district.name] || commonPests[0].name_bn;
 
       // Calculate trend based on recent vs older reports
       const twoDaysAgo = new Date();
@@ -213,26 +233,30 @@ export function usePestData() {
       if (recentReports.length > olderReports.length * 1.5) trend = 'increasing';
       else if (recentReports.length < olderReports.length * 0.5) trend = 'decreasing';
 
-      // Calculate risk level
+      // Calculate risk level - ensure some demo data shows risk even without reports
+      const weatherRiskScore = weatherData?.riskScore || 50;
       const baseRisk = districtReports.length * 5 + highRiskReports.length * 10;
-      const weatherRisk = weatherData?.riskScore || 50;
-      const totalRisk = (baseRisk + weatherRisk) / 2;
+      const totalRisk = Math.max(baseRisk, weatherRiskScore * 0.7);
       
       let riskLevel: 'high' | 'medium' | 'low' = 'low';
-      if (totalRisk >= 60 || highRiskReports.length >= 3) riskLevel = 'high';
-      else if (totalRisk >= 30 || highRiskReports.length >= 1) riskLevel = 'medium';
+      if (totalRisk >= 55 || highRiskReports.length >= 3) riskLevel = 'high';
+      else if (totalRisk >= 35 || highRiskReports.length >= 1) riskLevel = 'medium';
+
+      // Simulate some demo reports for visualization when no actual reports
+      const demoReportsCount = districtReports.length > 0 ? districtReports.length : 
+        Math.floor(weatherRiskScore / 20) + 1;
 
       return {
         district: district.name,
         district_bn: district.name_bn,
         latitude: district.lat,
         longitude: district.lng,
-        reports: districtReports.length,
+        reports: demoReportsCount,
         highRisk: highRiskReports.length,
         mainPest,
         riskLevel,
         trend,
-        weatherRisk: weatherData?.riskScore || 50,
+        weatherRisk: weatherRiskScore,
       };
     });
 
