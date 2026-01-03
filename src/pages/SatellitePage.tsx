@@ -81,10 +81,24 @@ export default function SatellitePage() {
         area_acres: route.area_acres,
         estimated_time_mins: route.estimated_time_mins,
         status: route.status,
-        status_bn: route.status_bn
+        status_bn: route.status_bn,
+        coverage_percentage: route.coverage_percentage,
+        waypoints: route.waypoints || [],
+        optimized_path: route.optimized_path || []
       }));
     }
-    return defaultRoutes;
+    // Add demo waypoints for default routes
+    return defaultRoutes.map((route, idx) => ({
+      ...route,
+      coverage_percentage: route.status === 'completed' ? 100 : route.status === 'in_progress' ? 65 : 0,
+      waypoints: [
+        { lat: 23.8103 + (idx * 0.02), lng: 90.4125, type: 'start' },
+        { lat: 23.8103 + (idx * 0.02) + 0.01, lng: 90.4125 + 0.01, type: 'waypoint' },
+        { lat: 23.8103 + (idx * 0.02) + 0.02, lng: 90.4125 + 0.005, type: 'waypoint' },
+        { lat: 23.8103 + (idx * 0.02) + 0.015, lng: 90.4125 + 0.02, type: 'end' }
+      ],
+      optimized_path: []
+    }));
   }, [routes]);
 
   // Get last scan time
@@ -215,6 +229,18 @@ export default function SatellitePage() {
             name_bn: z.name_bn,
             health_score: z.health_score
           }))}
+          droneRoutes={displayRoutes.map(r => ({
+            id: r.id,
+            task_bn: r.task_bn,
+            status: r.status as 'pending' | 'in_progress' | 'completed' | 'cancelled',
+            status_bn: r.status_bn,
+            area_acres: r.area_acres,
+            estimated_time_mins: r.estimated_time_mins,
+            coverage_percentage: r.coverage_percentage,
+            waypoints: r.waypoints,
+            optimized_path: r.optimized_path
+          }))}
+          showDroneRoutes={true}
         />
         <div className="mt-2 p-3 bg-card/80 backdrop-blur-sm border border-border rounded-xl flex items-center justify-between">
           <div className="flex items-center gap-2">

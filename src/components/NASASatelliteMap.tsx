@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Loader2, AlertTriangle, RefreshCw, ZoomIn, ZoomOut, Radio, Leaf, Satellite, Map as MapIcon } from 'lucide-react';
+import { Loader2, AlertTriangle, RefreshCw, ZoomIn, ZoomOut, Radio, Leaf, Satellite, Map as MapIcon, Navigation } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
@@ -20,12 +20,26 @@ interface FieldZone {
   last_scan_at?: string | null;
 }
 
+interface DroneRoute {
+  id: string;
+  task_bn: string;
+  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
+  status_bn: string;
+  area_acres: number;
+  estimated_time_mins: number;
+  coverage_percentage: number;
+  waypoints: Array<{ lat: number; lng: number; type: string }>;
+  optimized_path: Array<{ lat: number; lng: number; type: string }>;
+}
+
 interface NASASatelliteMapProps {
   latitude?: number;
   longitude?: number;
   zones?: FieldZone[];
+  droneRoutes?: DroneRoute[];
   onZoneClick?: (zoneId: string) => void;
   showHeatmap?: boolean;
+  showDroneRoutes?: boolean;
 }
 
 type TileLayer = 'satellite' | 'terrain' | 'ndvi';
@@ -43,19 +57,24 @@ export function NASASatelliteMap({
   latitude = 23.8103, 
   longitude = 90.4125, 
   zones = [], 
+  droneRoutes = [],
   onZoneClick,
-  showHeatmap = true 
+  showHeatmap = true,
+  showDroneRoutes = true
 }: NASASatelliteMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const markersLayer = useRef<L.LayerGroup | null>(null);
+  const routesLayer = useRef<L.LayerGroup | null>(null);
   
   const [loading, setLoading] = useState(true);
   const [activeLayer, setActiveLayer] = useState<TileLayer>('satellite');
   const [refreshing, setRefreshing] = useState(false);
   const [liveZones, setLiveZones] = useState<FieldZone[]>(zones);
+  const [liveRoutes, setLiveRoutes] = useState<DroneRoute[]>(droneRoutes);
   const [heatmapVisible, setHeatmapVisible] = useState(showHeatmap);
+  const [routesVisible, setRoutesVisible] = useState(showDroneRoutes);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [isMapReady, setIsMapReady] = useState(false);
 
@@ -75,10 +94,14 @@ export function NASASatelliteMap({
     }
   };
 
-  // Sync zones prop with local state
+  // Sync zones and routes props with local state
   useEffect(() => {
     setLiveZones(zones);
   }, [zones]);
+
+  useEffect(() => {
+    setLiveRoutes(droneRoutes);
+  }, [droneRoutes]);
 
   // Real-time subscription to field_zones table
   useEffect(() => {
@@ -135,6 +158,9 @@ export function NASASatelliteMap({
 
     // Add markers layer
     markersLayer.current = L.layerGroup().addTo(map.current);
+    
+    // Add routes layer
+    routesLayer.current = L.layerGroup().addTo(map.current);
 
     // Add zoom control
     L.control.zoom({ position: 'topright' }).addTo(map.current);
@@ -325,6 +351,198 @@ export function NASASatelliteMap({
 
   }, [liveZones, heatmapVisible, isMapReady, latitude, longitude, onZoneClick]);
 
+  // Render drone routes on map
+  useEffect(() => {
+    if (!map.current || !routesLayer.current || !isMapReady) return;
+
+    routesLayer.current.clearLayers();
+
+    if (!routesVisible || liveRoutes.length === 0) return;
+
+    liveRoutes.forEach((route) => {
+      const path = route.optimized_path?.length > 0 ? route.optimized_path : route.waypoints;
+      if (!path || path.length < 2) return;
+
+      // Determine route color based on status
+      let routeColor = '#3b82f6'; // blue - pending
+      let dashArray = '10, 10';
+      let weight = 3;
+      let opacity = 0.8;
+
+      if (route.status === 'in_progress') {
+        routeColor = '#f59e0b'; // amber
+        dashArray = '5, 5';
+        weight = 4;
+        opacity = 1;
+      } else if (route.status === 'completed') {
+        routeColor = '#22c55e'; // green
+        dashArray = '';
+        weight = 2;
+        opacity = 0.6;
+      } else if (route.status === 'cancelled') {
+        routeColor = '#ef4444'; // red
+        dashArray = '15, 10';
+        weight = 2;
+        opacity = 0.4;
+      }
+
+      // Create polyline for the route
+      const latLngs = path.map(p => [p.lat, p.lng] as [number, number]);
+      const polyline = L.polyline(latLngs, {
+        color: routeColor,
+        weight,
+        opacity,
+        dashArray,
+        lineCap: 'round',
+        lineJoin: 'round',
+      }).addTo(routesLayer.current!);
+
+      // Add start marker (drone icon)
+      const startPoint = path[0];
+      const startIcon = L.divIcon({
+        className: 'drone-start-marker',
+        html: `
+          <div style="
+            width: 32px;
+            height: 32px;
+            background: ${routeColor};
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid white;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+            ${route.status === 'in_progress' ? 'animation: dronePulse 1.5s infinite;' : ''}
+          ">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+              <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+              <path d="M3 12h6m6 0h6"/>
+              <path d="M12 3v6m0 6v6"/>
+            </svg>
+          </div>
+        `,
+        iconSize: [32, 32],
+        iconAnchor: [16, 16],
+      });
+
+      L.marker([startPoint.lat, startPoint.lng], { icon: startIcon })
+        .addTo(routesLayer.current!);
+
+      // Add end marker (flag)
+      const endPoint = path[path.length - 1];
+      const endIcon = L.divIcon({
+        className: 'drone-end-marker',
+        html: `
+          <div style="
+            width: 24px;
+            height: 24px;
+            background: ${routeColor}40;
+            border: 2px solid ${routeColor};
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+          ">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="${routeColor}" stroke="none">
+              <path d="M4 21V4h12l-3 4 3 4H6v9z"/>
+            </svg>
+          </div>
+        `,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12],
+      });
+
+      L.marker([endPoint.lat, endPoint.lng], { icon: endIcon })
+        .addTo(routesLayer.current!);
+
+      // Add waypoint markers for intermediate points
+      path.slice(1, -1).forEach((point, idx) => {
+        const waypointIcon = L.divIcon({
+          className: 'drone-waypoint-marker',
+          html: `
+            <div style="
+              width: 12px;
+              height: 12px;
+              background: ${routeColor};
+              border: 2px solid white;
+              border-radius: 50%;
+              box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+            "></div>
+          `,
+          iconSize: [12, 12],
+          iconAnchor: [6, 6],
+        });
+
+        L.marker([point.lat, point.lng], { icon: waypointIcon })
+          .addTo(routesLayer.current!);
+      });
+
+      // Route popup
+      const popupContent = `
+        <div style="min-width: 180px; padding: 10px; font-family: system-ui, sans-serif;">
+          <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 10px;">
+            <div style="
+              width: 32px;
+              height: 32px;
+              background: ${routeColor}20;
+              border-radius: 8px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+            ">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${routeColor}" stroke-width="2">
+                <path d="M12 12m-3 0a3 3 0 1 0 6 0a3 3 0 1 0 -6 0"/>
+                <path d="M3 12h6m6 0h6"/>
+                <path d="M12 3v6m0 6v6"/>
+              </svg>
+            </div>
+            <div>
+              <h3 style="font-weight: 600; color: #1f2937; font-size: 14px; margin: 0;">${route.task_bn}</h3>
+              <span style="
+                display: inline-block;
+                font-size: 10px;
+                color: ${routeColor};
+                background: ${routeColor}15;
+                padding: 2px 8px;
+                border-radius: 10px;
+                margin-top: 2px;
+              ">${route.status_bn}</span>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+            <div style="text-align: center; padding: 6px; background: #f9fafb; border-radius: 8px;">
+              <p style="font-size: 14px; font-weight: bold; color: #1f2937; margin: 0;">${route.area_acres.toFixed(1)}</p>
+              <p style="font-size: 9px; color: #6b7280; margin: 0;">একর</p>
+            </div>
+            <div style="text-align: center; padding: 6px; background: #f9fafb; border-radius: 8px;">
+              <p style="font-size: 14px; font-weight: bold; color: #1f2937; margin: 0;">${route.estimated_time_mins}</p>
+              <p style="font-size: 9px; color: #6b7280; margin: 0;">মিনিট</p>
+            </div>
+          </div>
+          
+          ${route.status === 'in_progress' ? `
+            <div style="margin-top: 8px;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span style="font-size: 10px; color: #6b7280;">অগ্রগতি</span>
+                <span style="font-size: 10px; font-weight: 600; color: ${routeColor};">${route.coverage_percentage}%</span>
+              </div>
+              <div style="height: 4px; background: #e5e7eb; border-radius: 2px; overflow: hidden;">
+                <div style="height: 100%; width: ${route.coverage_percentage}%; background: ${routeColor}; border-radius: 2px;"></div>
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      `;
+
+      polyline.bindPopup(popupContent, {
+        className: 'drone-route-popup',
+        maxWidth: 250,
+      });
+    });
+
+  }, [liveRoutes, routesVisible, isMapReady]);
+
   // NDVI stats
   const ndviStats = useMemo(() => {
     if (liveZones.length === 0) return null;
@@ -337,6 +555,17 @@ export function NASASatelliteMap({
     
     return { avg, min, max, stressed, total: liveZones.length };
   }, [liveZones]);
+
+  // Drone route stats
+  const routeStats = useMemo(() => {
+    if (liveRoutes.length === 0) return null;
+    
+    const inProgress = liveRoutes.filter(r => r.status === 'in_progress').length;
+    const completed = liveRoutes.filter(r => r.status === 'completed').length;
+    const pending = liveRoutes.filter(r => r.status === 'pending').length;
+    
+    return { total: liveRoutes.length, inProgress, completed, pending };
+  }, [liveRoutes]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -363,7 +592,19 @@ export function NASASatelliteMap({
         }
       }
       
-      .ndvi-custom-marker {
+      @keyframes dronePulse {
+        0%, 100% {
+          box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7);
+        }
+        50% {
+          box-shadow: 0 0 0 12px rgba(245, 158, 11, 0);
+        }
+      }
+      
+      .ndvi-custom-marker,
+      .drone-start-marker,
+      .drone-end-marker,
+      .drone-waypoint-marker {
         background: transparent !important;
         border: none !important;
       }
@@ -372,7 +613,8 @@ export function NASASatelliteMap({
         transform: scale(1.1) !important;
       }
       
-      .ndvi-leaflet-popup .leaflet-popup-content-wrapper {
+      .ndvi-leaflet-popup .leaflet-popup-content-wrapper,
+      .drone-route-popup .leaflet-popup-content-wrapper {
         background: white;
         border-radius: 16px;
         box-shadow: 0 10px 40px rgba(0,0,0,0.15);
@@ -380,15 +622,18 @@ export function NASASatelliteMap({
         padding: 0;
       }
       
-      .ndvi-leaflet-popup .leaflet-popup-content {
+      .ndvi-leaflet-popup .leaflet-popup-content,
+      .drone-route-popup .leaflet-popup-content {
         margin: 0;
       }
       
-      .ndvi-leaflet-popup .leaflet-popup-tip {
+      .ndvi-leaflet-popup .leaflet-popup-tip,
+      .drone-route-popup .leaflet-popup-tip {
         background: white;
       }
       
-      .ndvi-leaflet-popup .leaflet-popup-close-button {
+      .ndvi-leaflet-popup .leaflet-popup-close-button,
+      .drone-route-popup .leaflet-popup-close-button {
         color: #9ca3af !important;
         font-size: 20px !important;
         padding: 8px 10px !important;
@@ -447,6 +692,15 @@ export function NASASatelliteMap({
           <Leaf className="w-3 h-3 mr-1" />
           NDVI
         </Button>
+        <Button
+          size="sm"
+          variant={routesVisible ? 'default' : 'ghost'}
+          onClick={() => setRoutesVisible(!routesVisible)}
+          className="h-7 text-xs"
+        >
+          <Navigation className="w-3 h-3 mr-1" />
+          ড্রোন
+        </Button>
       </div>
 
       {/* Real-time indicator & Controls */}
@@ -493,18 +747,67 @@ export function NASASatelliteMap({
         </div>
       )}
 
-      {/* NDVI Legend */}
-      <div className="absolute bottom-3 left-3 z-[1000] bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-        <p className="text-[10px] text-muted-foreground mb-1.5">NDVI স্কেল</p>
-        <div className="flex items-center gap-1">
-          <div className="h-2 w-16 rounded-full" style={{
-            background: 'linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e)'
-          }} />
+      {/* Drone Route Stats Panel */}
+      {routeStats && routesVisible && (
+        <div className="absolute top-12 right-12 z-[1000] bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+          <p className="text-[10px] text-muted-foreground mb-1">ড্রোন রুট</p>
+          <div className="flex gap-2 text-xs">
+            <div className="text-center">
+              <p className="font-bold text-amber-500">{routeStats.inProgress}</p>
+              <p className="text-[9px] text-muted-foreground">চলমান</p>
+            </div>
+            <div className="w-px bg-border" />
+            <div className="text-center">
+              <p className="font-bold text-green-500">{routeStats.completed}</p>
+              <p className="text-[9px] text-muted-foreground">সম্পন্ন</p>
+            </div>
+            <div className="w-px bg-border" />
+            <div className="text-center">
+              <p className="font-bold text-blue-500">{routeStats.pending}</p>
+              <p className="text-[9px] text-muted-foreground">অপেক্ষায়</p>
+            </div>
+          </div>
         </div>
-        <div className="flex justify-between text-[8px] text-muted-foreground mt-0.5">
-          <span>০%</span>
-          <span>১০০%</span>
-        </div>
+      )}
+
+      {/* Legends */}
+      <div className="absolute bottom-3 left-3 z-[1000] flex gap-2">
+        {/* NDVI Legend */}
+        {heatmapVisible && (
+          <div className="bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+            <p className="text-[10px] text-muted-foreground mb-1.5">NDVI স্কেল</p>
+            <div className="flex items-center gap-1">
+              <div className="h-2 w-16 rounded-full" style={{
+                background: 'linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e)'
+              }} />
+            </div>
+            <div className="flex justify-between text-[8px] text-muted-foreground mt-0.5">
+              <span>০%</span>
+              <span>১০০%</span>
+            </div>
+          </div>
+        )}
+        
+        {/* Drone Route Legend */}
+        {routesVisible && (
+          <div className="bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+            <p className="text-[10px] text-muted-foreground mb-1.5">ড্রোন রুট</p>
+            <div className="flex flex-col gap-1">
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-0.5 bg-blue-500" style={{ borderStyle: 'dashed' }} />
+                <span className="text-[8px] text-muted-foreground">অপেক্ষায়</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-0.5 bg-amber-500" />
+                <span className="text-[8px] text-muted-foreground">চলমান</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <div className="w-4 h-0.5 bg-green-500" />
+                <span className="text-[8px] text-muted-foreground">সম্পন্ন</span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Map Container */}
