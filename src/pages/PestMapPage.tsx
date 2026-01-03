@@ -20,7 +20,7 @@ import {
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { usePestData, DistrictStats } from "@/hooks/usePestData";
-import PestMapbox from "@/components/PestMapbox";
+import PestLeafletMap from "@/components/PestLeafletMap";
 import { Button } from "@/components/ui/button";
 
 export default function PestMapPage() {
@@ -362,7 +362,7 @@ export default function PestMapPage() {
       {activeTab === "map" && (
         <section className="px-4 space-y-4">
           {/* Interactive Map */}
-          <PestMapbox 
+          <PestLeafletMap 
             districtStats={districtStats}
             onDistrictClick={setSelectedDistrict}
             selectedDistrict={selectedDistrict?.district}
