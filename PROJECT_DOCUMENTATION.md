@@ -125,6 +125,16 @@ Role: Team Lead, Prompt Engineering & AI Integration Specialist
 |---------|-------|---------|
 | Lovable AI Gateway | google/gemini-2.5-flash | Chat, RAG, Disease Detection |
 
+### NASA Data Integration
+
+| Service | Data Source | Purpose |
+|---------|-------------|---------|
+| NASA OpenET | Landsat, MODIS, Weather Stations | Evapotranspiration & Water Management |
+| Crop-CASMA | SMAP, MODIS, GPM | Soil Moisture & Drought Monitoring |
+| NASA POWER | GMAO GEOS-FP | Weather Forecasting & Climate Data |
+| Earth Observation | Landsat-8/9, Sentinel-2, MODIS | Vegetation Indices & Crop Health |
+| NASA GIBS | Multiple Satellites | Satellite Imagery & Visualization |
+
 ### DevOps & Infrastructure
 
 - **Hosting**: Lovable Cloud
@@ -219,6 +229,16 @@ User Action → React Component → Custom Hook → Supabase Client → Database
 - Like and comment system
 - Expert verification badges
 - AI-moderated content
+
+#### 4.7 NASA Farm Navigators 🛰️
+- **OpenET Integration**: Real-time evapotranspiration data for water management
+- **Crop-CASMA**: Soil moisture analysis and drought monitoring
+- **Earth Observation**: Landsat, MODIS, Sentinel-2 satellite data integration
+- **NASA Weather**: POWER and GMAO weather forecasting for agriculture
+- **NDVI Analysis**: Vegetation health monitoring and change detection
+- **Water Balance**: Automated irrigation recommendations and water budgeting
+- **Drought Alerts**: Early warning system for water stress conditions
+- **Satellite Imagery**: Multi-spectral analysis for crop health assessment
 
 ### Additional Features
 
@@ -774,6 +794,7 @@ src/
 │   ├── MachineOptimizerPage.tsx
 │   ├── MapPage.tsx
 │   ├── MarketPage.tsx
+│   ├── NASAFarmNavigatorsPage.tsx
 │   ├── NPKCalculatorPage.tsx
 │   ├── PestMapPage.tsx
 │   ├── ProfilePage.tsx
@@ -814,6 +835,10 @@ src/
 | useTextToSpeech | Text-to-speech |
 | useWeather | Weather data |
 | useOfflineStatus | Offline detection |
+| **useOpenETData** | NASA OpenET evapotranspiration data |
+| **useCropCASMAData** | NASA Crop-CASMA soil moisture analysis |
+| **useNASAEarthObservation** | NASA satellite data integration |
+| **useNASAWeatherData** | NASA weather forecasting |
 
 ---
 
