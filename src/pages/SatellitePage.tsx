@@ -359,34 +359,76 @@ export default function SatellitePage() {
         </div>
       </div>
 
-      {/* Main Worldview Interface */}
-      <div className="flex h-[calc(100vh-80px)]">
-        {/* Layer Panel */}
+      {/* Main Worldview Interface - Mobile Responsive */}
+      <div className="flex flex-col lg:flex-row h-[calc(100vh-80px)]">
+        {/* Mobile Header Controls */}
+        <div className="lg:hidden bg-black/50 backdrop-blur-lg border-b border-white/10 p-3">
+          <div className="flex items-center justify-between">
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowLayerPanel(!showLayerPanel)} 
+              className="text-white hover:text-green-400"
+            >
+              <Layers className="w-4 h-4 mr-2" />
+              Layers
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={() => setShowAnalytics(!showAnalytics)} 
+              className="text-white hover:text-green-400"
+            >
+              <BarChart3 className="w-4 h-4 mr-2" />
+              Analytics
+            </Button>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              onClick={handleRefreshAll} 
+              className="text-white hover:text-green-400"
+            >
+              <RefreshCw className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
+        {/* Layer Panel - Mobile Responsive */}
         {showLayerPanel && (
-          <div className="w-80 bg-black/50 backdrop-blur-lg border-r border-white/10 overflow-y-auto">
+          <div className="w-full lg:w-80 bg-black/50 backdrop-blur-lg border-r lg:border-r border-white/10 overflow-y-auto max-h-96 lg:max-h-full lg:relative absolute z-20 lg:z-auto">
             <div className="p-4">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-white font-semibold">Layers</h3>
-                <Button variant="ghost" size="sm" onClick={() => setShowLayerPanel(false)}>
-                  <X className="w-4 h-4" />
-                </Button>
+                <h3 className="text-white font-semibold text-sm lg:text-base">Layers</h3>
+                <div className="flex items-center space-x-2">
+                  <Button 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setShowBangladeshLayers(!showBangladeshLayers)} 
+                    className="text-white hover:text-green-400 lg:hidden"
+                  >
+                    <Globe className="w-4 h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setShowLayerPanel(false)}>
+                    <X className="w-4 h-4" />
+                  </Button>
+                </div>
               </div>
 
-              {/* Satellite Instruments */}
-              <div className="mb-6">
-                <h4 className="text-sm font-medium text-gray-300 mb-3">Satellite</h4>
+              {/* Satellite Instruments - Mobile Responsive */}
+              <div className="mb-4 lg:mb-6">
+                <h4 className="text-xs lg:text-sm font-medium text-gray-300 mb-2 lg:mb-3">Satellite</h4>
                 <Select value={selectedInstrument} onValueChange={setSelectedInstrument}>
-                  <SelectTrigger className="bg-white/5 border-white/10 text-white">
+                  <SelectTrigger className="bg-white/5 border-white/10 text-white text-xs lg:text-sm h-8 lg:h-10">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-black/90 border-white/10">
                     {satelliteInstruments.map(instrument => (
-                      <SelectItem key={instrument.id} value={instrument.id} className="text-white">
+                      <SelectItem key={instrument.id} value={instrument.id} className="text-white text-xs lg:text-sm">
                         <div className="flex items-center justify-between w-full">
-                          <span>{instrument.name}</span>
+                          <span className="text-xs lg:text-sm">{instrument.name}</span>
                           <div className="flex items-center space-x-2 text-xs text-gray-400">
-                            <span>{instrument.resolution}</span>
-                            {instrument.daily && <Badge variant="secondary">Daily</Badge>}
+                            <span className="text-xs">{instrument.resolution}</span>
+                            {instrument.daily && <Badge variant="secondary" className="text-xs">Daily</Badge>}
                           </div>
                         </div>
                       </SelectItem>
@@ -508,89 +550,87 @@ export default function SatellitePage() {
         {/* Main Map Area */}
         <div className="flex-1 relative">
           {/* Map Controls */}
-          <div className="absolute top-4 left-4 z-10 space-y-2">
-            <div className="bg-black/50 backdrop-blur-lg rounded-lg p-2 space-y-2">
-              <Button variant="ghost" size="sm" className="text-white hover:text-green-400 w-full justify-start">
-                <Home className="w-4 h-4 mr-2" />
-                Home
+          <div className="absolute top-2 left-2 lg:top-4 lg:left-4 z-10 space-y-1 lg:space-y-2">
+            <div className="bg-black/50 backdrop-blur-lg rounded-lg p-1 lg:p-2 space-y-1 lg:space-y-2">
+              <Button variant="ghost" size="sm" onClick={() => setZoom(Math.min(zoom + 1, 20))} className="text-white hover:text-green-400 w-full justify-start h-6 lg:h-8 text-xs lg:text-sm">
+                <ZoomIn className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden lg:inline">Zoom In</span>
               </Button>
-              <Button variant="ghost" size="sm" className="text-white hover:text-green-400 w-full justify-start">
-                <Compass className="w-4 h-4 mr-2" />
-                North
+              <Button variant="ghost" size="sm" onClick={() => setZoom(Math.max(zoom - 1, 1))} className="text-white hover:text-green-400 w-full justify-start h-6 lg:h-8 text-xs lg:text-sm">
+                <ZoomOut className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden lg:inline">Zoom Out</span>
               </Button>
-              <div className="border-t border-white/10 pt-2 space-y-2">
-                <Button variant="ghost" size="sm" onClick={() => setZoom(Math.min(zoom + 1, 20))} className="text-white hover:text-green-400 w-full justify-start">
-                  <ZoomIn className="w-4 h-4 mr-2" />
-                  Zoom In
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setZoom(Math.max(zoom - 1, 1))} className="text-white hover:text-green-400 w-full justify-start">
-                  <ZoomOut className="w-4 h-4 mr-2" />
-                  Zoom Out
-                </Button>
-              </div>
+              <Button variant="ghost" size="sm" onClick={() => setMeasurementMode('distance')} className={`w-full justify-start h-6 lg:h-8 text-xs lg:text-sm ${measurementMode === 'distance' ? 'bg-green-600 text-white' : 'text-white hover:text-green-400'}`}>
+                <Activity className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden lg:inline">Distance</span>
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setMeasurementMode('area')} className={`w-full justify-start h-6 lg:h-8 text-xs lg:text-sm ${measurementMode === 'area' ? 'bg-green-600 text-white' : 'text-white hover:text-green-400'}`}>
+                <Grid className="w-3 h-3 lg:w-4 lg:h-4 mr-1 lg:mr-2" />
+                <span className="hidden lg:inline">Area</span>
+              </Button>
             </div>
           </div>
 
-          {/* Award-winning Analytics Dashboard */}
+          {/* Award-winning Analytics Dashboard - Mobile Responsive */}
           {showAnalytics && (
-            <div className="absolute top-4 right-4 z-10 w-96">
-              <div className="bg-black/50 backdrop-blur-lg rounded-lg p-4 border border-white/10">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-white font-semibold">Farm Analytics</h3>
-                  <Button variant="ghost" size="sm" onClick={() => setShowAnalytics(false)}>
-                    <X className="w-4 h-4" />
+            <div className="absolute top-2 right-2 lg:top-4 lg:right-4 z-10 w-80 lg:w-96 max-w-[calc(100vw-1rem)] lg:max-w-none">
+              <div className="bg-black/50 backdrop-blur-lg rounded-lg p-3 lg:p-4 border border-white/10">
+                <div className="flex items-center justify-between mb-3 lg:mb-4">
+                  <h3 className="text-white font-semibold text-sm lg:text-base">Farm Analytics</h3>
+                  <Button variant="ghost" size="sm" onClick={() => setShowAnalytics(false)} className="h-6 w-6 lg:h-8 lg:w-8">
+                    <X className="w-3 h-3 lg:w-4 lg:h-4" />
                   </Button>
                 </div>
                 
-                <div className="space-y-4">
-                  {/* Yield Prediction */}
-                  <div className="p-3 bg-green-500/10 rounded-lg border border-green-500/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-green-400 font-medium">Yield Prediction</span>
-                      <Badge className="bg-green-500/20 text-green-400">+12%</Badge>
+                <div className="space-y-2 lg:space-y-4">
+                  {/* Yield Prediction - Mobile Responsive */}
+                  <div className="p-2 lg:p-3 bg-green-500/10 rounded-lg border border-green-500/30">
+                    <div className="flex items-center justify-between mb-1 lg:mb-2">
+                      <span className="text-xs lg:text-sm text-green-400 font-medium">Yield Prediction</span>
+                      <Badge className="bg-green-500/20 text-green-400 text-xs">+12%</Badge>
                     </div>
-                    <div className="text-2xl font-bold text-white">4.2 tons/ha</div>
+                    <div className="text-lg lg:text-2xl font-bold text-white">4.2 tons/ha</div>
                     <div className="text-xs text-gray-400">vs 3.8 tons/ha last season</div>
                   </div>
                   
-                  {/* Crop Health */}
-                  <div className="p-3 bg-blue-500/10 rounded-lg border border-blue-500/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-blue-400 font-medium">Crop Health</span>
-                      <Badge className="bg-blue-500/20 text-blue-400">Good</Badge>
+                  {/* Crop Health - Mobile Responsive */}
+                  <div className="p-2 lg:p-3 bg-blue-500/10 rounded-lg border border-blue-500/30">
+                    <div className="flex items-center justify-between mb-1 lg:mb-2">
+                      <span className="text-xs lg:text-sm text-blue-400 font-medium">Crop Health</span>
+                      <Badge className="bg-blue-500/20 text-blue-400 text-xs">Good</Badge>
                     </div>
-                    <div className="text-2xl font-bold text-white">87%</div>
-                    <Progress value={87} className="mt-2 h-2" />
+                    <div className="text-lg lg:text-2xl font-bold text-white">87%</div>
+                    <Progress value={87} className="mt-1 lg:mt-2 h-1 lg:h-2" />
                   </div>
                   
-                  {/* Water Efficiency */}
-                  <div className="p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-cyan-400 font-medium">Water Efficiency</span>
-                      <Badge className="bg-cyan-500/20 text-cyan-400">Optimal</Badge>
+                  {/* Water Efficiency - Mobile Responsive */}
+                  <div className="p-2 lg:p-3 bg-cyan-500/10 rounded-lg border border-cyan-500/30">
+                    <div className="flex items-center justify-between mb-1 lg:mb-2">
+                      <span className="text-xs lg:text-sm text-cyan-400 font-medium">Water Efficiency</span>
+                      <Badge className="bg-cyan-500/20 text-cyan-400 text-xs">Optimal</Badge>
                     </div>
-                    <div className="text-2xl font-bold text-white">23%</div>
+                    <div className="text-lg lg:text-2xl font-bold text-white">23%</div>
                     <div className="text-xs text-gray-400">reduction in water usage</div>
                   </div>
                   
-                  {/* AI Insights */}
-                  <div className="p-3 bg-purple-500/10 rounded-lg border border-purple-500/30">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm text-purple-400 font-medium">AI Insights</span>
-                      <Brain className="w-4 h-4 text-purple-400" />
+                  {/* AI Insights - Mobile Responsive */}
+                  <div className="p-2 lg:p-3 bg-purple-500/10 rounded-lg border border-purple-500/30">
+                    <div className="flex items-center justify-between mb-1 lg:mb-2">
+                      <span className="text-xs lg:text-sm text-purple-400 font-medium">AI Insights</span>
+                      <Brain className="w-3 h-3 lg:w-4 lg:h-4 text-purple-400" />
                     </div>
-                    <div className="text-sm text-gray-300 space-y-1">
-                      <div className="flex items-center space-x-2">
-                        <Check className="w-3 h-3 text-green-500" />
-                        <span>Optimal harvest in 12 days</span>
+                    <div className="text-xs text-gray-300 space-y-1">
+                      <div className="flex items-center space-x-1 lg:space-x-2">
+                        <Check className="w-2 h-2 lg:w-3 lg:h-3 text-green-500 flex-shrink-0" />
+                        <span className="text-xs">Optimal harvest in 12 days</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <AlertTriangle className="w-3 h-3 text-yellow-500" />
-                        <span>Monitor pest pressure in sector B</span>
+                      <div className="flex items-center space-x-1 lg:space-x-2">
+                        <AlertTriangle className="w-2 h-2 lg:w-3 lg:h-3 text-yellow-500 flex-shrink-0" />
+                        <span className="text-xs">Monitor pest pressure</span>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <TrendingUp className="w-3 h-3 text-blue-500" />
-                        <span>NDVI trending upward</span>
+                      <div className="flex items-center space-x-1 lg:space-x-2">
+                        <TrendingUp className="w-2 h-2 lg:w-3 lg:h-3 text-blue-500 flex-shrink-0" />
+                        <span className="text-xs">NDVI trending upward</span>
                       </div>
                     </div>
                   </div>
@@ -643,21 +683,23 @@ export default function SatellitePage() {
             />
           </div>
 
-          {/* Timeline Controls */}
+          {/* Timeline Controls - Mobile Responsive */}
           {showTimeline && (
-            <div className="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-lg border-t border-white/10 p-4">
-              <div className="flex items-center space-x-4">
-                <Button variant="ghost" size="sm" onClick={handleTimelinePrevious} className="text-white hover:text-green-400">
-                  <SkipBack className="w-4 h-4" />
-                </Button>
-                <Button variant="ghost" size="sm" onClick={handleTimelinePlay} className="text-white hover:text-green-400">
-                  {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={handleTimelineNext} className="text-white hover:text-green-400">
-                  <SkipForward className="w-4 h-4" />
-                </Button>
+            <div className="absolute bottom-0 left-0 right-0 bg-black/50 backdrop-blur-lg border-t border-white/10 p-2 lg:p-4">
+              <div className="flex flex-col lg:flex-row items-center space-y-2 lg:space-y-0 lg:space-x-4">
+                <div className="flex items-center space-x-2">
+                  <Button variant="ghost" size="sm" onClick={handleTimelinePrevious} className="text-white hover:text-green-400 h-6 w-6 lg:h-8 lg:w-8">
+                    <SkipBack className="w-3 h-3 lg:w-4 lg:h-4" />
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={handleTimelinePlay} className="text-white hover:text-green-400 h-6 w-6 lg:h-8 lg:w-8">
+                    {isPlaying ? <Pause className="w-3 h-3 lg:w-4 lg:h-4" /> : <Play className="w-3 h-3 lg:w-4 lg:h-4" />}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={handleTimelineNext} className="text-white hover:text-green-400 h-6 w-6 lg:h-8 lg:w-8">
+                    <SkipForward className="w-3 h-3 lg:w-4 lg:h-4" />
+                  </Button>
+                </div>
                 
-                <div className="flex-1">
+                <div className="flex-1 w-full">
                   <Slider
                     value={[currentDateIndex]}
                     onValueChange={(value) => setCurrentDate(dates[value[0]])}
@@ -666,14 +708,14 @@ export default function SatellitePage() {
                     className="w-full"
                   />
                   <div className="flex justify-between text-xs text-gray-400 mt-1">
-                    <span>{dates[0].toLocaleDateString()}</span>
-                    <span className="text-white font-medium">{currentDate.toLocaleDateString()}</span>
-                    <span>{dates[dates.length - 1].toLocaleDateString()}</span>
+                    <span className="hidden lg:inline">{dates[0].toLocaleDateString()}</span>
+                    <span className="text-xs lg:text-sm text-white font-medium">{currentDate.toLocaleDateString()}</span>
+                    <span className="hidden lg:inline">{dates[dates.length - 1].toLocaleDateString()}</span>
                   </div>
                 </div>
 
-                <Button variant="ghost" size="sm" onClick={() => setShowTimeline(false)} className="text-white hover:text-green-400">
-                  <ChevronRight className="w-4 h-4" />
+                <Button variant="ghost" size="sm" onClick={() => setShowTimeline(false)} className="text-white hover:text-green-400 h-6 w-6 lg:h-8 lg:w-8">
+                  <ChevronRight className="w-3 h-3 lg:w-4 lg:h-4" />
                 </Button>
               </div>
             </div>
