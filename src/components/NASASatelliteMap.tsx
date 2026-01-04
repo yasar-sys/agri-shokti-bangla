@@ -1,10 +1,11 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Loader2, AlertTriangle, RefreshCw, ZoomIn, ZoomOut, Radio, Leaf, Satellite, Map as MapIcon, Navigation } from 'lucide-react';
+import { Loader2, AlertTriangle, RefreshCw, ZoomIn, ZoomOut, Radio, Leaf, Satellite, Map as MapIcon, Navigation, Droplets, Thermometer, CloudRain, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
+import { TILE_LAYERS, getGIBSDate, getNDVIColor, getSoilMoistureColor } from '@/lib/nasaDataSources';
 
 interface FieldZone {
   id: string;
@@ -42,16 +43,20 @@ interface NASASatelliteMapProps {
   showDroneRoutes?: boolean;
 }
 
-type TileLayer = 'satellite' | 'terrain' | 'ndvi';
+// Extended layer types with NASA data products
+type TileLayer = 'satellite' | 'terrain' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation' | 'flood' | 'true_color';
 
-// Generate NDVI color based on value (0-1 scale)
-function getNDVIColor(value: number, opacity: number = 0.6): string {
-  if (value >= 0.8) return `hsla(120, 80%, 35%, ${opacity})`;
-  if (value >= 0.6) return `hsla(100, 70%, 40%, ${opacity})`;
-  if (value >= 0.4) return `hsla(60, 80%, 45%, ${opacity})`;
-  if (value >= 0.2) return `hsla(30, 80%, 45%, ${opacity})`;
-  return `hsla(0, 70%, 45%, ${opacity})`;
-}
+// Layer metadata for UI
+const LAYER_INFO: Record<TileLayer, { name: string; nameBn: string; icon: string; description: string }> = {
+  satellite: { name: 'Satellite', nameBn: 'স্যাটেলাইট', icon: 'satellite', description: 'Esri World Imagery' },
+  terrain: { name: 'Map', nameBn: 'ম্যাপ', icon: 'map', description: 'Dark terrain map' },
+  ndvi: { name: 'NDVI', nameBn: 'NDVI', icon: 'leaf', description: 'NASA MODIS Vegetation Index' },
+  soil_moisture: { name: 'Soil Moisture', nameBn: 'মাটির আর্দ্রতা', icon: 'droplets', description: 'NASA SMAP Soil Moisture' },
+  lst: { name: 'Temperature', nameBn: 'তাপমাত্রা', icon: 'thermometer', description: 'MODIS Land Surface Temperature' },
+  precipitation: { name: 'Rainfall', nameBn: 'বৃষ্টিপাত', icon: 'cloud-rain', description: 'NASA GPM Precipitation' },
+  flood: { name: 'Flood', nameBn: 'বন্যা', icon: 'alert', description: 'MODIS Flood Detection' },
+  true_color: { name: 'True Color', nameBn: 'প্রকৃত রঙ', icon: 'image', description: 'VIIRS True Color Imagery' }
+};
 
 export function NASASatelliteMap({ 
   latitude = 23.8103, 
@@ -65,6 +70,7 @@ export function NASASatelliteMap({
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const overlayLayerRef = useRef<L.TileLayer | null>(null);
   const markersLayer = useRef<L.LayerGroup | null>(null);
   const routesLayer = useRef<L.LayerGroup | null>(null);
   
@@ -78,33 +84,51 @@ export function NASASatelliteMap({
   const [routesVisible, setRoutesVisible] = useState(showDroneRoutes);
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [isMapReady, setIsMapReady] = useState(false);
+  const [showLayerMenu, setShowLayerMenu] = useState(false);
 
-  // Get recent date for NASA GIBS tiles (MODIS updates ~8 days, use 10 days back for reliability)
-  const getGIBSDate = () => {
-    const date = new Date();
-    date.setDate(date.getDate() - 10);
-    return date.toISOString().split('T')[0];
-  };
+  // Get dynamic dates for NASA GIBS tiles
+  const gibsDate = getGIBSDate(10); // 10 days back for reliability
+  const gibsDateRecent = getGIBSDate(3); // 3 days back for true color
 
-  const gibsDate = getGIBSDate();
-
-  // Tile layer configurations with NASA GIBS NDVI
-  const tileLayers: Record<TileLayer, { url: string; attribution: string; maxZoom?: number }> = {
+  // Tile layer configurations with all NASA GIBS products
+  const tileLayers: Record<TileLayer, { url: string; attribution: string; maxZoom: number; opacity?: number }> = {
     satellite: {
-      url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      attribution: 'Tiles &copy; Esri',
-      maxZoom: 18
+      ...TILE_LAYERS.satellite,
+      maxZoom: TILE_LAYERS.satellite.maxZoom || 18
     },
     terrain: {
-      url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-      maxZoom: 18
+      ...TILE_LAYERS.terrain,
+      maxZoom: TILE_LAYERS.terrain.maxZoom || 18
     },
     ndvi: {
-      // NASA GIBS MODIS Terra NDVI 8-Day - Real vegetation index data
-      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/${gibsDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,
-      attribution: 'NDVI &copy; NASA GIBS MODIS',
-      maxZoom: 9 // GIBS NDVI max zoom is 9
+      ...TILE_LAYERS.getNDVILayer(gibsDate),
+      maxZoom: 9,
+      opacity: 0.85
+    },
+    soil_moisture: {
+      ...TILE_LAYERS.getSoilMoistureLayer(gibsDate),
+      maxZoom: 7,
+      opacity: 0.8
+    },
+    lst: {
+      ...TILE_LAYERS.getLSTLayer(gibsDate),
+      maxZoom: 7,
+      opacity: 0.8
+    },
+    precipitation: {
+      ...TILE_LAYERS.getPrecipitationLayer(gibsDate),
+      maxZoom: 6,
+      opacity: 0.7
+    },
+    flood: {
+      ...TILE_LAYERS.getFloodLayer(gibsDate),
+      maxZoom: 8,
+      opacity: 0.8
+    },
+    true_color: {
+      ...TILE_LAYERS.getTrueColorLayer(gibsDateRecent),
+      maxZoom: 9,
+      opacity: 1
     }
   };
 
@@ -227,45 +251,48 @@ export function NASASatelliteMap({
     };
   }, []);
 
-  // Switch tile layers
+  // NASA GIBS layers that need a base map underneath
+  const needsBaseMap = ['ndvi', 'soil_moisture', 'lst', 'precipitation', 'flood'];
+
+  // Switch tile layers - handles all NASA data products
   useEffect(() => {
     if (!map.current || !isMapReady) return;
 
     console.log('[NASASatelliteMap] Switching to layer:', activeLayer);
 
-    if (tileLayerRef.current) {
-      map.current.removeLayer(tileLayerRef.current);
-    }
+    // Clear all existing tile layers
+    map.current.eachLayer((layer) => {
+      if (layer instanceof L.TileLayer) {
+        map.current!.removeLayer(layer);
+      }
+    });
 
     const layerConfig = tileLayers[activeLayer];
     
-    // For NDVI mode, add a light base map first for context (GIBS max zoom is 9)
-    if (activeLayer === 'ndvi') {
-      // Clear all layers first
-      map.current.eachLayer((layer) => {
-        if (layer instanceof L.TileLayer) {
-          map.current!.removeLayer(layer);
-        }
-      });
-      
-      // Add base map for context
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    // For NASA GIBS layers, add a base map first for context (most have limited zoom)
+    if (needsBaseMap.includes(activeLayer)) {
+      // Add light base map for context
+      L.tileLayer(TILE_LAYERS.light.url, {
         maxZoom: 18,
-        attribution: '&copy; OSM &copy; CARTO'
+        attribution: TILE_LAYERS.light.attribution
       }).addTo(map.current);
       
-      // Add NDVI overlay on top
+      // Add NASA overlay on top
       tileLayerRef.current = L.tileLayer(layerConfig.url, {
-        maxZoom: layerConfig.maxZoom || 9,
+        maxZoom: layerConfig.maxZoom,
         attribution: layerConfig.attribution,
         errorTileUrl: '',
-        opacity: 0.85, // Slight transparency to see base map
+        opacity: layerConfig.opacity || 0.85,
       });
+      
+      console.log(`[NASASatelliteMap] Added ${activeLayer} NASA layer with base map`);
     } else {
+      // Regular layer (satellite, terrain, true_color)
       tileLayerRef.current = L.tileLayer(layerConfig.url, {
-        maxZoom: layerConfig.maxZoom || 18,
+        maxZoom: layerConfig.maxZoom,
         attribution: layerConfig.attribution,
         errorTileUrl: '',
+        opacity: layerConfig.opacity || 1,
       });
     }
 
@@ -273,10 +300,14 @@ export function NASASatelliteMap({
       console.warn('[NASASatelliteMap] Tile error on', activeLayer, ':', error);
     });
 
-    tileLayerRef.current.addTo(map.current);
-    console.log('[NASASatelliteMap] Layer switched successfully');
+    tileLayerRef.current.on('load', () => {
+      console.log(`[NASASatelliteMap] ${activeLayer} layer loaded successfully`);
+    });
 
-  }, [activeLayer, isMapReady]);
+    tileLayerRef.current.addTo(map.current);
+    setLastUpdate(new Date());
+
+  }, [activeLayer, isMapReady, gibsDate]);
 
   // Update zone markers
   useEffect(() => {
@@ -811,44 +842,123 @@ export function NASASatelliteMap({
       {/* Map Controls - only show when map is ready */}
       {!loading && !mapError && (
         <>
-      {/* Layer Toggle */}
-      <div className="absolute top-2 left-2 z-[1000] flex gap-1 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
-        <Button
-          size="sm"
-          variant={activeLayer === 'satellite' ? 'default' : 'ghost'}
-          onClick={() => setActiveLayer('satellite')}
-          className="h-7 text-xs"
-        >
-          <Satellite className="w-3 h-3 mr-1" />
-          স্যাটেলাইট
-        </Button>
-        <Button
-          size="sm"
-          variant={activeLayer === 'terrain' ? 'default' : 'ghost'}
-          onClick={() => setActiveLayer('terrain')}
-          className="h-7 text-xs"
-        >
-          <MapIcon className="w-3 h-3 mr-1" />
-          ম্যাপ
-        </Button>
-        <Button
-          size="sm"
-          variant={heatmapVisible ? 'default' : 'ghost'}
-          onClick={() => setHeatmapVisible(!heatmapVisible)}
-          className="h-7 text-xs"
-        >
-          <Leaf className="w-3 h-3 mr-1" />
-          NDVI
-        </Button>
-        <Button
-          size="sm"
-          variant={routesVisible ? 'default' : 'ghost'}
-          onClick={() => setRoutesVisible(!routesVisible)}
-          className="h-7 text-xs"
-        >
-          <Navigation className="w-3 h-3 mr-1" />
-          ড্রোন
-        </Button>
+      {/* Layer Toggle - Main buttons */}
+      <div className="absolute top-2 left-2 z-[1000] flex flex-col gap-1">
+        {/* Primary layer controls */}
+        <div className="flex gap-1 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
+          <Button
+            size="sm"
+            variant={activeLayer === 'satellite' ? 'default' : 'ghost'}
+            onClick={() => setActiveLayer('satellite')}
+            className="h-7 text-xs"
+          >
+            <Satellite className="w-3 h-3 mr-1" />
+            স্যাটেলাইট
+          </Button>
+          <Button
+            size="sm"
+            variant={activeLayer === 'ndvi' ? 'default' : 'ghost'}
+            onClick={() => setActiveLayer('ndvi')}
+            className="h-7 text-xs"
+          >
+            <Leaf className="w-3 h-3 mr-1" />
+            NDVI
+          </Button>
+          <Button
+            size="sm"
+            variant={activeLayer === 'soil_moisture' ? 'default' : 'ghost'}
+            onClick={() => setActiveLayer('soil_moisture')}
+            className="h-7 text-xs"
+          >
+            <Droplets className="w-3 h-3 mr-1" />
+            আর্দ্রতা
+          </Button>
+          <Button
+            size="sm"
+            variant={showLayerMenu ? 'secondary' : 'ghost'}
+            onClick={() => setShowLayerMenu(!showLayerMenu)}
+            className="h-7 text-xs"
+          >
+            +{Object.keys(tileLayers).length - 3}
+          </Button>
+        </div>
+
+        {/* Extended NASA layers menu */}
+        {showLayerMenu && (
+          <div className="bg-background/95 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-border">
+            <p className="text-[10px] text-muted-foreground mb-1.5 font-medium">NASA ডেটা লেয়ার</p>
+            <div className="grid grid-cols-2 gap-1">
+              <Button
+                size="sm"
+                variant={activeLayer === 'lst' ? 'default' : 'ghost'}
+                onClick={() => { setActiveLayer('lst'); setShowLayerMenu(false); }}
+                className="h-7 text-xs justify-start"
+              >
+                <Thermometer className="w-3 h-3 mr-1" />
+                তাপমাত্রা
+              </Button>
+              <Button
+                size="sm"
+                variant={activeLayer === 'precipitation' ? 'default' : 'ghost'}
+                onClick={() => { setActiveLayer('precipitation'); setShowLayerMenu(false); }}
+                className="h-7 text-xs justify-start"
+              >
+                <CloudRain className="w-3 h-3 mr-1" />
+                বৃষ্টিপাত
+              </Button>
+              <Button
+                size="sm"
+                variant={activeLayer === 'flood' ? 'default' : 'ghost'}
+                onClick={() => { setActiveLayer('flood'); setShowLayerMenu(false); }}
+                className="h-7 text-xs justify-start"
+              >
+                <AlertCircle className="w-3 h-3 mr-1" />
+                বন্যা
+              </Button>
+              <Button
+                size="sm"
+                variant={activeLayer === 'true_color' ? 'default' : 'ghost'}
+                onClick={() => { setActiveLayer('true_color'); setShowLayerMenu(false); }}
+                className="h-7 text-xs justify-start"
+              >
+                <Satellite className="w-3 h-3 mr-1" />
+                VIIRS
+              </Button>
+              <Button
+                size="sm"
+                variant={activeLayer === 'terrain' ? 'default' : 'ghost'}
+                onClick={() => { setActiveLayer('terrain'); setShowLayerMenu(false); }}
+                className="h-7 text-xs justify-start"
+              >
+                <MapIcon className="w-3 h-3 mr-1" />
+                ম্যাপ
+              </Button>
+            </div>
+            <p className="text-[8px] text-muted-foreground mt-1.5">তারিখ: {gibsDate}</p>
+          </div>
+        )}
+        
+        {/* Overlay toggles */}
+        <div className="flex gap-1 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
+          <Button
+            size="sm"
+            variant={heatmapVisible ? 'default' : 'ghost'}
+            onClick={() => setHeatmapVisible(!heatmapVisible)}
+            className="h-6 text-[10px]"
+          >
+            <Leaf className="w-3 h-3 mr-1" />
+            জোন
+          </Button>
+          <Button
+            size="sm"
+            variant={routesVisible ? 'default' : 'ghost'}
+            onClick={() => setRoutesVisible(!routesVisible)}
+            className="h-6 text-[10px]"
+          >
+            <Navigation className="w-3 h-3 mr-1" />
+            ড্রোন
+          </Button>
+        </div>
       </div>
 
       {/* Real-time indicator & Controls */}
@@ -918,23 +1028,44 @@ export function NASASatelliteMap({
         </div>
       )}
 
-      {/* Legends */}
+      {/* Legends - Dynamic based on active layer */}
       <div className="absolute bottom-3 left-3 z-[1000] flex gap-2">
-        {/* NDVI Legend */}
-        {heatmapVisible && (
-          <div className="bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-            <p className="text-[10px] text-muted-foreground mb-1.5">NDVI স্কেল</p>
-            <div className="flex items-center gap-1">
-              <div className="h-2 w-16 rounded-full" style={{
-                background: 'linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e)'
-              }} />
-            </div>
-            <div className="flex justify-between text-[8px] text-muted-foreground mt-0.5">
-              <span>০%</span>
-              <span>১০০%</span>
-            </div>
+        {/* Active Layer Legend */}
+        <div className="bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
+          <p className="text-[10px] text-muted-foreground mb-1.5 flex items-center gap-1">
+            {activeLayer === 'ndvi' && <Leaf className="w-3 h-3" />}
+            {activeLayer === 'soil_moisture' && <Droplets className="w-3 h-3" />}
+            {activeLayer === 'lst' && <Thermometer className="w-3 h-3" />}
+            {activeLayer === 'precipitation' && <CloudRain className="w-3 h-3" />}
+            {activeLayer === 'flood' && <AlertCircle className="w-3 h-3" />}
+            {LAYER_INFO[activeLayer]?.nameBn || activeLayer}
+          </p>
+          <div className="flex items-center gap-1">
+            <div className="h-2 w-20 rounded-full" style={{
+              background: activeLayer === 'ndvi' 
+                ? 'linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e)'
+                : activeLayer === 'soil_moisture'
+                ? 'linear-gradient(to right, #f97316, #eab308, #22d3ee, #3b82f6, #1e3a8a)'
+                : activeLayer === 'lst'
+                ? 'linear-gradient(to right, #3b82f6, #22c55e, #eab308, #f97316, #ef4444)'
+                : activeLayer === 'precipitation'
+                ? 'linear-gradient(to right, #f0f9ff, #93c5fd, #3b82f6, #1e40af, #581c87)'
+                : activeLayer === 'flood'
+                ? 'linear-gradient(to right, #fef9c3, #3b82f6, #1e3a8a)'
+                : 'linear-gradient(to right, #525252, #a3a3a3)'
+            }} />
           </div>
-        )}
+          <div className="flex justify-between text-[8px] text-muted-foreground mt-0.5">
+            {activeLayer === 'ndvi' && <><span>০%</span><span>১০০%</span></>}
+            {activeLayer === 'soil_moisture' && <><span>শুষ্ক</span><span>ভেজা</span></>}
+            {activeLayer === 'lst' && <><span>ঠাণ্ডা</span><span>গরম</span></>}
+            {activeLayer === 'precipitation' && <><span>কম</span><span>বেশি</span></>}
+            {activeLayer === 'flood' && <><span>স্বাভাবিক</span><span>বন্যা</span></>}
+            {(activeLayer === 'satellite' || activeLayer === 'terrain' || activeLayer === 'true_color') && (
+              <span className="text-[8px]">{LAYER_INFO[activeLayer]?.description}</span>
+            )}
+          </div>
+        </div>
         
         {/* Drone Route Legend */}
         {routesVisible && (
