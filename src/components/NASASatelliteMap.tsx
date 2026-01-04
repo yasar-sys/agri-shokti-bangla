@@ -79,19 +79,32 @@ export function NASASatelliteMap({
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [isMapReady, setIsMapReady] = useState(false);
 
-  // Tile layer configurations
-  const tileLayers: Record<TileLayer, { url: string; attribution: string }> = {
+  // Get recent date for NASA GIBS tiles (MODIS updates ~8 days, use 10 days back for reliability)
+  const getGIBSDate = () => {
+    const date = new Date();
+    date.setDate(date.getDate() - 10);
+    return date.toISOString().split('T')[0];
+  };
+
+  const gibsDate = getGIBSDate();
+
+  // Tile layer configurations with NASA GIBS NDVI
+  const tileLayers: Record<TileLayer, { url: string; attribution: string; maxZoom?: number }> = {
     satellite: {
       url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-      attribution: 'Tiles &copy; Esri'
+      attribution: 'Tiles &copy; Esri',
+      maxZoom: 18
     },
     terrain: {
       url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
+      maxZoom: 18
     },
     ndvi: {
-      url: 'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>'
+      // NASA GIBS MODIS Terra NDVI 8-Day - Real vegetation index data
+      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/${gibsDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,
+      attribution: 'NDVI &copy; NASA GIBS MODIS',
+      maxZoom: 9 // GIBS NDVI max zoom is 9
     }
   };
 
@@ -160,10 +173,18 @@ export function NASASatelliteMap({
       // Add initial tile layer with error handling
       const initialLayerConfig = tileLayers[activeLayer];
       tileLayerRef.current = L.tileLayer(initialLayerConfig.url, {
-        maxZoom: 18,
+        maxZoom: initialLayerConfig.maxZoom || 18,
         attribution: initialLayerConfig.attribution,
         errorTileUrl: '', // Prevent broken tile images
       });
+      
+      // For NDVI, add a base map underneath for context at higher zooms
+      if (activeLayer === 'ndvi') {
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+          maxZoom: 18,
+          attribution: '&copy; OSM &copy; CARTO'
+        }).addTo(map.current);
+      }
 
       // Listen for tile load errors
       tileLayerRef.current.on('tileerror', (error) => {
@@ -217,11 +238,36 @@ export function NASASatelliteMap({
     }
 
     const layerConfig = tileLayers[activeLayer];
-    tileLayerRef.current = L.tileLayer(layerConfig.url, {
-      maxZoom: 18,
-      attribution: layerConfig.attribution,
-      errorTileUrl: '',
-    });
+    
+    // For NDVI mode, add a light base map first for context (GIBS max zoom is 9)
+    if (activeLayer === 'ndvi') {
+      // Clear all layers first
+      map.current.eachLayer((layer) => {
+        if (layer instanceof L.TileLayer) {
+          map.current!.removeLayer(layer);
+        }
+      });
+      
+      // Add base map for context
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        maxZoom: 18,
+        attribution: '&copy; OSM &copy; CARTO'
+      }).addTo(map.current);
+      
+      // Add NDVI overlay on top
+      tileLayerRef.current = L.tileLayer(layerConfig.url, {
+        maxZoom: layerConfig.maxZoom || 9,
+        attribution: layerConfig.attribution,
+        errorTileUrl: '',
+        opacity: 0.85, // Slight transparency to see base map
+      });
+    } else {
+      tileLayerRef.current = L.tileLayer(layerConfig.url, {
+        maxZoom: layerConfig.maxZoom || 18,
+        attribution: layerConfig.attribution,
+        errorTileUrl: '',
+      });
+    }
 
     tileLayerRef.current.on('tileerror', (error) => {
       console.warn('[NASASatelliteMap] Tile error on', activeLayer, ':', error);
