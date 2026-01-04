@@ -1,11 +1,12 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Loader2, AlertTriangle, RefreshCw, ZoomIn, ZoomOut, Radio, Leaf, Satellite, Map as MapIcon, Navigation, Droplets, Thermometer, CloudRain, AlertCircle } from 'lucide-react';
+import { Loader2, AlertTriangle, RefreshCw, ZoomIn, ZoomOut, Radio, Leaf, Satellite, Map as MapIcon, Navigation, Droplets, Thermometer, CloudRain, AlertCircle, BarChart3 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 import { TILE_LAYERS, getGIBSDate, getNDVIColor, getSoilMoistureColor } from '@/lib/nasaDataSources';
+import { AppEEARSPanel } from './AppEEARSPanel';
 
 interface FieldZone {
   id: string;
@@ -85,6 +86,7 @@ export function NASASatelliteMap({
   const [lastUpdate, setLastUpdate] = useState<Date>(new Date());
   const [isMapReady, setIsMapReady] = useState(false);
   const [showLayerMenu, setShowLayerMenu] = useState(false);
+  const [showAppEEARS, setShowAppEEARS] = useState(false);
 
   // Get dynamic dates for NASA GIBS tiles
   const gibsDate = getGIBSDate(10); // 10 days back for reliability
@@ -194,32 +196,31 @@ export function NASASatelliteMap({
 
       console.log('[NASASatelliteMap] Map instance created');
 
-      // Add initial tile layer with error handling
+      // Add base layer first
+      const baseLayer = L.tileLayer(TILE_LAYERS.light.url, {
+        maxZoom: 18,
+        attribution: TILE_LAYERS.light.attribution
+      }).addTo(map.current);
+
+      // Add initial overlay layer
       const initialLayerConfig = tileLayers[activeLayer];
-      tileLayerRef.current = L.tileLayer(initialLayerConfig.url, {
-        maxZoom: initialLayerConfig.maxZoom || 18,
-        attribution: initialLayerConfig.attribution,
-        errorTileUrl: '', // Prevent broken tile images
-      });
-      
-      // For NDVI, add a base map underneath for context at higher zooms
-      if (activeLayer === 'ndvi') {
-        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
-          maxZoom: 18,
-          attribution: '&copy; OSM &copy; CARTO'
+      if (needsBaseMap.includes(activeLayer)) {
+        // NASA overlay on top of base
+        overlayLayerRef.current = L.tileLayer(initialLayerConfig.url, {
+          maxZoom: initialLayerConfig.maxZoom || 18,
+          attribution: initialLayerConfig.attribution,
+          opacity: initialLayerConfig.opacity || 0.85,
+          errorTileUrl: '',
+        }).addTo(map.current);
+      } else {
+        // Replace base with this layer
+        map.current.removeLayer(baseLayer);
+        tileLayerRef.current = L.tileLayer(initialLayerConfig.url, {
+          maxZoom: initialLayerConfig.maxZoom || 18,
+          attribution: initialLayerConfig.attribution,
+          errorTileUrl: '',
         }).addTo(map.current);
       }
-
-      // Listen for tile load errors
-      tileLayerRef.current.on('tileerror', (error) => {
-        console.warn('[NASASatelliteMap] Tile load error:', error);
-      });
-
-      tileLayerRef.current.on('load', () => {
-        console.log('[NASASatelliteMap] Initial tiles loaded successfully');
-      });
-
-      tileLayerRef.current.addTo(map.current);
 
       // Add markers layer
       markersLayer.current = L.layerGroup().addTo(map.current);
@@ -230,8 +231,6 @@ export function NASASatelliteMap({
       // Add zoom control
       L.control.zoom({ position: 'topright' }).addTo(map.current);
 
-      // Leaflet maps are ready immediately after initialization
-      // The 'load' event doesn't exist on Leaflet Map, so we mark ready immediately
       console.log('[NASASatelliteMap] Map is ready');
       setLoading(false);
       setIsMapReady(true);
@@ -247,6 +246,8 @@ export function NASASatelliteMap({
         console.log('[NASASatelliteMap] Cleaning up map');
         map.current.remove();
         map.current = null;
+        tileLayerRef.current = null;
+        overlayLayerRef.current = null;
       }
     };
   }, []);
@@ -260,54 +261,60 @@ export function NASASatelliteMap({
 
     console.log('[NASASatelliteMap] Switching to layer:', activeLayer);
 
-    // Clear all existing tile layers
+    // Remove existing tile layers but keep markers and routes
     map.current.eachLayer((layer) => {
       if (layer instanceof L.TileLayer) {
         map.current!.removeLayer(layer);
       }
     });
 
+    // Reset refs
+    tileLayerRef.current = null;
+    overlayLayerRef.current = null;
+
     const layerConfig = tileLayers[activeLayer];
     
-    // For NASA GIBS layers, add a base map first for context (most have limited zoom)
+    // For NASA GIBS layers, add a base map first for context
     if (needsBaseMap.includes(activeLayer)) {
-      // Add light base map for context
-      L.tileLayer(TILE_LAYERS.light.url, {
+      // Add light base map
+      tileLayerRef.current = L.tileLayer(TILE_LAYERS.light.url, {
         maxZoom: 18,
         attribution: TILE_LAYERS.light.attribution
       }).addTo(map.current);
       
       // Add NASA overlay on top
-      tileLayerRef.current = L.tileLayer(layerConfig.url, {
+      overlayLayerRef.current = L.tileLayer(layerConfig.url, {
         maxZoom: layerConfig.maxZoom,
         attribution: layerConfig.attribution,
         errorTileUrl: '',
         opacity: layerConfig.opacity || 0.85,
       });
       
+      overlayLayerRef.current.on('tileerror', (error) => {
+        console.warn('[NASASatelliteMap] NASA tile error on', activeLayer);
+      });
+
+      overlayLayerRef.current.addTo(map.current);
       console.log(`[NASASatelliteMap] Added ${activeLayer} NASA layer with base map`);
     } else {
-      // Regular layer (satellite, terrain, true_color)
+      // Regular layer (satellite, terrain, true_color) - no base needed
       tileLayerRef.current = L.tileLayer(layerConfig.url, {
         maxZoom: layerConfig.maxZoom,
         attribution: layerConfig.attribution,
         errorTileUrl: '',
         opacity: layerConfig.opacity || 1,
       });
+
+      tileLayerRef.current.on('tileerror', (error) => {
+        console.warn('[NASASatelliteMap] Tile error on', activeLayer);
+      });
+
+      tileLayerRef.current.addTo(map.current);
     }
 
-    tileLayerRef.current.on('tileerror', (error) => {
-      console.warn('[NASASatelliteMap] Tile error on', activeLayer, ':', error);
-    });
-
-    tileLayerRef.current.on('load', () => {
-      console.log(`[NASASatelliteMap] ${activeLayer} layer loaded successfully`);
-    });
-
-    tileLayerRef.current.addTo(map.current);
     setLastUpdate(new Date());
 
-  }, [activeLayer, isMapReady, gibsDate]);
+  }, [activeLayer, isMapReady]);
 
   // Update zone markers
   useEffect(() => {
@@ -958,8 +965,28 @@ export function NASASatelliteMap({
             <Navigation className="w-3 h-3 mr-1" />
             ড্রোন
           </Button>
+          <Button
+            size="sm"
+            variant={showAppEEARS ? 'secondary' : 'ghost'}
+            onClick={() => setShowAppEEARS(!showAppEEARS)}
+            className="h-6 text-[10px]"
+          >
+            <BarChart3 className="w-3 h-3 mr-1" />
+            চার্ট
+          </Button>
         </div>
       </div>
+
+      {/* AppEEARS Panel */}
+      {showAppEEARS && (
+        <div className="absolute bottom-14 left-3 z-[1001] w-80 max-w-[calc(100%-24px)]">
+          <AppEEARSPanel 
+            latitude={latitude} 
+            longitude={longitude} 
+            onClose={() => setShowAppEEARS(false)}
+          />
+        </div>
+      )}
 
       {/* Real-time indicator & Controls */}
       <div className="absolute top-2 right-2 z-[1000] flex flex-col gap-1">
