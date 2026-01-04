@@ -69,7 +69,8 @@ export function NASASatelliteMap({
   const routesLayer = useRef<L.LayerGroup | null>(null);
   
   const [loading, setLoading] = useState(true);
-  const [activeLayer, setActiveLayer] = useState<TileLayer>('satellite');
+  const [mapError, setMapError] = useState<string | null>(null);
+  const [activeLayer, setActiveLayer] = useState<TileLayer>('ndvi'); // Default to NDVI
   const [refreshing, setRefreshing] = useState(false);
   const [liveZones, setLiveZones] = useState<FieldZone[]>(zones);
   const [liveRoutes, setLiveRoutes] = useState<DroneRoute[]>(droneRoutes);
@@ -143,43 +144,65 @@ export function NASASatelliteMap({
   useEffect(() => {
     if (!mapContainer.current || map.current) return;
 
-    map.current = L.map(mapContainer.current, {
-      center: [latitude, longitude],
-      zoom: 10,
-      zoomControl: false,
-      attributionControl: false,
-    });
+    console.log('[NASASatelliteMap] Initializing map...');
+    setMapError(null);
 
-    // Add initial tile layer
-    tileLayerRef.current = L.tileLayer(tileLayers[activeLayer].url, {
-      maxZoom: 18,
-      attribution: tileLayers[activeLayer].attribution,
-    }).addTo(map.current);
+    try {
+      map.current = L.map(mapContainer.current, {
+        center: [latitude, longitude],
+        zoom: 10,
+        zoomControl: false,
+        attributionControl: false,
+      });
 
-    // Add markers layer
-    markersLayer.current = L.layerGroup().addTo(map.current);
-    
-    // Add routes layer
-    routesLayer.current = L.layerGroup().addTo(map.current);
+      console.log('[NASASatelliteMap] Map instance created');
 
-    // Add zoom control
-    L.control.zoom({ position: 'topright' }).addTo(map.current);
+      // Add initial tile layer with error handling
+      const initialLayerConfig = tileLayers[activeLayer];
+      tileLayerRef.current = L.tileLayer(initialLayerConfig.url, {
+        maxZoom: 18,
+        attribution: initialLayerConfig.attribution,
+        errorTileUrl: '', // Prevent broken tile images
+      });
 
-    // Map load complete
-    map.current.on('load', () => {
+      // Listen for tile load errors
+      tileLayerRef.current.on('tileerror', (error) => {
+        console.warn('[NASASatelliteMap] Tile load error:', error);
+      });
+
+      tileLayerRef.current.on('load', () => {
+        console.log('[NASASatelliteMap] Initial tiles loaded successfully');
+      });
+
+      tileLayerRef.current.addTo(map.current);
+
+      // Add markers layer
+      markersLayer.current = L.layerGroup().addTo(map.current);
+      
+      // Add routes layer
+      routesLayer.current = L.layerGroup().addTo(map.current);
+
+      // Add zoom control
+      L.control.zoom({ position: 'topright' }).addTo(map.current);
+
+      // Leaflet maps are ready immediately after initialization
+      // The 'load' event doesn't exist on Leaflet Map, so we mark ready immediately
+      console.log('[NASASatelliteMap] Map is ready');
       setLoading(false);
       setIsMapReady(true);
-    });
 
-    // Fallback in case 'load' doesn't fire
-    setTimeout(() => {
+    } catch (error) {
+      console.error('[NASASatelliteMap] Failed to initialize map:', error);
+      setMapError(error instanceof Error ? error.message : 'ম্যাপ লোড করতে ব্যর্থ হয়েছে');
       setLoading(false);
-      setIsMapReady(true);
-    }, 1500);
+    }
 
     return () => {
-      map.current?.remove();
-      map.current = null;
+      if (map.current) {
+        console.log('[NASASatelliteMap] Cleaning up map');
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, []);
 
@@ -187,14 +210,25 @@ export function NASASatelliteMap({
   useEffect(() => {
     if (!map.current || !isMapReady) return;
 
+    console.log('[NASASatelliteMap] Switching to layer:', activeLayer);
+
     if (tileLayerRef.current) {
       map.current.removeLayer(tileLayerRef.current);
     }
 
-    tileLayerRef.current = L.tileLayer(tileLayers[activeLayer].url, {
+    const layerConfig = tileLayers[activeLayer];
+    tileLayerRef.current = L.tileLayer(layerConfig.url, {
       maxZoom: 18,
-      attribution: tileLayers[activeLayer].attribution,
-    }).addTo(map.current);
+      attribution: layerConfig.attribution,
+      errorTileUrl: '',
+    });
+
+    tileLayerRef.current.on('tileerror', (error) => {
+      console.warn('[NASASatelliteMap] Tile error on', activeLayer, ':', error);
+    });
+
+    tileLayerRef.current.addTo(map.current);
+    console.log('[NASASatelliteMap] Layer switched successfully');
 
   }, [activeLayer, isMapReady]);
 
@@ -649,20 +683,88 @@ export function NASASatelliteMap({
     };
   }, []);
 
-  if (loading) {
-    return (
-      <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border border-border">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-muted-foreground mx-auto mb-2" />
-          <p className="text-sm text-muted-foreground">স্যাটেলাইট ডেটা লোড হচ্ছে...</p>
-          <p className="text-xs text-muted-foreground mt-1">NDVI হিটম্যাপ প্রস্তুত হচ্ছে</p>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="relative rounded-lg overflow-hidden border border-border bg-muted aspect-video">
+      {/* Map Container - Always rendered for Leaflet to initialize */}
+      <div 
+        ref={mapContainer} 
+        className={cn(
+          "absolute inset-0 z-0",
+          (loading || mapError) && "invisible"
+        )} 
+      />
+      
+      {/* Error State Overlay */}
+      {mapError && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted">
+          <div className="text-center p-4">
+            <AlertTriangle className="w-8 h-8 text-destructive mx-auto mb-2" />
+            <p className="text-sm text-destructive font-medium">ম্যাপ লোড করতে সমস্যা হয়েছে</p>
+            <p className="text-xs text-muted-foreground mt-1">{mapError}</p>
+            <Button
+              size="sm"
+              variant="outline"
+              className="mt-3"
+              onClick={() => {
+                setMapError(null);
+                setLoading(true);
+                // Force re-mount by clearing refs
+                if (map.current) {
+                  map.current.remove();
+                  map.current = null;
+                }
+                // Trigger re-initialization
+                setTimeout(() => {
+                  if (mapContainer.current && !map.current) {
+                    try {
+                      map.current = L.map(mapContainer.current, {
+                        center: [latitude, longitude],
+                        zoom: 10,
+                        zoomControl: false,
+                        attributionControl: false,
+                      });
+                      
+                      const layerConfig = tileLayers[activeLayer];
+                      tileLayerRef.current = L.tileLayer(layerConfig.url, {
+                        maxZoom: 18,
+                        attribution: layerConfig.attribution,
+                      }).addTo(map.current);
+                      
+                      markersLayer.current = L.layerGroup().addTo(map.current);
+                      routesLayer.current = L.layerGroup().addTo(map.current);
+                      L.control.zoom({ position: 'topright' }).addTo(map.current);
+                      
+                      setLoading(false);
+                      setIsMapReady(true);
+                    } catch (err) {
+                      setMapError(err instanceof Error ? err.message : 'পুনরায় লোড ব্যর্থ');
+                      setLoading(false);
+                    }
+                  }
+                }, 100);
+              }}
+            >
+              <RefreshCw className="w-3 h-3 mr-1" />
+              পুনরায় চেষ্টা করুন
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Loading State Overlay */}
+      {loading && !mapError && (
+        <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted">
+          <div className="text-center">
+            <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">স্যাটেলাইট ডেটা লোড হচ্ছে...</p>
+            <p className="text-xs text-muted-foreground mt-1">NDVI হিটম্যাপ প্রস্তুত হচ্ছে</p>
+          </div>
+        </div>
+      )}
+
+      {/* Map Controls - only show when map is ready */}
+      {!loading && !mapError && (
+        <>
       {/* Layer Toggle */}
       <div className="absolute top-2 left-2 z-[1000] flex gap-1 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
         <Button
@@ -809,9 +911,8 @@ export function NASASatelliteMap({
           </div>
         )}
       </div>
-
-      {/* Map Container */}
-      <div ref={mapContainer} className="absolute inset-0 z-0" />
+        </>
+      )}
     </div>
   );
 }
