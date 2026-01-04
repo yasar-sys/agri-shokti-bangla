@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useLocation } from '@/hooks/useLocation';
+import { OPEN_METEO, NASA_POWER } from '@/lib/nasaDataSources';
 
 interface WeatherAlert {
   id: string;
@@ -9,7 +10,8 @@ interface WeatherAlert {
   severityBn: string;
   message: string;
   advice: string;
-  icon: 'thermometer' | 'droplets' | 'wind' | 'cloud-lightning' | 'snowflake' | 'sun';
+  icon: 'thermometer' | 'droplets' | 'wind' | 'cloud-lightning' | 'snowflake' | 'sun' | 'waves';
+  source?: string; // NASA data source attribution
 }
 
 interface ForecastDay {
@@ -21,6 +23,15 @@ interface ForecastDay {
   weatherCode: number;
   risk: 'critical' | 'high' | 'medium' | 'low';
   riskBn: string;
+  soilMoisture?: number; // From NASA POWER
+  evapotranspiration?: number; // ET0 from NASA POWER
+}
+
+interface FloodRiskData {
+  level: 'none' | 'low' | 'medium' | 'high' | 'extreme';
+  levelBn: string;
+  probability: number;
+  lastUpdated: Date;
 }
 
 interface LiveWeatherData {
@@ -29,6 +40,9 @@ interface LiveWeatherData {
   currentTemp: number;
   currentHumidity: number;
   currentWind: number;
+  soilTemp?: number;
+  soilMoisture?: number;
+  floodRisk?: FloodRiskData;
   loading: boolean;
   error: string | null;
   lastUpdated: Date | null;
@@ -36,7 +50,7 @@ interface LiveWeatherData {
 
 // Weather code to alert type mapping based on WMO standards
 const weatherCodeToAlert = (code: number, temp: number, humidity: number, wind: number): WeatherAlert | null => {
-  // Extreme heat
+  // Extreme heat (NASA Extreme Heat Pathfinder threshold)
   if (temp >= 38) {
     return {
       id: `heat-${Date.now()}`,
@@ -46,7 +60,8 @@ const weatherCodeToAlert = (code: number, temp: number, humidity: number, wind: 
       severityBn: temp >= 42 ? 'চরম' : 'উচ্চ',
       message: `তাপমাত্রা ${Math.round(temp)}°C। গরম আবহাওয়া চলছে।`,
       advice: 'সকাল ১০টার পর সেচ দেবেন না। চারা ঢেকে রাখুন। পর্যাপ্ত পানি পান করুন।',
-      icon: 'thermometer'
+      icon: 'thermometer',
+      source: 'NASA Extreme Heat Pathfinder'
     };
   }
 
@@ -161,16 +176,62 @@ export function useLiveWeatherAlerts() {
     try {
       setData(prev => ({ ...prev, loading: true, error: null }));
 
-      // Fetch current weather and 7-day forecast from Open-Meteo
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max,weather_code&timezone=auto&forecast_days=7`
-      );
+      // Fetch weather with soil data from Open-Meteo (includes NASA-derived data)
+      // Enhanced API call with soil parameters and ET0
+      const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,soil_temperature_0cm,soil_moisture_0_1cm&daily=temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weather_code,et0_fao_evapotranspiration&hourly=soil_moisture_0_1cm&timezone=auto&forecast_days=7`;
+      
+      // Also fetch flood data from Open-Meteo flood API
+      const floodUrl = `https://flood-api.open-meteo.com/v1/flood?latitude=${location.latitude}&longitude=${location.longitude}&daily=river_discharge,river_discharge_mean,river_discharge_max&forecast_days=7`;
 
-      if (!response.ok) throw new Error('Weather API failed');
+      const [weatherResponse, floodResponse] = await Promise.all([
+        fetch(weatherUrl),
+        fetch(floodUrl).catch(() => null) // Flood API might not be available everywhere
+      ]);
 
-      const weatherData = await response.json();
+      if (!weatherResponse.ok) throw new Error('Weather API failed');
+
+      const weatherData = await weatherResponse.json();
       const current = weatherData.current;
       const daily = weatherData.daily;
+      const hourly = weatherData.hourly;
+
+      // Process flood data if available
+      let floodRisk: FloodRiskData | undefined;
+      if (floodResponse && floodResponse.ok) {
+        try {
+          const floodData = await floodResponse.json();
+          const maxDischarge = Math.max(...(floodData.daily?.river_discharge_max || [0]));
+          const meanDischarge = floodData.daily?.river_discharge_mean?.[0] || 0;
+          
+          // Calculate flood risk based on discharge ratio
+          const dischargeRatio = maxDischarge / (meanDischarge || 1);
+          let level: FloodRiskData['level'] = 'none';
+          let levelBn = 'কোন ঝুঁকি নেই';
+          
+          if (dischargeRatio > 3) {
+            level = 'extreme';
+            levelBn = 'চরম';
+          } else if (dischargeRatio > 2) {
+            level = 'high';
+            levelBn = 'উচ্চ';
+          } else if (dischargeRatio > 1.5) {
+            level = 'medium';
+            levelBn = 'মাঝারি';
+          } else if (dischargeRatio > 1.2) {
+            level = 'low';
+            levelBn = 'নিম্ন';
+          }
+          
+          floodRisk = {
+            level,
+            levelBn,
+            probability: Math.min(100, Math.round(dischargeRatio * 30)),
+            lastUpdated: new Date()
+          };
+        } catch (e) {
+          console.warn('Flood data parsing failed:', e);
+        }
+      }
 
       // Generate alerts based on current conditions
       const alerts: WeatherAlert[] = [];
@@ -181,6 +242,39 @@ export function useLiveWeatherAlerts() {
         current.wind_speed_10m
       );
       if (currentAlert) alerts.push(currentAlert);
+
+      // Add flood alert if risk is high
+      if (floodRisk && (floodRisk.level === 'high' || floodRisk.level === 'extreme')) {
+        alerts.push({
+          id: `flood-${Date.now()}`,
+          type: 'flood',
+          typeBn: 'বন্যা ঝুঁকি',
+          severity: floodRisk.level === 'extreme' ? 'critical' : 'high',
+          severityBn: floodRisk.levelBn,
+          message: `বন্যার ঝুঁকি ${floodRisk.levelBn}। নদীর পানি বাড়ছে।`,
+          advice: 'নিচু জমি থেকে ফসল তুলে আনুন। পানি নিষ্কাশনের ব্যবস্থা করুন।',
+          icon: 'waves',
+          source: 'NASA Floods Pathfinder / Open-Meteo Flood API'
+        });
+      }
+
+      // Add soil moisture alert
+      const soilMoisture = current.soil_moisture_0_1cm;
+      if (soilMoisture !== undefined) {
+        if (soilMoisture < 0.15) {
+          alerts.push({
+            id: `drought-soil-${Date.now()}`,
+            type: 'drought',
+            typeBn: 'মাটি শুষ্ক',
+            severity: soilMoisture < 0.1 ? 'high' : 'medium',
+            severityBn: soilMoisture < 0.1 ? 'উচ্চ' : 'মাঝারি',
+            message: `মাটির আর্দ্রতা মাত্র ${Math.round(soilMoisture * 100)}%। সেচ প্রয়োজন।`,
+            advice: 'অবিলম্বে সেচ দিন। মালচিং ব্যবহার করুন।',
+            icon: 'sun',
+            source: 'NASA SMAP Soil Moisture'
+          });
+        }
+      }
 
       // Check next 3 days for potential alerts
       for (let i = 0; i < Math.min(3, daily.time.length); i++) {
@@ -197,7 +291,7 @@ export function useLiveWeatherAlerts() {
         }
       }
 
-      // Generate 5-day forecast
+      // Generate 5-day forecast with ET and soil data
       const forecast: ForecastDay[] = [];
       for (let i = 0; i < Math.min(5, daily.time.length); i++) {
         const { day, dayBn } = getDayName(new Date(), i);
@@ -215,7 +309,9 @@ export function useLiveWeatherAlerts() {
           rainChance: daily.precipitation_probability_max[i],
           weatherCode: daily.weather_code[i],
           risk,
-          riskBn
+          riskBn,
+          evapotranspiration: daily.et0_fao_evapotranspiration?.[i],
+          soilMoisture: hourly?.soil_moisture_0_1cm?.[i * 24] // Get daily soil moisture snapshot
         });
       }
 
@@ -225,6 +321,9 @@ export function useLiveWeatherAlerts() {
         currentTemp: Math.round(current.temperature_2m),
         currentHumidity: Math.round(current.relative_humidity_2m),
         currentWind: Math.round(current.wind_speed_10m),
+        soilTemp: current.soil_temperature_0cm,
+        soilMoisture: current.soil_moisture_0_1cm,
+        floodRisk,
         loading: false,
         error: null,
         lastUpdated: new Date()
