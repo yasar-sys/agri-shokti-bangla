@@ -48,7 +48,6 @@ const RAGHistoryPage = lazy(() => import("./pages/RAGHistoryPage"));
 const SubmissionPage = lazy(() => import("./pages/SubmissionPage"));
 const BarterPage = lazy(() => import("./pages/BarterPage"));
 const AboutPage = lazy(() => import("./pages/AboutPage"));
-const NASAFarmNavigatorsPage = lazy(() => import("./pages/NASAFarmNavigatorsPage"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 // Error Boundary Component
@@ -174,7 +173,7 @@ function AppContent() {
             <Route path="/submission" element={<SubmissionPage />} />
             <Route path="/barter" element={<BarterPage />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/nasa-farm-navigators" element={<NASAFarmNavigatorsPage />} />
+            <Route path="/satellite" element={<SatellitePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>
