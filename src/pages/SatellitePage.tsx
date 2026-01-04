@@ -372,98 +372,293 @@ export default function SatellitePage() {
             <TabsTrigger value="drone" className="text-xs">ড্রোন</TabsTrigger>
           </TabsList>
 
-          {/* Overview Tab */}
+          {/* Overview Tab - Enhanced Dashboard */}
           <TabsContent value="overview" className="space-y-4">
-            {/* Interactive NASA Satellite Map */}
-            <NASASatelliteMap
-              latitude={location.latitude || 23.8103}
-              longitude={location.longitude || 90.4125}
-              zones={displayZones.slice(0, 4).map(z => ({
-                id: z.id,
-                name_bn: z.name_bn,
-                health_score: z.health_score
-              }))}
-              droneRoutes={displayRoutes.map(r => ({
-                id: r.id,
-                task_bn: r.task_bn,
-                status: r.status as 'pending' | 'in_progress' | 'completed' | 'cancelled',
-                status_bn: r.status_bn,
-                area_acres: r.area_acres,
-                estimated_time_mins: r.estimated_time_mins,
-                coverage_percentage: r.coverage_percentage,
-                waypoints: r.waypoints,
-                optimized_path: r.optimized_path
-              }))}
-              showDroneRoutes={true}
-            />
-            <div className="mt-2 p-3 bg-card/80 backdrop-blur-sm border border-border rounded-xl flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <MapPin className="w-4 h-4 text-destructive" />
-                <span className="text-sm text-foreground">
-                  {location.loading ? "লোকেশন খোঁজা হচ্ছে..." : `${location.city}, ${location.country}`}
-                </span>
-              </div>
-              <span className="text-xs text-muted-foreground">আপডেট: {lastScanTime}</span>
+            {/* Main Stats Dashboard */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <Card className="bg-gradient-to-br from-green-500/20 to-green-600/20 border-green-300">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-green-700 font-medium">ফিল্ড স্বাস্থ্য</p>
+                      <p className="text-lg font-bold text-green-900">
+                        {displayZones.length > 0 ? toBengaliNumber(displayZones.filter(z => z.health_score > 0.7).length) : '০'}
+                      </p>
+                      <p className="text-xs text-green-700">সুস্থ জোন</p>
+                    </div>
+                    <Leaf className="w-8 h-8 text-green-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-blue-300">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-blue-700 font-medium">ড্রোন অপারেশন</p>
+                      <p className="text-lg font-bold text-blue-900">
+                        {toBengaliNumber(displayRoutes.filter(r => r.status === 'completed').length)}
+                      </p>
+                      <p className="text-xs text-blue-700">সম্পন্ন রুট</p>
+                    </div>
+                    <Plane className="w-8 h-8 text-blue-600" />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
 
-            {/* Field Zones */}
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-foreground">ক্ষেতের জোনভিত্তিক স্বাস্থ্য</h2>
-              {isUsingDemoData && (
-                <span className="text-xs text-muted-foreground bg-muted px-2 py-1 rounded">ডেমো ডেটা</span>
-              )}
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              {displayZones.slice(0, 4).map((zone) => (
-                <div key={zone.id} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3">
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-foreground">{zone.name_bn}</span>
-                    <div className={cn(
-                      "w-3 h-3 rounded-full",
-                      zone.health_score >= 0.8 && "bg-secondary",
-                      zone.health_score >= 0.6 && zone.health_score < 0.8 && "bg-chart-2",
-                      zone.health_score < 0.6 && "bg-destructive"
-                    )} />
-                  </div>
-                  <div className="flex items-end justify-between">
-                    <div>
-                      <p className="text-2xl font-bold text-foreground">{(zone.health_score * 100).toFixed(0)}%</p>
-                      <p className="text-xs text-muted-foreground">{zone.status_bn}</p>
-                    </div>
-                    {zone.health_score < 0.6 && (
-                      <AlertTriangle className="w-5 h-5 text-destructive" />
-                    )}
+            {/* Interactive Map with Enhanced Controls */}
+            <Card className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Satellite className="w-4 h-4 text-purple-600" />
+                    স্যাটেলাইট ম্যাপ + ড্রোন রুট
+                  </CardTitle>
+                  <div className="flex items-center gap-1">
+                    <Badge variant="outline" className="text-xs">
+                      {displayZones.length} জোন
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      {displayRoutes.length} রুট
+                    </Badge>
                   </div>
                 </div>
-              ))}
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="relative">
+                  <NASASatelliteMap
+                    latitude={location.latitude || 23.8103}
+                    longitude={location.longitude || 90.4125}
+                    zones={displayZones.slice(0, 4).map(z => ({
+                      id: z.id,
+                      name_bn: z.name_bn,
+                      health_score: z.health_score
+                    }))}
+                    droneRoutes={displayRoutes.map(r => ({
+                      id: r.id,
+                      task_bn: r.task_bn,
+                      status: r.status as 'pending' | 'in_progress' | 'completed' | 'cancelled',
+                      status_bn: r.status_bn,
+                      area_acres: r.area_acres,
+                      estimated_time_mins: r.estimated_time_mins,
+                      coverage_percentage: r.coverage_percentage,
+                      waypoints: r.waypoints,
+                      optimized_path: r.optimized_path
+                    }))}
+                    showDroneRoutes={true}
+                  />
+                  <div className="absolute bottom-2 left-2 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-2 py-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      <MapPin className="w-3 h-3 text-destructive" />
+                      <span className="text-foreground">
+                        {location.loading ? "লোকেশন..." : `${location.city}`}
+                      </span>
+                      <span className="text-muted-foreground">• {lastScanTime}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Field Zones Grid */}
+            <div className="bg-card/60 backdrop-blur-sm border border-border rounded-xl p-3">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-semibold text-foreground">ক্ষেতের জোনভিত্তিক স্বাস্থ্য</h3>
+                {isUsingDemoData && (
+                  <Badge variant="secondary" className="text-xs">ডেমো ডেটা</Badge>
+                )}
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                {displayZones.slice(0, 4).map((zone) => (
+                  <div key={zone.id} className="bg-gradient-to-br from-card to-card/80 border border-border rounded-lg p-3">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-foreground">{zone.name_bn}</span>
+                      <div className={cn(
+                        "w-3 h-3 rounded-full animate-pulse",
+                        zone.health_score >= 0.8 && "bg-green-500",
+                        zone.health_score >= 0.6 && zone.health_score < 0.8 && "bg-yellow-500",
+                        zone.health_score < 0.6 && "bg-red-500"
+                      )} />
+                    </div>
+                    <div className="flex items-end justify-between">
+                      <div>
+                        <p className="text-xl font-bold text-foreground">{(zone.health_score * 100).toFixed(0)}%</p>
+                        <p className="text-xs text-muted-foreground">{zone.status_bn}</p>
+                      </div>
+                      {zone.health_score < 0.6 && (
+                        <AlertTriangle className="w-5 h-5 text-red-500" />
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="grid grid-cols-2 gap-2">
+              <Button 
+                variant="outline" 
+                onClick={() => triggerScan()}
+                disabled={scanning || !userId}
+                className="flex items-center gap-2"
+              >
+                {scanning ? <Loader2 className="w-4 h-4 animate-spin" /> : <RefreshCw className="w-4 h-4" />}
+                <span className="text-sm">স্ক্যান করুন</span>
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => generateRoutes()}
+                disabled={optimizing}
+                className="flex items-center gap-2"
+              >
+                {optimizing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plane className="w-4 h-4" />}
+                <span className="text-sm">রুট অপ্টিমাইজ</span>
+              </Button>
             </div>
           </TabsContent>
 
-          {/* Satellite Tab */}
+          {/* Satellite Tab - Advanced NASA Satellite Features */}
           <TabsContent value="satellite" className="space-y-4">
+            {/* Satellite Data Sources */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <Card className="bg-gradient-to-br from-purple-500/20 to-purple-600/20 border-purple-300">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-purple-700 font-medium">স্যাটেলাইট কভারেজ</p>
+                      <p className="text-lg font-bold text-purple-900">
+                        {earthObservation.fields.length > 0 ? toBengaliNumber(earthObservation.fields.length) : '০'}
+                      </p>
+                      <p className="text-xs text-purple-700">ফিল্ড মনিটর</p>
+                    </div>
+                    <Eye className="w-8 h-8 text-purple-600" />
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-indigo-500/20 to-indigo-600/20 border-indigo-300">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-indigo-700 font-medium">NDVI এভারেজ</p>
+                      <p className="text-lg font-bold text-indigo-900">
+                        {earthObservation.fields.length > 0 
+                          ? toBengaliNumber(parseFloat((earthObservation.fields.reduce((sum, field) => 
+                              sum + (field.vegetation_indices?.ndvi || 0), 0) / earthObservation.fields.length * 100).toFixed(1)))
+                          : '০'}%
+                      </p>
+                      <p className="text-xs text-indigo-700">স্বাস্থ্য সূচক</p>
+                    </div>
+                    <TrendingUp className="w-8 h-8 text-indigo-600" />
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            {/* Advanced NASA Satellite Map */}
+            <Card className="overflow-hidden">
+              <CardHeader className="pb-2">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Satellite className="w-4 h-4 text-purple-600" />
+                    উন্নত NASA স্যাটেলাইট ম্যাপ
+                  </CardTitle>
+                  <div className="flex items-center gap-1">
+                    <Badge variant="outline" className="text-xs">
+                      Landsat
+                    </Badge>
+                    <Badge variant="outline" className="text-xs">
+                      Sentinel-2
+                    </Badge>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="relative">
+                  <NASAFarmMap
+                    openETData={openETData.fields}
+                    soilData={cropCASMAData.fields}
+                    satelliteData={earthObservation.fields}
+                    weatherData={weatherData.weatherData}
+                    centerLat={23.8103}
+                    centerLng={90.4125}
+                    onFieldClick={(field) => {
+                      console.log('Field clicked:', field);
+                      toast({
+                        title: 'ফিল্ড নির্বাচিত',
+                        description: `${field.field_name_bn} - বিস্তারিত তথ্য দেখুন`,
+                      });
+                    }}
+                  />
+                  <div className="absolute top-2 right-2 bg-card/90 backdrop-blur-sm border border-border rounded-lg px-2 py-1">
+                    <div className="flex items-center gap-2 text-xs">
+                      <Layers className="w-3 h-3 text-purple-600" />
+                      <span className="text-foreground">মাল্টি-লেয়ার</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Satellite Data Analysis */}
             <Card>
               <CardHeader>
                 <CardTitle className="text-base flex items-center gap-2">
-                  <Satellite className="w-4 h-4 text-green-600" />
-                  NASA স্যাটেলাইট পর্যবেক্ষণ
+                  <BarChart3 className="w-4 h-4 text-purple-600" />
+                  স্যাটেলাইট ডেটা বিশ্লেষণ
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <NASAFarmMap
-                  openETData={openETData.fields}
-                  soilData={cropCASMAData.fields}
-                  satelliteData={earthObservation.fields}
-                  weatherData={weatherData.weatherData}
-                  centerLat={23.8103}
-                  centerLng={90.4125}
-                  onFieldClick={(field) => {
-                    console.log('Field clicked:', field);
-                    toast({
-                      title: 'ফিল্ড নির্বাচিত',
-                      description: `${field.field_name_bn} - বিস্তারিত তথ্য দেখুন`,
-                    });
-                  }}
-                />
+                {earthObservation.loading ? (
+                  <div className="text-center py-8">
+                    <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2 text-purple-500" />
+                    <p className="text-sm text-gray-600">স্যাটেলাইট ডেটা প্রক্রিয়া করা হচ্ছে...</p>
+                  </div>
+                ) : earthObservation.fields.length > 0 ? (
+                  <div className="space-y-3">
+                    {earthObservation.fields.slice(0, 3).map((field) => (
+                      <div key={field.field_id} className="border border-purple-200 rounded-lg p-3">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-sm font-medium">{field.field_name_bn}</span>
+                          <Badge variant={field.vegetation_indices?.ndvi > 0.7 ? 'default' : 
+                                       field.vegetation_indices?.ndvi > 0.5 ? 'secondary' : 'destructive'}>
+                            {field.vegetation_indices?.ndvi > 0.7 ? 'সুস্থ' :
+                             field.vegetation_indices?.ndvi > 0.5 ? 'মাঝারি' : 'সমস্যা'}
+                          </Badge>
+                        </div>
+                        
+                        <div className="grid grid-cols-3 gap-2 text-xs">
+                          <div>
+                            <p className="text-gray-600">NDVI</p>
+                            <p className="font-semibold">{(field.vegetation_indices?.ndvi || 0).toFixed(3)}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600">EVI</p>
+                            <p className="font-semibold">{(field.vegetation_indices?.evi || 0).toFixed(3)}</p>
+                          </div>
+                          <div>
+                            <p className="text-gray-600">LAI</p>
+                            <p className="font-semibold">{(field.vegetation_indices as any)?.lai || 'N/A'}</p>
+                          </div>
+                        </div>
+
+                        <div className="mt-2">
+                          <p className="text-xs text-gray-600 mb-1">স্যাটেলাইট সোর্স</p>
+                          <p className="text-xs font-medium text-purple-700">{(field as any).satellite_info?.satellite || 'Landsat-8'} • {(field as any).satellite_info?.acquisition_date || 'Today'}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8">
+                    <Satellite className="w-12 h-12 mx-auto mb-2 text-gray-400" />
+                    <p className="text-sm text-gray-600">স্যাটেলাইট ডেটা উপলব্ধ নেই</p>
+                    <Button size="sm" variant="outline" onClick={earthObservation.fetchSatelliteData} className="mt-2">
+                      ডেটা লোড করুন
+                    </Button>
+                  </div>
+                )}
               </CardContent>
             </Card>
 
@@ -471,16 +666,16 @@ export default function SatellitePage() {
             <Card>
               <CardContent className="p-3">
                 <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
-                  <Leaf className="w-4 h-4 text-secondary" />
-                  NDVI স্বাস্থ্য সূচক
+                  <Leaf className="w-4 h-4 text-purple-600" />
+                  NDVI স্বাস্থ্য সূচক (স্যাটেলাইট)
                 </h3>
                 <div className="flex items-center gap-2">
-                  <div className="flex-1 h-3 rounded-full bg-gradient-to-r from-destructive via-chart-2 to-secondary" />
+                  <div className="flex-1 h-3 rounded-full bg-gradient-to-r from-red-500 via-yellow-500 to-green-500" />
                 </div>
                 <div className="flex justify-between mt-1">
-                  <span className="text-xs text-destructive">অসুস্থ (0.0)</span>
-                  <span className="text-xs text-chart-2">মাঝারি (0.5)</span>
-                  <span className="text-xs text-secondary">সুস্থ (1.0)</span>
+                  <span className="text-xs text-red-600">অসুস্থ (0.0)</span>
+                  <span className="text-xs text-yellow-600">মাঝারি (0.5)</span>
+                  <span className="text-xs text-green-600">সুস্থ (1.0)</span>
                 </div>
               </CardContent>
             </Card>
@@ -603,69 +798,193 @@ export default function SatellitePage() {
             </Card>
           </TabsContent>
 
-          {/* Drone Tab */}
+          {/* Drone Tab - Advanced Drone Operations */}
           <TabsContent value="drone" className="space-y-4">
-            {/* Drone Routes */}
-            <div className="flex items-center justify-between mb-3">
-              <h2 className="text-base font-semibold text-foreground flex items-center gap-2">
-                <Plane className="w-4 h-4 text-chart-4" />
-                ড্রোন স্প্রে রুট
-              </h2>
-              {userId && !isUsingDemoData && (
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => generateRoutes()}
-                  disabled={optimizing}
-                  className="text-xs"
-                >
-                  {optimizing ? <Loader2 className="w-3 h-3 animate-spin" /> : "অপ্টিমাইজ"}
-                </Button>
-              )}
-            </div>
-            <div className="space-y-2">
-              {displayRoutes.map((route) => (
-                <div key={route.id} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3">
+            {/* Drone Operations Dashboard */}
+            <div className="grid grid-cols-2 gap-3 mb-4">
+              <Card className="bg-gradient-to-br from-blue-500/20 to-blue-600/20 border-blue-300">
+                <CardContent className="p-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-medium text-foreground">{route.task_bn}</p>
-                      <div className="flex items-center gap-3 mt-1">
-                        <span className="text-xs text-muted-foreground">📐 {toBengaliNumber(route.area_acres)} একর</span>
-                        <span className="text-xs text-muted-foreground">⏱️ {toBengaliNumber(route.estimated_time_mins)} মিনিট</span>
-                      </div>
+                      <p className="text-xs text-blue-700 font-medium">ড্রোন মিশন</p>
+                      <p className="text-lg font-bold text-blue-900">
+                        {toBengaliNumber(displayRoutes.length)}
+                      </p>
+                      <p className="text-xs text-blue-700">মোট রুট</p>
                     </div>
-                    <span className={cn(
-                      "text-xs px-2 py-1 rounded-full",
-                      route.status === "completed" && "bg-secondary/20 text-secondary",
-                      route.status === "in_progress" && "bg-chart-2/20 text-chart-2",
-                      route.status === "pending" && "bg-muted text-muted-foreground"
-                    )}>
-                      {route.status_bn}
-                    </span>
+                    <Plane className="w-8 h-8 text-blue-600" />
                   </div>
-                </div>
-              ))}
+                </CardContent>
+              </Card>
+
+              <Card className="bg-gradient-to-br from-cyan-500/20 to-cyan-600/20 border-cyan-300">
+                <CardContent className="p-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-cyan-700 font-medium">কাভারেজ এরিয়া</p>
+                      <p className="text-lg font-bold text-cyan-900">
+                        {toBengaliNumber(parseFloat(displayRoutes.reduce((sum, r) => sum + r.area_acres, 0).toFixed(1)))}
+                      </p>
+                      <p className="text-xs text-cyan-700">একর</p>
+                    </div>
+                    <Radio className="w-8 h-8 text-cyan-600" />
+                  </div>
+                </CardContent>
+              </Card>
             </div>
-            
-            {/* Route Stats */}
-            {userId && !isUsingDemoData && stats.total > 0 && (
-              <div className="mt-3 p-2 bg-muted/50 rounded-lg">
-                <div className="flex justify-around text-center">
-                  <div>
-                    <p className="text-lg font-bold text-foreground">{toBengaliNumber(stats.total)}</p>
-                    <p className="text-xs text-muted-foreground">মোট রুট</p>
+
+            {/* Drone Route Management */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-base flex items-center gap-2">
+                    <Plane className="w-4 h-4 text-blue-600" />
+                    ড্রোন রুট ম্যানেজমেন্ট
+                  </CardTitle>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => generateRoutes()}
+                    disabled={optimizing}
+                    className="text-xs"
+                  >
+                    {optimizing ? <Loader2 className="w-3 h-3 animate-spin" /> : "অপ্টিমাইজ"}
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Route Statistics */}
+                {userId && !isUsingDemoData && stats.total > 0 && (
+                  <div className="grid grid-cols-3 gap-2 p-3 bg-blue-50 rounded-lg">
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-blue-900">{toBengaliNumber(stats.total)}</p>
+                      <p className="text-xs text-blue-700">মোট রুট</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-green-600">{toBengaliNumber(stats.completed)}</p>
+                      <p className="text-xs text-green-700">সম্পন্ন</p>
+                    </div>
+                    <div className="text-center">
+                      <p className="text-lg font-bold text-orange-600">{toBengaliNumber(stats.inProgress)}</p>
+                      <p className="text-xs text-orange-700">চলছে</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-lg font-bold text-secondary">{toBengaliNumber(stats.completed)}</p>
-                    <p className="text-xs text-muted-foreground">সম্পন্ন</p>
+                )}
+
+                {/* Active Routes */}
+                <div className="space-y-3">
+                  {displayRoutes.map((route) => (
+                    <div key={route.id} className="border border-blue-200 rounded-lg p-3">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm font-medium text-foreground">{route.task_bn}</span>
+                          <Badge variant={route.status === "completed" ? "default" : 
+                                       route.status === "in_progress" ? "secondary" : "outline"}>
+                            {route.status_bn}
+                          </Badge>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          {route.status === "in_progress" && (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                          )}
+                          {route.status === "completed" && (
+                            <div className="w-2 h-2 bg-green-500 rounded-full" />
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="grid grid-cols-3 gap-2 text-xs mb-2">
+                        <div>
+                          <p className="text-gray-600">এরিয়া</p>
+                          <p className="font-semibold">{toBengaliNumber(route.area_acres)} একর</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">সময়</p>
+                          <p className="font-semibold">{toBengaliNumber(route.estimated_time_mins)} মিনিট</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600">কাভারেজ</p>
+                          <p className="font-semibold">{toBengaliNumber(route.coverage_percentage || 0)}%</p>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      {route.status === "in_progress" && (
+                        <div className="mt-2">
+                          <div className="flex items-center justify-between text-xs mb-1">
+                            <span className="text-gray-600">প্রগ্রেস</span>
+                            <span className="text-blue-700">{toBengaliNumber(route.coverage_percentage || 0)}%</span>
+                          </div>
+                          <Progress value={route.coverage_percentage || 0} className="h-2" />
+                        </div>
+                      )}
+
+                      {/* Waypoints Info */}
+                      {route.waypoints && route.waypoints.length > 0 && (
+                        <div className="mt-2 text-xs text-gray-600">
+                          <p>📍 {toBengaliNumber(route.waypoints.length)} ওয়েপয়েন্ট</p>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quick Actions */}
+                <div className="grid grid-cols-2 gap-2 pt-2">
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => generateRoutes()}
+                    disabled={optimizing}
+                    className="text-xs"
+                  >
+                    <Plane className="w-3 h-3 mr-1" />
+                    নতুন রুট
+                  </Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="text-xs"
+                  >
+                    <MapPin className="w-3 h-3 mr-1" />
+                    রুট ম্যাপ
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Drone Analytics */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-blue-600" />
+                  ড্রোন অ্যানালিটিক্স
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="text-center p-3 bg-blue-50 rounded-lg">
+                    <p className="text-2xl font-bold text-blue-900">
+                      {toBengaliNumber(displayRoutes.filter(r => r.status === 'completed').length)}
+                    </p>
+                    <p className="text-xs text-blue-700">সম্পন্ন মিশন</p>
                   </div>
-                  <div>
-                    <p className="text-lg font-bold text-chart-2">{toBengaliNumber(stats.inProgress)}</p>
-                    <p className="text-xs text-muted-foreground">চলছে</p>
+                  <div className="text-center p-3 bg-green-50 rounded-lg">
+                    <p className="text-2xl font-bold text-green-900">
+                      {toBengaliNumber(parseFloat(displayRoutes.reduce((sum, r) => sum + r.area_acres, 0).toFixed(1)))}
+                    </p>
+                    <p className="text-xs text-green-700">মোট একর</p>
                   </div>
                 </div>
-              </div>
-            )}
+
+                <div className="text-center p-3 bg-gray-50 rounded-lg">
+                  <p className="text-2xl font-bold text-gray-900">
+                    {toBengaliNumber(displayRoutes.reduce((sum, r) => sum + r.estimated_time_mins, 0))}
+                  </p>
+                  <p className="text-xs text-gray-700">মোট ফ্লাইট সময় (মিনিট)</p>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>
