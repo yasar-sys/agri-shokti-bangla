@@ -325,49 +325,41 @@ const PestLeafletMap: React.FC<PestLeafletMapProps> = ({
   }, []);
 
   return (
-    <div className="relative w-full h-[350px] rounded-2xl overflow-hidden border border-border shadow-lg">
+    <div className="relative w-full h-[300px] sm:h-[350px] rounded-2xl overflow-hidden border border-border shadow-lg">
       <div ref={mapContainer} className="absolute inset-0 z-0" />
       
       {/* Gradient overlay for aesthetics */}
       <div className="absolute inset-0 pointer-events-none z-[1] bg-gradient-to-t from-background/20 via-transparent to-transparent" />
       
-      {/* Legend */}
-      <div className="absolute bottom-4 left-4 bg-background/95 backdrop-blur-md rounded-xl p-3 z-[400] border border-border shadow-lg">
-        <p className="text-[10px] font-medium text-muted-foreground mb-2 uppercase tracking-wider">ঝুঁকির মাত্রা</p>
-        <div className="flex flex-col gap-2">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-destructive shadow-sm shadow-destructive/30" />
-            <span className="text-xs text-foreground">উচ্চ ঝুঁকি</span>
+      {/* Legend - Bottom left, compact on mobile */}
+      <div className="absolute bottom-2 sm:bottom-4 left-2 sm:left-4 bg-background/95 backdrop-blur-md rounded-lg sm:rounded-xl p-2 sm:p-3 z-[400] border border-border shadow-lg">
+        <p className="text-[8px] sm:text-[10px] font-medium text-muted-foreground mb-1.5 sm:mb-2 uppercase tracking-wider">ঝুঁকির মাত্রা</p>
+        <div className="flex flex-row sm:flex-col gap-2 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-destructive shadow-sm shadow-destructive/30" />
+            <span className="text-[10px] sm:text-xs text-foreground">উচ্চ</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-orange-500 shadow-sm shadow-orange-500/30" />
-            <span className="text-xs text-foreground">মাঝারি ঝুঁকি</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-orange-500 shadow-sm shadow-orange-500/30" />
+            <span className="text-[10px] sm:text-xs text-foreground">মাঝারি</span>
           </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-4 rounded-full bg-green-500 shadow-sm shadow-green-500/30" />
-            <span className="text-xs text-foreground">কম ঝুঁকি</span>
+          <div className="flex items-center gap-1 sm:gap-2">
+            <div className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-green-500 shadow-sm shadow-green-500/30" />
+            <span className="text-[10px] sm:text-xs text-foreground">কম</span>
           </div>
         </div>
       </div>
 
-      {/* Stats overlay */}
-      <div className="absolute top-4 left-4 bg-background/95 backdrop-blur-md rounded-xl p-3 z-[400] border border-border shadow-lg">
+      {/* Stats overlay - Top right instead of top left to avoid overlap */}
+      <div className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-background/95 backdrop-blur-md rounded-lg sm:rounded-xl p-2 sm:p-3 z-[400] border border-border shadow-lg">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-            <Bug className="w-4 h-4 text-primary" />
+          <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-primary/20 flex items-center justify-center">
+            <Bug className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />
           </div>
           <div>
-            <p className="text-xs text-muted-foreground">মোট জেলা</p>
-            <p className="text-lg font-bold text-foreground">{districtStats.length}</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground">মোট জেলা</p>
+            <p className="text-sm sm:text-lg font-bold text-foreground">{districtStats.length}</p>
           </div>
-        </div>
-      </div>
-
-      {/* Map type indicator */}
-      <div className="absolute top-4 right-16 bg-background/95 backdrop-blur-md rounded-lg px-3 py-1.5 z-[400] border border-border shadow-lg">
-        <div className="flex items-center gap-1.5">
-          <MapPin className="w-3 h-3 text-primary" />
-          <span className="text-[10px] font-medium text-foreground">লাইভ ম্যাপ</span>
         </div>
       </div>
     </div>

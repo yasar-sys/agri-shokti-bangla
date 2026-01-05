@@ -441,37 +441,29 @@ export default function SatellitePage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-green-900 to-slate-900">
-      {/* NASA Worldview-inspired Header with AI Status */}
+      {/* NASA Worldview-inspired Header with AI Status - Mobile Responsive */}
       <div className="bg-black/50 backdrop-blur-lg border-b border-white/10">
-        <div className="container mx-auto px-4 py-3">
+        <div className="container mx-auto px-2 sm:px-4 py-2 sm:py-3">
+          {/* Mobile Header */}
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Link to="/">
-                <Button variant="ghost" size="sm" className="text-white hover:text-green-400">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  ফিরে যান
+                <Button variant="ghost" size="sm" className="text-white hover:text-green-400 h-8 px-2 sm:px-3">
+                  <ArrowLeft className="w-4 h-4" />
+                  <span className="hidden sm:inline ml-2">ফিরে যান</span>
                 </Button>
               </Link>
-              <div className="flex items-center space-x-2">
-                <Satellite className="w-6 h-6 text-green-400" />
-                <h1 className="text-xl font-bold text-white">NASA Worldview Bangladesh</h1>
-                <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30">
+              <div className="flex items-center space-x-1 sm:space-x-2">
+                <Satellite className="w-5 h-5 sm:w-6 sm:h-6 text-green-400" />
+                <h1 className="text-sm sm:text-xl font-bold text-white">স্যাটেলাইট ভিউ</h1>
+                <Badge variant="secondary" className="bg-green-500/20 text-green-400 border-green-500/30 text-[10px] sm:text-xs px-1 sm:px-2">
                   Live
                 </Badge>
-                <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                  <Radio className="w-3 h-3 mr-1" />
-                  NASA Real-time
-                </Badge>
-                {aiAnalysisEnabled && (
-                  <Badge variant="secondary" className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-                    <Brain className="w-3 h-3 mr-1" />
-                    AI Active
-                  </Badge>
-                )}
               </div>
             </div>
             
-            <div className="flex items-center space-x-2">
+            {/* Desktop Actions */}
+            <div className="hidden lg:flex items-center space-x-2">
               <Button variant="ghost" size="sm" onClick={() => setShowBangladeshLayers(!showBangladeshLayers)} className="text-white hover:text-green-400">
                 <Globe className="w-4 h-4 mr-2" />
                 Bangladesh Layers
@@ -496,31 +488,37 @@ export default function SatellitePage() {
                 <Settings className="w-4 h-4" />
               </Button>
             </div>
+
+            {/* Mobile Actions */}
+            <div className="flex lg:hidden items-center space-x-1">
+              <Button variant="ghost" size="sm" onClick={handleRefreshAll} className="text-white hover:text-green-400 h-8 w-8 p-0">
+                <RefreshCw className="w-4 h-4" />
+              </Button>
+              <Button variant="ghost" size="sm" onClick={() => setShowAnalytics(!showAnalytics)} className="text-white hover:text-green-400 h-8 w-8 p-0">
+                <BarChart3 className="w-4 h-4" />
+              </Button>
+            </div>
           </div>
           
-          {/* Award-winning AI Status Bar */}
+          {/* AI Status Bar - Compact on mobile */}
           {aiAnalysisEnabled && (
-            <div className="mt-3 flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Badge variant="outline" className="border-green-500/30 text-green-400">
-                  <Award className="w-3 h-3 mr-1" />
-                  Award-Winning AI Analysis
-                </Badge>
-              </div>
+            <div className="mt-2 sm:mt-3 flex flex-wrap items-center gap-2 sm:gap-4">
+              <Badge variant="outline" className="border-green-500/30 text-green-400 text-[10px] sm:text-xs">
+                <Brain className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
+                AI Active
+              </Badge>
               {isAnalyzing && (
-                <div className="flex items-center space-x-2 text-blue-400">
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Analyzing satellite data...</span>
+                <div className="flex items-center space-x-1 sm:space-x-2 text-blue-400">
+                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                  <span className="text-[10px] sm:text-sm">বিশ্লেষণ...</span>
                 </div>
               )}
-              <div className="flex items-center space-x-4 text-xs text-gray-400">
+              <div className="hidden sm:flex items-center space-x-2 sm:space-x-4 text-[10px] sm:text-xs text-gray-400">
                 <span>NDVI: Real-time</span>
                 <span>•</span>
                 <span>Weather: NASA POWER</span>
                 <span>•</span>
-                <span>Soil: SMAP</span>
-                <span>•</span>
-                <span>AI: {aiFeatures.find(f => f.id === selectedAI)?.accuracy} accuracy</span>
+                <span>AI: {aiFeatures.find(f => f.id === selectedAI)?.accuracy}</span>
               </div>
             </div>
           )}
