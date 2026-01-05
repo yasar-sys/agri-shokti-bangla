@@ -260,6 +260,7 @@ export function NASASatelliteMap({
     if (!map.current || !isMapReady) return;
 
     console.log('[NASASatelliteMap] Switching to layer:', activeLayer);
+    console.log('[NASASatelliteMap] Using NASA GIBS date:', gibsDate);
 
     // Remove existing tile layers but keep markers and routes
     map.current.eachLayer((layer) => {
@@ -273,6 +274,9 @@ export function NASASatelliteMap({
     overlayLayerRef.current = null;
 
     const layerConfig = tileLayers[activeLayer];
+    
+    console.log('[NASASatelliteMap] Layer URL:', layerConfig.url);
+    console.log('[NASASatelliteMap] Layer attribution:', layerConfig.attribution);
     
     // For NASA GIBS layers, add a base map first for context
     if (needsBaseMap.includes(activeLayer)) {
@@ -291,11 +295,19 @@ export function NASASatelliteMap({
       });
       
       overlayLayerRef.current.on('tileerror', (error) => {
-        console.warn('[NASASatelliteMap] NASA tile error on', activeLayer);
+        console.warn('[NASASatelliteMap] NASA GIBS tile error on', activeLayer, '- this is normal for dates without data');
+      });
+      
+      overlayLayerRef.current.on('loading', () => {
+        console.log('[NASASatelliteMap] Loading NASA GIBS tiles for', activeLayer);
+      });
+      
+      overlayLayerRef.current.on('load', () => {
+        console.log('[NASASatelliteMap] NASA GIBS tiles loaded for', activeLayer);
       });
 
       overlayLayerRef.current.addTo(map.current);
-      console.log(`[NASASatelliteMap] Added ${activeLayer} NASA layer with base map`);
+      console.log(`[NASASatelliteMap] ✓ Added ${activeLayer} NASA layer with base map`);
     } else {
       // Regular layer (satellite, terrain, true_color) - no base needed
       tileLayerRef.current = L.tileLayer(layerConfig.url, {
@@ -310,6 +322,7 @@ export function NASASatelliteMap({
       });
 
       tileLayerRef.current.addTo(map.current);
+      console.log(`[NASASatelliteMap] ✓ Added ${activeLayer} layer`);
     }
 
     setLastUpdate(new Date());
@@ -792,12 +805,10 @@ export function NASASatelliteMap({
               onClick={() => {
                 setMapError(null);
                 setLoading(true);
-                // Force re-mount by clearing refs
                 if (map.current) {
                   map.current.remove();
                   map.current = null;
                 }
-                // Trigger re-initialization
                 setTimeout(() => {
                   if (mapContainer.current && !map.current) {
                     try {
@@ -841,7 +852,7 @@ export function NASASatelliteMap({
           <div className="text-center">
             <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
             <p className="text-sm text-muted-foreground">স্যাটেলাইট ডেটা লোড হচ্ছে...</p>
-            <p className="text-xs text-muted-foreground mt-1">NDVI হিটম্যাপ প্রস্তুত হচ্ছে</p>
+            <p className="text-xs text-muted-foreground mt-1">NASA GIBS থেকে ডেটা আনা হচ্ছে</p>
           </div>
         </div>
       )}
@@ -849,137 +860,140 @@ export function NASASatelliteMap({
       {/* Map Controls - only show when map is ready */}
       {!loading && !mapError && (
         <>
-      {/* Layer Toggle - Main buttons */}
-      <div className="absolute top-2 left-2 z-[1000] flex flex-col gap-1">
-        {/* Primary layer controls */}
-        <div className="flex gap-1 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
+      {/* Layer Toggle - Mobile Responsive */}
+      <div className="absolute top-2 left-2 z-[1000] flex flex-col gap-1 max-w-[calc(100%-60px)] sm:max-w-none">
+        {/* Primary layer controls - scrollable on mobile */}
+        <div className="flex gap-1 bg-background/95 backdrop-blur-md rounded-lg p-1 shadow-lg overflow-x-auto">
           <Button
             size="sm"
             variant={activeLayer === 'satellite' ? 'default' : 'ghost'}
             onClick={() => setActiveLayer('satellite')}
-            className="h-7 text-xs"
+            className="h-7 text-[10px] sm:text-xs shrink-0 px-2 sm:px-3"
           >
-            <Satellite className="w-3 h-3 mr-1" />
-            স্যাটেলাইট
+            <Satellite className="w-3 h-3 sm:mr-1" />
+            <span className="hidden sm:inline">স্যাটেলাইট</span>
           </Button>
           <Button
             size="sm"
             variant={activeLayer === 'ndvi' ? 'default' : 'ghost'}
             onClick={() => setActiveLayer('ndvi')}
-            className="h-7 text-xs"
+            className="h-7 text-[10px] sm:text-xs shrink-0 px-2 sm:px-3"
           >
-            <Leaf className="w-3 h-3 mr-1" />
-            NDVI
+            <Leaf className="w-3 h-3 sm:mr-1" />
+            <span className="hidden sm:inline">NDVI</span>
           </Button>
           <Button
             size="sm"
             variant={activeLayer === 'soil_moisture' ? 'default' : 'ghost'}
             onClick={() => setActiveLayer('soil_moisture')}
-            className="h-7 text-xs"
+            className="h-7 text-[10px] sm:text-xs shrink-0 px-2 sm:px-3"
           >
-            <Droplets className="w-3 h-3 mr-1" />
-            আর্দ্রতা
+            <Droplets className="w-3 h-3 sm:mr-1" />
+            <span className="hidden sm:inline">আর্দ্রতা</span>
           </Button>
           <Button
             size="sm"
             variant={showLayerMenu ? 'secondary' : 'ghost'}
             onClick={() => setShowLayerMenu(!showLayerMenu)}
-            className="h-7 text-xs"
+            className="h-7 text-[10px] sm:text-xs shrink-0 px-2"
           >
             +{Object.keys(tileLayers).length - 3}
           </Button>
         </div>
 
-        {/* Extended NASA layers menu */}
+        {/* Extended NASA layers menu - Mobile optimized */}
         {showLayerMenu && (
-          <div className="bg-background/95 backdrop-blur-sm rounded-lg p-2 shadow-lg border border-border">
-            <p className="text-[10px] text-muted-foreground mb-1.5 font-medium">NASA ডেটা লেয়ার</p>
+          <div className="bg-background/95 backdrop-blur-md rounded-lg p-2 shadow-lg border border-border max-w-[200px] sm:max-w-none">
+            <div className="flex items-center justify-between mb-1.5">
+              <p className="text-[10px] text-muted-foreground font-medium">NASA ডেটা লেয়ার</p>
+              <span className="text-[8px] text-primary bg-primary/10 px-1.5 py-0.5 rounded">Live</span>
+            </div>
             <div className="grid grid-cols-2 gap-1">
               <Button
                 size="sm"
                 variant={activeLayer === 'lst' ? 'default' : 'ghost'}
                 onClick={() => { setActiveLayer('lst'); setShowLayerMenu(false); }}
-                className="h-7 text-xs justify-start"
+                className="h-6 sm:h-7 text-[9px] sm:text-xs justify-start px-1.5 sm:px-2"
               >
-                <Thermometer className="w-3 h-3 mr-1" />
+                <Thermometer className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                 তাপমাত্রা
               </Button>
               <Button
                 size="sm"
                 variant={activeLayer === 'precipitation' ? 'default' : 'ghost'}
                 onClick={() => { setActiveLayer('precipitation'); setShowLayerMenu(false); }}
-                className="h-7 text-xs justify-start"
+                className="h-6 sm:h-7 text-[9px] sm:text-xs justify-start px-1.5 sm:px-2"
               >
-                <CloudRain className="w-3 h-3 mr-1" />
+                <CloudRain className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                 বৃষ্টিপাত
               </Button>
               <Button
                 size="sm"
                 variant={activeLayer === 'flood' ? 'default' : 'ghost'}
                 onClick={() => { setActiveLayer('flood'); setShowLayerMenu(false); }}
-                className="h-7 text-xs justify-start"
+                className="h-6 sm:h-7 text-[9px] sm:text-xs justify-start px-1.5 sm:px-2"
               >
-                <AlertCircle className="w-3 h-3 mr-1" />
+                <AlertCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                 বন্যা
               </Button>
               <Button
                 size="sm"
                 variant={activeLayer === 'true_color' ? 'default' : 'ghost'}
                 onClick={() => { setActiveLayer('true_color'); setShowLayerMenu(false); }}
-                className="h-7 text-xs justify-start"
+                className="h-6 sm:h-7 text-[9px] sm:text-xs justify-start px-1.5 sm:px-2"
               >
-                <Satellite className="w-3 h-3 mr-1" />
+                <Satellite className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
                 VIIRS
               </Button>
               <Button
                 size="sm"
                 variant={activeLayer === 'terrain' ? 'default' : 'ghost'}
                 onClick={() => { setActiveLayer('terrain'); setShowLayerMenu(false); }}
-                className="h-7 text-xs justify-start"
+                className="h-6 sm:h-7 text-[9px] sm:text-xs justify-start px-1.5 sm:px-2 col-span-2"
               >
-                <MapIcon className="w-3 h-3 mr-1" />
-                ম্যাপ
+                <MapIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 mr-1" />
+                ম্যাপ ভিউ
               </Button>
             </div>
-            <p className="text-[8px] text-muted-foreground mt-1.5">তারিখ: {gibsDate}</p>
+            <p className="text-[7px] sm:text-[8px] text-muted-foreground mt-1.5">NASA GIBS: {gibsDate}</p>
           </div>
         )}
         
-        {/* Overlay toggles */}
-        <div className="flex gap-1 bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-lg">
+        {/* Overlay toggles - Compact on mobile */}
+        <div className="flex gap-1 bg-background/95 backdrop-blur-md rounded-lg p-1 shadow-lg">
           <Button
             size="sm"
             variant={heatmapVisible ? 'default' : 'ghost'}
             onClick={() => setHeatmapVisible(!heatmapVisible)}
-            className="h-6 text-[10px]"
+            className="h-6 text-[9px] sm:text-[10px] px-1.5 sm:px-2"
           >
-            <Leaf className="w-3 h-3 mr-1" />
-            জোন
+            <Leaf className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-1" />
+            <span className="hidden sm:inline">জোন</span>
           </Button>
           <Button
             size="sm"
             variant={routesVisible ? 'default' : 'ghost'}
             onClick={() => setRoutesVisible(!routesVisible)}
-            className="h-6 text-[10px]"
+            className="h-6 text-[9px] sm:text-[10px] px-1.5 sm:px-2"
           >
-            <Navigation className="w-3 h-3 mr-1" />
-            ড্রোন
+            <Navigation className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-1" />
+            <span className="hidden sm:inline">ড্রোন</span>
           </Button>
           <Button
             size="sm"
             variant={showAppEEARS ? 'secondary' : 'ghost'}
             onClick={() => setShowAppEEARS(!showAppEEARS)}
-            className="h-6 text-[10px]"
+            className="h-6 text-[9px] sm:text-[10px] px-1.5 sm:px-2"
           >
-            <BarChart3 className="w-3 h-3 mr-1" />
-            চার্ট
+            <BarChart3 className="w-2.5 h-2.5 sm:w-3 sm:h-3 sm:mr-1" />
+            <span className="hidden sm:inline">চার্ট</span>
           </Button>
         </div>
       </div>
 
-      {/* AppEEARS Panel */}
+      {/* AppEEARS Panel - Mobile responsive positioning */}
       {showAppEEARS && (
-        <div className="absolute bottom-14 left-3 z-[1001] w-80 max-w-[calc(100%-24px)]">
+        <div className="absolute bottom-16 sm:bottom-14 left-2 sm:left-3 z-[1001] w-[calc(100%-16px)] sm:w-72 md:w-80">
           <AppEEARSPanel 
             latitude={latitude} 
             longitude={longitude} 
@@ -988,87 +1002,90 @@ export function NASASatelliteMap({
         </div>
       )}
 
-      {/* Real-time indicator & Controls */}
+      {/* Real-time indicator & Controls - Top right, compact */}
       <div className="absolute top-2 right-2 z-[1000] flex flex-col gap-1">
-        <div className="bg-background/90 backdrop-blur-sm rounded-lg p-1 shadow-lg flex items-center gap-1">
-          <Radio className="w-3 h-3 text-green-500 animate-pulse ml-1" />
-          <span className="text-[10px] text-green-500 pr-1">লাইভ</span>
+        <div className="bg-background/95 backdrop-blur-md rounded-lg px-1.5 py-1 shadow-lg flex items-center gap-1">
+          <Radio className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-green-500 animate-pulse" />
+          <span className="text-[8px] sm:text-[10px] text-green-500">NASA</span>
         </div>
-        <div className="bg-background/90 backdrop-blur-sm rounded-lg shadow-lg flex flex-col">
-          <Button size="sm" variant="ghost" onClick={handleZoomIn} className="h-7 w-7 p-0">
-            <ZoomIn className="w-4 h-4" />
+        <div className="bg-background/95 backdrop-blur-md rounded-lg shadow-lg flex flex-col">
+          <Button size="sm" variant="ghost" onClick={handleZoomIn} className="h-6 w-6 sm:h-7 sm:w-7 p-0">
+            <ZoomIn className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={handleZoomOut} className="h-7 w-7 p-0">
-            <ZoomOut className="w-4 h-4" />
+          <Button size="sm" variant="ghost" onClick={handleZoomOut} className="h-6 w-6 sm:h-7 sm:w-7 p-0">
+            <ZoomOut className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </Button>
-          <Button size="sm" variant="ghost" onClick={handleRefresh} className="h-7 w-7 p-0" disabled={refreshing}>
-            <RefreshCw className={cn("w-4 h-4", refreshing && "animate-spin")} />
+          <Button size="sm" variant="ghost" onClick={handleRefresh} className="h-6 w-6 sm:h-7 sm:w-7 p-0" disabled={refreshing}>
+            <RefreshCw className={cn("w-3.5 h-3.5 sm:w-4 sm:h-4", refreshing && "animate-spin")} />
           </Button>
         </div>
       </div>
 
-      {/* NDVI Stats Panel */}
-      {ndviStats && heatmapVisible && (
-        <div className="absolute top-12 left-2 z-[1000] bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-          <p className="text-[10px] text-muted-foreground mb-1">NDVI পরিসংখ্যান</p>
-          <div className="flex gap-2 text-xs">
-            <div className="text-center">
-              <p className={cn("font-bold", ndviStats.avg >= 0.6 ? "text-green-500" : ndviStats.avg >= 0.4 ? "text-yellow-500" : "text-red-500")}>
-                {(ndviStats.avg * 100).toFixed(0)}%
-              </p>
-              <p className="text-[9px] text-muted-foreground">গড়</p>
-            </div>
-            <div className="w-px bg-border" />
-            <div className="text-center">
-              <p className="font-bold text-red-500">{ndviStats.stressed}</p>
-              <p className="text-[9px] text-muted-foreground">ঝুঁকিপূর্ণ</p>
-            </div>
-            <div className="w-px bg-border" />
-            <div className="text-center">
-              <p className="font-bold text-foreground">{ndviStats.total}</p>
-              <p className="text-[9px] text-muted-foreground">মোট জোন</p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Drone Route Stats Panel */}
-      {routeStats && routesVisible && (
-        <div className="absolute top-12 right-12 z-[1000] bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-          <p className="text-[10px] text-muted-foreground mb-1">ড্রোন রুট</p>
-          <div className="flex gap-2 text-xs">
-            <div className="text-center">
-              <p className="font-bold text-amber-500">{routeStats.inProgress}</p>
-              <p className="text-[9px] text-muted-foreground">চলমান</p>
-            </div>
-            <div className="w-px bg-border" />
-            <div className="text-center">
-              <p className="font-bold text-green-500">{routeStats.completed}</p>
-              <p className="text-[9px] text-muted-foreground">সম্পন্ন</p>
-            </div>
-            <div className="w-px bg-border" />
-            <div className="text-center">
-              <p className="font-bold text-blue-500">{routeStats.pending}</p>
-              <p className="text-[9px] text-muted-foreground">অপেক্ষায়</p>
+      {/* Stats Panels Container - Positioned to avoid overlap */}
+      <div className="absolute top-14 sm:top-16 left-2 right-2 z-[999] flex flex-wrap gap-1.5 sm:gap-2 pointer-events-none">
+        {/* NDVI Stats Panel */}
+        {ndviStats && heatmapVisible && (
+          <div className="bg-background/95 backdrop-blur-md rounded-lg px-2 py-1.5 sm:p-2 shadow-lg pointer-events-auto">
+            <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-1">NDVI</p>
+            <div className="flex gap-2 sm:gap-3 text-[10px] sm:text-xs">
+              <div className="text-center">
+                <p className={cn("font-bold text-sm sm:text-base", ndviStats.avg >= 0.6 ? "text-green-500" : ndviStats.avg >= 0.4 ? "text-yellow-500" : "text-red-500")}>
+                  {(ndviStats.avg * 100).toFixed(0)}%
+                </p>
+                <p className="text-[7px] sm:text-[9px] text-muted-foreground">গড়</p>
+              </div>
+              <div className="w-px bg-border" />
+              <div className="text-center">
+                <p className="font-bold text-sm sm:text-base text-red-500">{ndviStats.stressed}</p>
+                <p className="text-[7px] sm:text-[9px] text-muted-foreground">ঝুঁকি</p>
+              </div>
+              <div className="w-px bg-border" />
+              <div className="text-center">
+                <p className="font-bold text-sm sm:text-base text-foreground">{ndviStats.total}</p>
+                <p className="text-[7px] sm:text-[9px] text-muted-foreground">জোন</p>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* Legends - Dynamic based on active layer */}
-      <div className="absolute bottom-3 left-3 z-[1000] flex gap-2">
+        {/* Drone Route Stats Panel */}
+        {routeStats && routesVisible && (
+          <div className="bg-background/95 backdrop-blur-md rounded-lg px-2 py-1.5 sm:p-2 shadow-lg pointer-events-auto">
+            <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-1">ড্রোন</p>
+            <div className="flex gap-2 sm:gap-3 text-[10px] sm:text-xs">
+              <div className="text-center">
+                <p className="font-bold text-sm sm:text-base text-amber-500">{routeStats.inProgress}</p>
+                <p className="text-[7px] sm:text-[9px] text-muted-foreground">চলমান</p>
+              </div>
+              <div className="w-px bg-border" />
+              <div className="text-center">
+                <p className="font-bold text-sm sm:text-base text-green-500">{routeStats.completed}</p>
+                <p className="text-[7px] sm:text-[9px] text-muted-foreground">সম্পন্ন</p>
+              </div>
+              <div className="w-px bg-border" />
+              <div className="text-center">
+                <p className="font-bold text-sm sm:text-base text-blue-500">{routeStats.pending}</p>
+                <p className="text-[7px] sm:text-[9px] text-muted-foreground">অপেক্ষায়</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Legends - Bottom left, Mobile responsive */}
+      <div className="absolute bottom-2 sm:bottom-3 left-2 sm:left-3 z-[1000] flex flex-col sm:flex-row gap-1.5 sm:gap-2 max-w-[calc(100%-60px)] sm:max-w-none">
         {/* Active Layer Legend */}
-        <div className="bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-          <p className="text-[10px] text-muted-foreground mb-1.5 flex items-center gap-1">
-            {activeLayer === 'ndvi' && <Leaf className="w-3 h-3" />}
-            {activeLayer === 'soil_moisture' && <Droplets className="w-3 h-3" />}
-            {activeLayer === 'lst' && <Thermometer className="w-3 h-3" />}
-            {activeLayer === 'precipitation' && <CloudRain className="w-3 h-3" />}
-            {activeLayer === 'flood' && <AlertCircle className="w-3 h-3" />}
-            {LAYER_INFO[activeLayer]?.nameBn || activeLayer}
+        <div className="bg-background/95 backdrop-blur-md rounded-lg px-2 py-1.5 sm:p-2 shadow-lg">
+          <p className="text-[8px] sm:text-[10px] text-muted-foreground mb-1 flex items-center gap-1">
+            {activeLayer === 'ndvi' && <Leaf className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
+            {activeLayer === 'soil_moisture' && <Droplets className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
+            {activeLayer === 'lst' && <Thermometer className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
+            {activeLayer === 'precipitation' && <CloudRain className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
+            {activeLayer === 'flood' && <AlertCircle className="w-2.5 h-2.5 sm:w-3 sm:h-3" />}
+            <span className="truncate">{LAYER_INFO[activeLayer]?.nameBn || activeLayer}</span>
           </p>
           <div className="flex items-center gap-1">
-            <div className="h-2 w-20 rounded-full" style={{
+            <div className="h-1.5 sm:h-2 w-16 sm:w-20 rounded-full" style={{
               background: activeLayer === 'ndvi' 
                 ? 'linear-gradient(to right, #ef4444, #f97316, #eab308, #22c55e)'
                 : activeLayer === 'soil_moisture'
@@ -1082,34 +1099,34 @@ export function NASASatelliteMap({
                 : 'linear-gradient(to right, #525252, #a3a3a3)'
             }} />
           </div>
-          <div className="flex justify-between text-[8px] text-muted-foreground mt-0.5">
+          <div className="flex justify-between text-[7px] sm:text-[8px] text-muted-foreground mt-0.5">
             {activeLayer === 'ndvi' && <><span>০%</span><span>১০০%</span></>}
             {activeLayer === 'soil_moisture' && <><span>শুষ্ক</span><span>ভেজা</span></>}
             {activeLayer === 'lst' && <><span>ঠাণ্ডা</span><span>গরম</span></>}
             {activeLayer === 'precipitation' && <><span>কম</span><span>বেশি</span></>}
             {activeLayer === 'flood' && <><span>স্বাভাবিক</span><span>বন্যা</span></>}
             {(activeLayer === 'satellite' || activeLayer === 'terrain' || activeLayer === 'true_color') && (
-              <span className="text-[8px]">{LAYER_INFO[activeLayer]?.description}</span>
+              <span className="text-[7px] sm:text-[8px] truncate">{LAYER_INFO[activeLayer]?.description}</span>
             )}
           </div>
         </div>
         
-        {/* Drone Route Legend */}
+        {/* Drone Route Legend - Show on larger screens or when routes are few */}
         {routesVisible && (
-          <div className="bg-background/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-            <p className="text-[10px] text-muted-foreground mb-1.5">ড্রোন রুট</p>
-            <div className="flex flex-col gap-1">
+          <div className="hidden sm:block bg-background/95 backdrop-blur-md rounded-lg p-2 shadow-lg">
+            <p className="text-[10px] text-muted-foreground mb-1">ড্রোন রুট</p>
+            <div className="flex flex-col gap-0.5">
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-0.5 bg-blue-500" style={{ borderStyle: 'dashed' }} />
-                <span className="text-[8px] text-muted-foreground">অপেক্ষায়</span>
+                <div className="w-3 sm:w-4 h-0.5 bg-blue-500 border-dashed border-t" />
+                <span className="text-[7px] sm:text-[8px] text-muted-foreground">অপেক্ষায়</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-0.5 bg-amber-500" />
-                <span className="text-[8px] text-muted-foreground">চলমান</span>
+                <div className="w-3 sm:w-4 h-0.5 bg-amber-500" />
+                <span className="text-[7px] sm:text-[8px] text-muted-foreground">চলমান</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <div className="w-4 h-0.5 bg-green-500" />
-                <span className="text-[8px] text-muted-foreground">সম্পন্ন</span>
+                <div className="w-3 sm:w-4 h-0.5 bg-green-500" />
+                <span className="text-[7px] sm:text-[8px] text-muted-foreground">সম্পন্ন</span>
               </div>
             </div>
           </div>
