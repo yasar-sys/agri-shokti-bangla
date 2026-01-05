@@ -160,11 +160,11 @@ export function useNASAEarthObservation(userId: string | null) {
         processing_level: selectedSatellite.startsWith('Landsat') ? 'L2SR' : 'L2A'
       },
       vegetation_indices: {
-        ndvi: parseFloat(ndvi),
-        evi: parseFloat(evi),
-        savi: parseFloat(savi),
-        ndwi: parseFloat(ndwi),
-        msavi: parseFloat(msavi),
+        ndvi: parseFloat(ndvi.toString()),
+        evi: parseFloat(evi.toString()),
+        savi: parseFloat(savi.toString()),
+        ndwi: parseFloat(ndwi.toString()),
+        msavi: parseFloat(msavi.toString()),
         confidence: Number((0.8 + Math.random() * 0.2).toFixed(3))
       },
       crop_health: {

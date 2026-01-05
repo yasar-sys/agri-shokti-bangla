@@ -193,7 +193,7 @@ export function useNASAWeatherData(userId: string | null) {
         precipitation_amount: Number((Math.random() * 15).toFixed(1)),
         humidity: Number((40 + Math.random() * 50).toFixed(0)),
         wind_speed: Number((5 + Math.random() * 25).toFixed(1)),
-        conditions: ['sunny', 'partly_cloudy', 'cloudy', 'rainy'][Math.floor(Math.random() * 4)],
+        conditions: (['sunny', 'partly_cloudy', 'cloudy', 'rainy'] as const)[Math.floor(Math.random() * 4)],
         confidence: Number((0.5 + Math.random() * 0.3).toFixed(3)),
         agricultural_suitability: 'moderate',
         pest_disease_risk: 'medium',
