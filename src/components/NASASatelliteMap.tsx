@@ -1,7 +1,23 @@
 import { useEffect, useState, useMemo, useRef, memo, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Loader2, AlertTriangle, RefreshCw, ChevronDown, Leaf, Satellite, Droplets, Thermometer, CloudRain, AlertCircle, Map as MapIcon, Navigation, BarChart3, Radio } from 'lucide-react';
+import {
+  Loader2,
+  AlertTriangle,
+  RefreshCw,
+  ChevronDown,
+  Leaf,
+  Satellite,
+  Droplets,
+  Thermometer,
+  CloudRain,
+  AlertCircle,
+  Map as MapIcon,
+  Navigation,
+  BarChart3,
+  Radio,
+  SplitSquareHorizontal
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
@@ -38,6 +54,14 @@ interface DroneRoute {
   optimized_path: Array<{ lat: number; lng: number; type: string }>;
 }
 
+interface ComparisonMode {
+  type: 'side-by-side' | 'slider' | 'overlay';
+  leftDate: Date;
+  rightDate: Date;
+  leftLayer?: TileLayer;
+  rightLayer?: TileLayer;
+}
+
 interface NASASatelliteMapProps {
   latitude?: number;
   longitude?: number;
@@ -46,6 +70,7 @@ interface NASASatelliteMapProps {
   onZoneClick?: (zoneId: string) => void;
   showHeatmap?: boolean;
   showDroneRoutes?: boolean;
+  comparisonMode?: ComparisonMode | null;
 }
 
 type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
@@ -65,12 +90,14 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   droneRoutes = [],
   onZoneClick,
   showHeatmap = true,
-  showDroneRoutes = true
+  showDroneRoutes = true,
+  comparisonMode = null
 }: NASASatelliteMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const overlayLayerRef = useRef<L.TileLayer | null>(null);
+  const comparisonLayerRef = useRef<L.TileLayer | null>(null);
   const markersLayer = useRef<L.LayerGroup | null>(null);
   const routesLayer = useRef<L.LayerGroup | null>(null);
 
@@ -84,6 +111,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   const [routesVisible, setRoutesVisible] = useState(showDroneRoutes);
   const [isMapReady, setIsMapReady] = useState(false);
   const [showAppEEARS, setShowAppEEARS] = useState(false);
+  const [sliderPosition, setSliderPosition] = useState(50);
 
   const gibsDate = useMemo(() => getGIBSDate(10), []);
 
@@ -158,29 +186,94 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
 
   const needsBaseMap = ['ndvi', 'soil_moisture', 'lst', 'precipitation'];
 
-  // Switch layers
+  const updateLayerClip = useCallback(() => {
+    if (!comparisonLayerRef.current || !map.current) return;
+
+    const container = comparisonLayerRef.current.getContainer();
+    if (container) {
+      const nw = map.current.containerPointToLayerPoint([0, 0]);
+      const se = map.current.containerPointToLayerPoint(map.current.getSize());
+      const clipX = nw.x + (se.x - nw.x) * (sliderPosition / 100);
+
+      container.style.clip = `rect(${nw.y}px, ${se.x}px, ${se.y}px, ${clipX}px)`;
+    }
+  }, [sliderPosition]);
+
+  // Switch layers and handle comparison
   useEffect(() => {
     if (!map.current || !isMapReady) return;
 
+    // Clear existing tile layers
     map.current.eachLayer((layer) => {
       if (layer instanceof L.TileLayer) map.current!.removeLayer(layer);
     });
 
     tileLayerRef.current = null;
     overlayLayerRef.current = null;
+    comparisonLayerRef.current = null;
 
-    const layerConfig = tileLayers[activeLayer];
+    if (comparisonMode) {
+      const leftDateStr = comparisonMode.leftDate.toISOString().split('T')[0];
+      const rightDateStr = comparisonMode.rightDate.toISOString().split('T')[0];
 
-    if (needsBaseMap.includes(activeLayer)) {
-      tileLayerRef.current = L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
-      overlayLayerRef.current = L.tileLayer(layerConfig.url, {
-        maxZoom: layerConfig.maxZoom,
-        opacity: layerConfig.opacity || 0.85,
+      const leftLayerType = comparisonMode.leftLayer || activeLayer;
+      const rightLayerType = comparisonMode.rightLayer || activeLayer;
+
+      // Base layer
+      L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
+
+      // Left Layer (Bottom)
+      const leftConfig = leftLayerType === 'satellite'
+        ? TILE_LAYERS.satellite
+        : TILE_LAYERS.getNDVILayer(leftDateStr);
+
+      tileLayerRef.current = L.tileLayer(leftConfig.url, {
+        maxZoom: leftConfig.maxZoom,
+        opacity: 1,
       }).addTo(map.current);
+
+      // Right Layer (Top with clip)
+      const rightConfig = rightLayerType === 'satellite'
+        ? TILE_LAYERS.satellite
+        : TILE_LAYERS.getNDVILayer(rightDateStr);
+
+      comparisonLayerRef.current = L.tileLayer(rightConfig.url, {
+        maxZoom: rightConfig.maxZoom,
+        opacity: 1,
+      }).addTo(map.current);
+
+      // Apply initial clip
+      const timer = setTimeout(() => {
+        updateLayerClip();
+      }, 100);
+      return () => clearTimeout(timer);
     } else {
-      tileLayerRef.current = L.tileLayer(layerConfig.url, { maxZoom: layerConfig.maxZoom }).addTo(map.current);
+      const layerConfig = tileLayers[activeLayer];
+
+      if (needsBaseMap.includes(activeLayer)) {
+        tileLayerRef.current = L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
+        overlayLayerRef.current = L.tileLayer(layerConfig.url, {
+          maxZoom: layerConfig.maxZoom,
+          opacity: layerConfig.opacity || 0.85,
+        }).addTo(map.current);
+      } else {
+        tileLayerRef.current = L.tileLayer(layerConfig.url, { maxZoom: layerConfig.maxZoom }).addTo(map.current);
+      }
     }
-  }, [activeLayer, isMapReady]);
+  }, [activeLayer, isMapReady, comparisonMode, tileLayers]);
+
+  useEffect(() => {
+    if (comparisonMode) {
+      updateLayerClip();
+    }
+  }, [sliderPosition, comparisonMode, updateLayerClip]);
+
+  // Update clip on map move/zoom
+  useEffect(() => {
+    if (!map.current || !isMapReady || !comparisonMode) return;
+    map.current.on('movezoom move end', updateLayerClip);
+    return () => { map.current?.off('movezoom move end', updateLayerClip); };
+  }, [isMapReady, comparisonMode, updateLayerClip]);
 
   // Update zone markers
   useEffect(() => {
@@ -453,6 +546,27 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
               }} />
             </div>
           </div>
+
+          {/* Comparison Slider Handle */}
+          {comparisonMode && (
+            <div
+              className="absolute inset-y-0 z-[1001] w-1 bg-white cursor-col-resize shadow-[0_0_10px_rgba(0,0,0,0.5)]"
+              style={{ left: `${sliderPosition}%` }}
+            >
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-8 h-8 bg-white rounded-full shadow-xl flex items-center justify-center border-2 border-primary">
+                <SplitSquareHorizontal className="w-4 h-4 text-primary" />
+              </div>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={sliderPosition}
+                onChange={(e) => setSliderPosition(parseInt(e.target.value))}
+                className="absolute inset-0 w-full h-full opacity-0 cursor-col-resize"
+                style={{ width: '40px', transform: 'translateX(-20px)' }}
+              />
+            </div>
+          )}
 
           {/* AppEEARS Panel */}
           {showAppEEARS && (

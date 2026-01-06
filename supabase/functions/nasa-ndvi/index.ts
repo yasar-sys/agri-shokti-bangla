@@ -52,19 +52,19 @@ function getCurrentSeason(): typeof BANGLADESH_SEASONS.BORO {
 // Generate realistic NDVI data based on Bangladesh agricultural patterns and NASA seasonal data
 function generateRealisticNDVI(baseScore: number, daysAgo: number, seasonalFactor: number): number {
   const season = getCurrentSeason();
-  
+
   // Apply seasonal variation based on crop cycle
   const seasonalVariation = Math.sin((daysAgo / 365) * 2 * Math.PI) * 0.15;
-  
+
   // Weather variability (simulated - would use NASA POWER in production)
   const weatherNoise = (Math.random() - 0.5) * 0.08;
-  
+
   // Crop growth stage effect
   const growthTrend = Math.sin((daysAgo / 120) * Math.PI) * 0.12;
-  
+
   // Season-specific base adjustment
   const seasonBase = season.baseNDVI;
-  
+
   const ndvi = (baseScore * 0.7 + seasonBase * 0.3) + seasonalVariation + weatherNoise + growthTrend + seasonalFactor;
   return Math.max(0.1, Math.min(0.95, ndvi));
 }
@@ -94,10 +94,10 @@ function getHealthStatus(ndvi: number): { status: string; status_bn: string; sev
 function generateRecommendations(currentNDVI: number, trend: string, zone: string): string[] {
   const recommendations: string[] = [];
   const season = getCurrentSeason();
-  
+
   // Season-specific recommendations
   recommendations.push(`📅 বর্তমান মৌসুম: ${season.nameBn} (${season.crops.join(', ')})`);
-  
+
   if (currentNDVI < 0.4) {
     recommendations.push('🚨 জরুরি সেচ প্রয়োজন - NASA SMAP মাটির আর্দ্রতা কম দেখাচ্ছে');
     recommendations.push('🔬 রোগ পরীক্ষা করুন - MODIS থার্মাল ডেটা অস্বাভাবিক তাপমাত্রা নির্দেশ করছে');
@@ -109,13 +109,13 @@ function generateRecommendations(currentNDVI: number, trend: string, zone: strin
     recommendations.push('✅ ফসলের স্বাস্থ্য চমৎকার - NASA MODIS NDVI সর্বোচ্চ পর্যায়ে');
     recommendations.push('📅 ফসল কাটার সময় নির্ধারণ করুন');
   }
-  
+
   if (trend === 'declining') {
     recommendations.push('⚠️ স্বাস্থ্য হ্রাস পাচ্ছে - NASA GIBS টাইম-সিরিজ বিশ্লেষণ');
   } else if (trend === 'improving') {
     recommendations.push('📈 স্বাস্থ্যের উন্নতি হচ্ছে - বর্তমান পরিচর্যা চালু রাখুন');
   }
-  
+
   return recommendations;
 }
 
@@ -129,25 +129,46 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    const { action, userId, fieldZoneId, latitude, longitude, days } = await req.json();
+    const { action, userId, fieldZoneId, latitude, longitude, days, useCache = true } = await req.json();
 
-    console.log(`NASA NDVI action: ${action}, userId: ${userId}`);
+    console.log(`NASA NDVI action: ${action}, userId: ${userId}, useCache: ${useCache}`);
+
+    // Cache lookup
+    const cacheKey = `${action}:${userId || 'anon'}:${fieldZoneId || 'global'}:${latitude || 0}:${longitude || 0}:${days || 0}`;
+
+    if (useCache) {
+      const { data: cached, error: cacheError } = await supabase
+        .from('nasa_data_cache')
+        .select('data, expires_at')
+        .eq('cache_key', cacheKey)
+        .gt('expires_at', new Date().toISOString())
+        .maybeSingle();
+
+      if (cached && !cacheError) {
+        console.log(`Cache hit for ${cacheKey}`);
+        return new Response(JSON.stringify({ success: true, ...cached.data, from_cache: true }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+    }
+
+    let responseData: any = null;
 
     switch (action) {
       case 'get_satellite_tiles': {
         // Return NASA GIBS tile URLs for the given location
         const today = new Date();
         const dateStr = today.toISOString().split('T')[0];
-        
+
         // Calculate tile coordinates from lat/lng
         const zoom = 9;
         const lat = latitude || 23.8103; // Default: Dhaka
         const lng = longitude || 90.4125;
-        
+
         const n = Math.pow(2, zoom);
         const x = Math.floor((lng + 180) / 360 * n);
         const y = Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * n);
-        
+
         const tiles = {
           ndvi_terra: getGIBSTileUrl(NDVI_LAYERS.terra_8day, dateStr, zoom, x, y),
           ndvi_aqua: getGIBSTileUrl(NDVI_LAYERS.aqua_16day, dateStr, zoom, x, y),
@@ -164,17 +185,16 @@ serve(async (req) => {
             temperature: 'NASA MODIS LST'
           }
         };
-        
-        return new Response(JSON.stringify({ success: true, tiles }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+
+        responseData = { tiles };
+        break;
       }
 
       case 'get_ndvi_history': {
         // Generate NDVI history for the past N days
         const historyDays = days || 90;
         const history: any[] = [];
-        
+
         // Get field zone data if exists
         let baseScore = 0.65;
         if (fieldZoneId) {
@@ -183,22 +203,22 @@ serve(async (req) => {
             .select('health_score')
             .eq('id', fieldZoneId)
             .single();
-          
+
           if (zone) {
             baseScore = zone.health_score;
           }
         }
-        
+
         // Generate historical data points
         const today = new Date();
         for (let i = historyDays; i >= 0; i -= 7) { // Weekly data points
           const date = new Date(today);
           date.setDate(date.getDate() - i);
-          
+
           // Simulate seasonal patterns for Bangladesh
           const month = date.getMonth();
           let seasonalFactor = 0;
-          
+
           // Boro season (Nov-Apr): Higher NDVI
           if (month >= 10 || month <= 3) {
             seasonalFactor = 0.1;
@@ -211,10 +231,10 @@ serve(async (req) => {
           else {
             seasonalFactor = 0.05;
           }
-          
+
           const ndvi = generateRealisticNDVI(baseScore, i, seasonalFactor);
           const status = getHealthStatus(ndvi);
-          
+
           history.push({
             date: date.toISOString().split('T')[0],
             ndvi: parseFloat(ndvi.toFixed(3)),
@@ -225,19 +245,18 @@ serve(async (req) => {
             stress_level: parseFloat(((1 - ndvi) * 0.8).toFixed(3))
           });
         }
-        
+
         // Calculate trend
         const recentAvg = history.slice(-4).reduce((a, b) => a + b.ndvi, 0) / 4;
         const olderAvg = history.slice(0, 4).reduce((a, b) => a + b.ndvi, 0) / 4;
-        const trend = recentAvg > olderAvg + 0.05 ? 'improving' 
-                    : recentAvg < olderAvg - 0.05 ? 'declining' 
-                    : 'stable';
-        
+        const trend = recentAvg > olderAvg + 0.05 ? 'improving'
+          : recentAvg < olderAvg - 0.05 ? 'declining'
+            : 'stable';
+
         const latestNDVI = history[history.length - 1]?.ndvi || baseScore;
         const recommendations = generateRecommendations(latestNDVI, trend, fieldZoneId || 'default');
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
+
+        responseData = {
           history,
           trend,
           trend_bn: trend === 'improving' ? 'উন্নতি হচ্ছে' : trend === 'declining' ? 'অবনতি হচ্ছে' : 'স্থিতিশীল',
@@ -248,9 +267,8 @@ serve(async (req) => {
             max_ndvi: Math.max(...history.map(h => h.ndvi)),
             min_ndvi: Math.min(...history.map(h => h.ndvi))
           }
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+        };
+        break;
       }
 
       case 'get_all_zones_history': {
@@ -258,35 +276,35 @@ serve(async (req) => {
         if (!userId) {
           throw new Error('userId is required');
         }
-        
+
         const { data: zones, error: zonesError } = await supabase
           .from('field_zones')
           .select('id, name, name_bn, health_score, latitude, longitude')
           .eq('user_id', userId);
-        
+
         if (zonesError) throw zonesError;
-        
+
         const zonesWithHistory = await Promise.all((zones || []).map(async (zone) => {
           const historyDays = days || 60;
           const history: any[] = [];
           const today = new Date();
-          
+
           for (let i = historyDays; i >= 0; i -= 7) {
             const date = new Date(today);
             date.setDate(date.getDate() - i);
-            
+
             const month = date.getMonth();
             let seasonalFactor = (month >= 10 || month <= 3) ? 0.1 : (month >= 3 && month <= 6) ? 0 : 0.05;
-            
+
             const ndvi = generateRealisticNDVI(zone.health_score, i, seasonalFactor);
-            
+
             history.push({
               date: date.toISOString().split('T')[0],
               ndvi: parseFloat(ndvi.toFixed(3)),
               health_score: parseFloat((ndvi * 100).toFixed(1))
             });
           }
-          
+
           return {
             zone_id: zone.id,
             zone_name: zone.name,
@@ -294,20 +312,16 @@ serve(async (req) => {
             history
           };
         }));
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
-          zones: zonesWithHistory
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+
+        responseData = { zones: zonesWithHistory };
+        break;
       }
 
       case 'analyze_imagery': {
         // Analyze satellite imagery and detect anomalies
         const lat = latitude || 23.8103;
         const lng = longitude || 90.4125;
-        
+
         // Simulate image analysis results
         const analysis = {
           vegetation_coverage: parseFloat((0.6 + Math.random() * 0.3).toFixed(2)),
@@ -320,7 +334,7 @@ serve(async (req) => {
           estimated_yield: parseFloat((2.5 + Math.random() * 1.5).toFixed(2)), // tons per hectare
           last_updated: new Date().toISOString()
         };
-        
+
         // Detect potential issues
         if (analysis.vegetation_coverage < 0.5) {
           analysis.detected_anomalies.push({
@@ -331,7 +345,7 @@ serve(async (req) => {
             recommendation: 'পানির ঘাটতি বা রোগের লক্ষণ হতে পারে'
           });
         }
-        
+
         if (analysis.bare_soil > 0.25) {
           analysis.detected_anomalies.push({
             type: 'exposed_soil',
@@ -341,7 +355,7 @@ serve(async (req) => {
             recommendation: 'মালচিং বা আবরণী ফসল বিবেচনা করুন'
           });
         }
-        
+
         // Random pest detection
         if (Math.random() > 0.7) {
           analysis.detected_anomalies.push({
@@ -352,29 +366,49 @@ serve(async (req) => {
             recommendation: 'ড্রোন দিয়ে নিবিড় পরিদর্শন প্রয়োজন'
           });
         }
-        
-        return new Response(JSON.stringify({ 
-          success: true, 
+
+        responseData = {
           analysis,
-          tile_url: getGIBSTileUrl(NDVI_LAYERS.viirs_true_color, getGIBSDate(3), 9, 
-            Math.floor((lng + 180) / 360 * 512), 
+          tile_url: getGIBSTileUrl(NDVI_LAYERS.viirs_true_color, getGIBSDate(3), 9,
+            Math.floor((lng + 180) / 360 * 512),
             Math.floor((1 - Math.log(Math.tan(lat * Math.PI / 180) + 1 / Math.cos(lat * Math.PI / 180)) / Math.PI) / 2 * 512)
           ),
           sources: ['NASA MODIS NDVI', 'NASA VIIRS True Color', 'NASA SMAP Soil Moisture']
-        }), {
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        });
+        };
+        break;
       }
 
       default:
         throw new Error(`Unknown action: ${action}`);
     }
+
+    // Save to cache if successful
+    if (responseData && useCache) {
+      const expiresAt = new Date();
+      // Default cache 6 hours for dynamic data, 24 for tiles
+      const ttlHours = action === 'get_satellite_tiles' ? 24 : 6;
+      expiresAt.setHours(expiresAt.getHours() + ttlHours);
+
+      const { error: saveError } = await supabase
+        .from('nasa_data_cache')
+        .upsert({
+          cache_key: cacheKey,
+          data: responseData,
+          expires_at: expiresAt.toISOString()
+        });
+
+      if (saveError) console.error('Cache save error:', saveError);
+    }
+
+    return new Response(JSON.stringify({ success: true, ...responseData }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     console.error('NASA NDVI function error:', error);
-    return new Response(JSON.stringify({ 
-      success: false, 
-      error: errorMessage 
+    return new Response(JSON.stringify({
+      success: false,
+      error: errorMessage
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }

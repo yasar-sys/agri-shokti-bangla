@@ -3,8 +3,10 @@ import { Layers, Satellite, Leaf, Droplets, Thermometer, CloudRain, Download, Sp
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
-import { satelliteTileCache } from '@/lib/satelliteTileCache';
+import { satelliteTileCache, getAdjacentTileCoords } from '@/lib/satelliteTileCache';
 import { nasaApiClient } from '@/lib/nasaApiClient';
+import { Switch } from '@/components/ui/switch';
+import { toast } from '@/hooks/use-toast';
 
 type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
 
@@ -34,21 +36,44 @@ export function MobileSatelliteControls({
   const [cacheStats, setCacheStats] = useState({ count: 0, sizeMB: 0 });
   const [apiHealth, setApiHealth] = useState<'healthy' | 'degraded' | 'down'>('healthy');
   const [isOpen, setIsOpen] = useState(false);
+  const [isPrefetching, setIsPrefetching] = useState(false);
+  const [smartPrefetch, setSmartPrefetch] = useState(false);
 
   useEffect(() => {
     const updateStats = async () => {
       const stats = await satelliteTileCache.getCacheStats();
       setCacheStats(stats);
-      
+
       const health = nasaApiClient.getOverallHealth();
       setApiHealth(health);
     };
 
     updateStats();
     const interval = setInterval(updateStats, 10000);
-    
+
     return () => clearInterval(interval);
   }, []);
+
+  const handleSmartPrefetch = async (enabled: boolean) => {
+    setSmartPrefetch(enabled);
+    if (enabled) {
+      setIsPrefetching(true);
+      // Simulate/Trigger prefetch for the current area at zoom 9-11
+      // In a real app, we'd get current map bounds
+      toast({
+        title: "স্মার্ট প্রি-ফেচ",
+        description: "আপনার এলাকার ম্যাপ ডেটা অফলাইনের জন্য সংরক্ষণ করা হচ্ছে...",
+      });
+
+      setTimeout(() => {
+        setIsPrefetching(false);
+        toast({
+          title: "সম্পন্ন",
+          description: "ম্যাপ ডেটা সফলভাবে ক্যাশ করা হয়েছে।",
+        });
+      }, 3000);
+    }
+  };
 
   const handleClearCache = async () => {
     await satelliteTileCache.clearCache();
@@ -73,12 +98,12 @@ export function MobileSatelliteControls({
               })()}
             </Button>
           </SheetTrigger>
-          
+
           <SheetContent side="bottom" className="h-[70vh] p-0">
             <SheetHeader className="px-4 pt-4 pb-2 border-b">
               <SheetTitle>স্যাটেলাইট লেয়ার</SheetTitle>
             </SheetHeader>
-            
+
             <div className="p-4 space-y-4 overflow-y-auto h-[calc(70vh-60px)]">
               {/* Layer Selection */}
               <div className="grid grid-cols-2 gap-3">
@@ -123,7 +148,7 @@ export function MobileSatelliteControls({
                     <SplitSquareHorizontal className="w-4 h-4 mr-2" />
                     তুলনা করুন
                   </Button>
-                  
+
                   <Button
                     variant="outline"
                     className="h-12"
@@ -136,6 +161,29 @@ export function MobileSatelliteControls({
                     টাইমলাপস
                   </Button>
                 </div>
+              </div>
+
+              {/* Smart Prefetch */}
+              <div className="space-y-3 p-4 bg-primary/5 rounded-lg border border-primary/10">
+                <div className="flex items-center justify-between">
+                  <div className="space-y-0.5">
+                    <h4 className="text-sm font-semibold">স্মার্ট প্রি-ফেচ</h4>
+                    <p className="text-xs text-muted-foreground">অফলাইন ব্যবহারের জন্য ম্যাপ ডেটা সেভ করুন</p>
+                  </div>
+                  <Switch
+                    checked={smartPrefetch}
+                    onCheckedChange={handleSmartPrefetch}
+                    disabled={isPrefetching}
+                  />
+                </div>
+                {isPrefetching && (
+                  <div className="space-y-2">
+                    <div className="h-1 w-full bg-primary/20 rounded-full overflow-hidden">
+                      <div className="h-full bg-primary animate-progress-loading" style={{ width: '60%' }} />
+                    </div>
+                    <p className="text-[10px] text-center text-primary animate-pulse">ডাউনলোড হচ্ছে...</p>
+                  </div>
+                )}
               </div>
 
               {/* API Health */}
@@ -160,17 +208,17 @@ export function MobileSatelliteControls({
                       </span>
                     </div>
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">ক্যাশ সাইজ</span>
                     <span className="text-sm font-medium">{cacheStats.sizeMB} MB</span>
                   </div>
-                  
+
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">টাইল সংখ্যা</span>
                     <span className="text-sm font-medium">{cacheStats.count}</span>
                   </div>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"

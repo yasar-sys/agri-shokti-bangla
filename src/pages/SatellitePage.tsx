@@ -22,6 +22,7 @@ import { MobileSatelliteControls } from "@/components/satellite/MobileSatelliteC
 import { useSatelliteServiceWorker } from "@/hooks/useSatelliteServiceWorker";
 import { nasaApiClient } from "@/lib/nasaApiClient";
 import { ComponentErrorBoundary } from "@/components/ui/component-error-boundary";
+import { SatelliteAIInsight } from "@/components/satellite/SatelliteAIInsight";
 
 const SATELLITE_OPTIONS = [
   { id: 'modis', name: 'MODIS', resolution: '250m' },
@@ -41,12 +42,29 @@ export default function SatellitePage() {
   const [activeLayer, setActiveLayer] = useState<TileLayer>('ndvi');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [apiHealth, setApiHealth] = useState<'healthy' | 'degraded' | 'down'>('healthy');
+  const [healthData, setHealthData] = useState<any>(null);
 
   const location = useLocation();
   const { fieldZones, loading: ndviLoading, refetch: refreshNDVI } = useNDVIData(userId);
   const { routes, loading: droneLoading, refetch: refreshDrone } = useDroneRoutes(userId);
   const { toast } = useToast();
   const serviceWorker = useSatelliteServiceWorker();
+
+  const fetchNDVIHistory = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const data = await nasaApiClient.getNDVIHistory(fieldZones[0]?.id);
+      setHealthData(data);
+    } catch (error) {
+      console.error('Error fetching NDVI history:', error);
+    }
+  }, [userId, fieldZones]);
+
+  useEffect(() => {
+    if (fieldZones.length > 0) {
+      fetchNDVIHistory();
+    }
+  }, [fieldZones, fetchNDVIHistory]);
 
   // Generate 30 days of dates
   const dates = Array.from({ length: 30 }, (_, i) => {
@@ -250,7 +268,21 @@ export default function SatellitePage() {
             longitude={location?.longitude ?? 90.4125}
             zones={fieldZones}
             droneRoutes={routes}
+            comparisonMode={showComparison ? {
+              type: 'slider',
+              leftDate: dates[0] || new Date(),
+              rightDate: dates[dates.length - 1] || new Date(),
+            } : null}
           />
+
+          {/* AI Insight Panel - Positioned top-right on desktop, bottom on mobile */}
+          <div className="absolute top-4 right-4 z-[1002] hidden lg:block w-80">
+            <SatelliteAIInsight
+              ndviValue={healthData?.history?.[healthData.history.length - 1]?.ndvi ?? 0.7}
+              moistureValue={healthData?.history?.[healthData.history.length - 1]?.moisture_index ?? 0.5}
+              trend={(healthData?.trend as any) || "stable"}
+            />
+          </div>
 
           {/* Mobile Controls */}
           <MobileSatelliteControls
