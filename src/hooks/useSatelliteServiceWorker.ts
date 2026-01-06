@@ -40,7 +40,7 @@ export function useSatelliteServiceWorker() {
 
       registration.addEventListener('updatefound', () => {
         const newWorker = registration.installing;
-        
+
         if (newWorker) {
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
@@ -65,6 +65,7 @@ export function useSatelliteServiceWorker() {
       navigator.serviceWorker.addEventListener('controllerchange', () => {
         if (!refreshing) {
           refreshing = true;
+          console.log('[SW] Controller changed, reloading...');
           window.location.reload();
         }
       });

@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { ArrowLeft, Satellite, RefreshCw, Loader2, Calendar, ChevronDown, SplitSquareHorizontal, Wifi, WifiOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -66,12 +66,12 @@ export default function SatellitePage() {
     }
   }, [fieldZones, fetchNDVIHistory]);
 
-  // Generate 30 days of dates
-  const dates = Array.from({ length: 30 }, (_, i) => {
+  // Generate 30 days of dates - Memoized to prevent re-renders
+  const dates = useMemo(() => Array.from({ length: 30 }, (_, i) => {
     const date = new Date();
     date.setDate(date.getDate() - (29 - i));
     return date;
-  });
+  }), []);
 
   const currentDateIndex = dates.findIndex(date => date.toDateString() === currentDate.toDateString());
 
@@ -188,9 +188,7 @@ export default function SatellitePage() {
                     </Badge>
                   )}
                   {serviceWorker.isRegistered && (
-                    <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-xs hidden sm:flex">
-                      PWA
-                    </Badge>
+                    <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" title="PWA Active" />
                   )}
                 </div>
               </div>
@@ -268,11 +266,11 @@ export default function SatellitePage() {
             longitude={location?.longitude ?? 90.4125}
             zones={fieldZones}
             droneRoutes={routes}
-            comparisonMode={showComparison ? {
+            comparisonMode={useMemo(() => showComparison ? {
               type: 'slider',
               leftDate: dates[0] || new Date(),
               rightDate: dates[dates.length - 1] || new Date(),
-            } : null}
+            } : null, [showComparison, dates])}
           />
 
           {/* AI Insight Panel - Positioned top-right on desktop, bottom on mobile */}

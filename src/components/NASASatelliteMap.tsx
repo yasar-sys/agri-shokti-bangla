@@ -113,7 +113,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   const [showAppEEARS, setShowAppEEARS] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(50);
 
-  const gibsDate = useMemo(() => getGIBSDate(10), []);
+  const gibsDate = useMemo(() => getGIBSDate(14), []);
 
   const tileLayers = useMemo<Record<TileLayer, { url: string; attribution: string; maxZoom: number; opacity?: number }>>(() => ({
     satellite: { ...TILE_LAYERS.satellite, maxZoom: 18 },
