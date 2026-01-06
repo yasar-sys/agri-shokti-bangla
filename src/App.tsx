@@ -173,7 +173,6 @@ function AppContent() {
             <Route path="/submission" element={<SubmissionPage />} />
             <Route path="/barter" element={<BarterPage />} />
             <Route path="/about" element={<AboutPage />} />
-            <Route path="/satellite" element={<SatellitePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Suspense>

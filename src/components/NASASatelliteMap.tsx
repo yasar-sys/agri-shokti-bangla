@@ -58,10 +58,10 @@ const LAYER_INFO: Record<TileLayer, { name: string; nameBn: string; icon: typeof
   precipitation: { name: 'Rainfall', nameBn: 'বৃষ্টিপাত', icon: CloudRain, color: '#8b5cf6' },
 };
 
-export const NASASatelliteMap = memo(function NASASatelliteMap({ 
-  latitude = 23.8103, 
-  longitude = 90.4125, 
-  zones = [], 
+export const NASASatelliteMap = memo(function NASASatelliteMap({
+  latitude = 23.8103,
+  longitude = 90.4125,
+  zones = [],
   droneRoutes = [],
   onZoneClick,
   showHeatmap = true,
@@ -73,7 +73,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   const overlayLayerRef = useRef<L.TileLayer | null>(null);
   const markersLayer = useRef<L.LayerGroup | null>(null);
   const routesLayer = useRef<L.LayerGroup | null>(null);
-  
+
   const [loading, setLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
   const [activeLayer, setActiveLayer] = useState<TileLayer>('ndvi');
@@ -85,15 +85,15 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   const [isMapReady, setIsMapReady] = useState(false);
   const [showAppEEARS, setShowAppEEARS] = useState(false);
 
-  const gibsDate = getGIBSDate(10);
+  const gibsDate = useMemo(() => getGIBSDate(10), []);
 
-  const tileLayers: Record<TileLayer, { url: string; attribution: string; maxZoom: number; opacity?: number }> = {
+  const tileLayers = useMemo<Record<TileLayer, { url: string; attribution: string; maxZoom: number; opacity?: number }>>(() => ({
     satellite: { ...TILE_LAYERS.satellite, maxZoom: 18 },
     ndvi: { ...TILE_LAYERS.getNDVILayer(gibsDate), maxZoom: 9, opacity: 0.85 },
     soil_moisture: { ...TILE_LAYERS.getSoilMoistureLayer(gibsDate), maxZoom: 7, opacity: 0.8 },
     lst: { ...TILE_LAYERS.getLSTLayer(gibsDate), maxZoom: 7, opacity: 0.8 },
     precipitation: { ...TILE_LAYERS.getPrecipitationLayer(gibsDate), maxZoom: 6, opacity: 0.7 },
-  };
+  }), [gibsDate]);
 
   useEffect(() => { setLiveZones(zones); }, [zones]);
   useEffect(() => { setLiveRoutes(droneRoutes); }, [droneRoutes]);
@@ -128,7 +128,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
       });
 
       const baseLayer = L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
-      
+
       const initialLayerConfig = tileLayers[activeLayer];
       if (activeLayer !== 'satellite') {
         overlayLayerRef.current = L.tileLayer(initialLayerConfig.url, {
@@ -170,7 +170,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
     overlayLayerRef.current = null;
 
     const layerConfig = tileLayers[activeLayer];
-    
+
     if (needsBaseMap.includes(activeLayer)) {
       tileLayerRef.current = L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
       overlayLayerRef.current = L.tileLayer(layerConfig.url, {
@@ -250,16 +250,18 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
       else if (route.status === 'completed') routeColor = '#22c55e';
 
       const latLngs = path.map(p => [p.lat, p.lng] as [number, number]);
-      L.polyline(latLngs, { color: routeColor, weight: 3, opacity: 0.8 }).addTo(routesLayer.current!);
+      if (latLngs.length >= 2) {
+        L.polyline(latLngs, { color: routeColor, weight: 3, opacity: 0.8 }).addTo(routesLayer.current!);
 
-      const startIcon = L.divIcon({
-        className: 'drone-marker',
-        html: `<div style="width: 24px; height: 24px; background: ${routeColor}; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12h6m6 0h6M12 3v6m0 6v6"/></svg>
-        </div>`,
-        iconSize: [24, 24], iconAnchor: [12, 12],
-      });
-      L.marker([path[0].lat, path[0].lng], { icon: startIcon }).addTo(routesLayer.current!);
+        const startIcon = L.divIcon({
+          className: 'drone-marker',
+          html: `<div style="width: 24px; height: 24px; background: ${routeColor}; border-radius: 50%; border: 2px solid white; display: flex; align-items: center; justify-content: center;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M3 12h6m6 0h6M12 3v6m0 6v6"/></svg>
+          </div>`,
+          iconSize: [24, 24], iconAnchor: [12, 12],
+        });
+        L.marker(latLngs[0], { icon: startIcon }).addTo(routesLayer.current!);
+      }
     });
   }, [liveRoutes, routesVisible, isMapReady]);
 
@@ -295,7 +297,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   return (
     <div className="relative rounded-xl overflow-hidden border border-border bg-background h-full min-h-[250px] sm:min-h-[400px]">
       <div ref={mapContainer} className={cn("absolute inset-0 z-0", (loading || mapError) && "invisible")} />
-      
+
       {mapError && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted">
           <div className="text-center p-6">
@@ -439,15 +441,15 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
               <ActiveLayerIcon className="w-3.5 h-3.5" style={{ color: LAYER_INFO[activeLayer].color }} />
               <span className="text-muted-foreground">{LAYER_INFO[activeLayer].nameBn}</span>
               <div className="h-2 w-16 rounded-full" style={{
-                background: activeLayer === 'ndvi' 
+                background: activeLayer === 'ndvi'
                   ? 'linear-gradient(to right, #ef4444, #eab308, #22c55e)'
                   : activeLayer === 'soil_moisture'
-                  ? 'linear-gradient(to right, #f97316, #3b82f6)'
-                  : activeLayer === 'lst'
-                  ? 'linear-gradient(to right, #3b82f6, #ef4444)'
-                  : activeLayer === 'precipitation'
-                  ? 'linear-gradient(to right, #f0f9ff, #3b82f6)'
-                  : '#6b7280'
+                    ? 'linear-gradient(to right, #f97316, #3b82f6)'
+                    : activeLayer === 'lst'
+                      ? 'linear-gradient(to right, #3b82f6, #ef4444)'
+                      : activeLayer === 'precipitation'
+                        ? 'linear-gradient(to right, #f0f9ff, #3b82f6)'
+                        : '#6b7280'
               }} />
             </div>
           </div>
@@ -455,9 +457,9 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
           {/* AppEEARS Panel */}
           {showAppEEARS && (
             <div className="absolute bottom-16 left-3 z-[1001] w-[calc(100%-24px)] sm:w-80">
-              <AppEEARSPanel 
-                latitude={latitude} 
-                longitude={longitude} 
+              <AppEEARSPanel
+                latitude={latitude}
+                longitude={longitude}
                 onClose={() => setShowAppEEARS(false)}
               />
             </div>
