@@ -11,7 +11,7 @@
 // Real-time satellite imagery tiles
 export const NASA_GIBS = {
   BASE_URL: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best',
-  
+
   // NDVI Vegetation Indices
   LAYERS: {
     // MODIS Terra NDVI - 8-day composite (250m resolution)
@@ -22,40 +22,40 @@ export const NASA_GIBS = {
     MODIS_AQUA_NDVI_16DAY: 'MODIS_Aqua_NDVI_16Day',
     // VIIRS NDVI - 8-day composite (375m resolution)
     VIIRS_NDVI_8DAY: 'VIIRS_SNPP_NDVI_8Day',
-    
+
     // Soil Moisture
     SMAP_SOIL_MOISTURE_L4: 'SMAP_L4_Analyzed_Surface_Soil_Moisture',
     SMAP_SOIL_MOISTURE_L3: 'SMAP_L3_SM_P_E_Surface_Soil_Moisture_9km',
-    
+
     // Evapotranspiration (ET)
     MODIS_TERRA_ET_8DAY: 'MODIS_Terra_Evapotranspiration_8Day',
-    
+
     // Land Surface Temperature
     MODIS_TERRA_LST_DAY: 'MODIS_Terra_Land_Surface_Temp_Day',
     MODIS_TERRA_LST_NIGHT: 'MODIS_Terra_Land_Surface_Temp_Night',
-    
+
     // True Color Imagery
     VIIRS_NOAA20_TRUE_COLOR: 'VIIRS_NOAA20_CorrectedReflectance_TrueColor',
     MODIS_TERRA_TRUE_COLOR: 'MODIS_Terra_CorrectedReflectance_TrueColor',
-    
+
     // Precipitation
     IMERG_PRECIPITATION: 'GPM_IMERG_Precipitation_Rate',
-    
+
     // Floods & Disasters
     MODIS_FLOOD_DETECTION: 'MODIS_Combined_Flood_14Day_3Day',
     VIIRS_FIRE_DETECTION: 'VIIRS_NOAA20_Thermal_Anomalies_375m_Day'
   },
-  
+
   // Get tile URL for a specific layer and date
   getTileUrl: (layer: string, date: string, z: number, y: number, x: number) => {
     return `${NASA_GIBS.BASE_URL}/${layer}/default/${date}/GoogleMapsCompatible_Level9/${z}/${y}/${x}.png`;
   },
-  
+
   // Get WMTS URL for Leaflet integration
   getWMTSUrl: (layer: string, date: string) => {
     return `${NASA_GIBS.BASE_URL}/${layer}/default/${date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`;
   },
-  
+
   // Max zoom levels for different layers
   MAX_ZOOM: {
     NDVI: 9,
@@ -71,7 +71,7 @@ export const NASA_GIBS = {
 export const NASA_GLAM = {
   BASE_URL: 'https://glam1.gsfc.nasa.gov',
   WMS_URL: 'https://glam1.gsfc.nasa.gov/cgi-bin/mapserv',
-  
+
   // Available products
   PRODUCTS: {
     CROP_CONDITION: 'crop_condition',
@@ -86,7 +86,7 @@ export const NASA_GLAM = {
 export const CROP_CASMA = {
   WMS_URL: 'https://nassgeo.csiss.gmu.edu/CropCASMA/wms',
   WCS_URL: 'https://nassgeo.csiss.gmu.edu/CropCASMA/wcs',
-  
+
   LAYERS: {
     // SMAP Soil Moisture (9km resolution)
     SMAP_SM: 'smap_sm',
@@ -97,7 +97,7 @@ export const CROP_CASMA = {
     // Evapotranspiration
     ET: 'evapotranspiration'
   },
-  
+
   getWMSUrl: (layer: string, bbox: string) => {
     return `${CROP_CASMA.WMS_URL}?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&LAYERS=${layer}&CRS=EPSG:4326&BBOX=${bbox}&WIDTH=256&HEIGHT=256&FORMAT=image/png`;
   }
@@ -107,14 +107,14 @@ export const CROP_CASMA = {
 // API for subsetting NASA Earth Science data
 export const APPEEARS = {
   BASE_URL: 'https://appeears.earthdatacloud.nasa.gov/api',
-  
+
   ENDPOINTS: {
     PRODUCTS: '/product',
     TASK: '/task',
     BUNDLE: '/bundle',
     QUALITY: '/quality'
   },
-  
+
   // Common products for agriculture
   PRODUCTS: {
     // MODIS NDVI
@@ -134,7 +134,7 @@ export const APPEEARS = {
 export const NASA_HARVEST = {
   PORTAL_URL: 'https://www.harvestportal.org',
   API_URL: 'https://api.harvestportal.org/v1',
-  
+
   DATASETS: {
     CROP_YIELD: 'crop_yield_estimates',
     FOOD_SECURITY: 'food_security_indicators',
@@ -146,20 +146,20 @@ export const NASA_HARVEST = {
 // Free weather API (already integrated)
 export const OPEN_METEO = {
   BASE_URL: 'https://api.open-meteo.com/v1',
-  
+
   ENDPOINTS: {
     FORECAST: '/forecast',
     HISTORICAL: '/archive',
     FLOOD: '/flood'
   },
-  
+
   // Weather parameters for agriculture
   PARAMS: {
     CURRENT: 'temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,soil_temperature_0cm,soil_moisture_0_1cm',
     DAILY: 'temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,weather_code,et0_fao_evapotranspiration',
     HOURLY: 'temperature_2m,relative_humidity_2m,precipitation,soil_temperature_0cm,soil_moisture_0_1cm'
   },
-  
+
   getForecastUrl: (lat: number, lng: number, params: string) => {
     return `${OPEN_METEO.BASE_URL}/forecast?latitude=${lat}&longitude=${lng}&${params}&timezone=auto`;
   }
@@ -169,7 +169,7 @@ export const OPEN_METEO = {
 // Agroclimatology data
 export const NASA_POWER = {
   BASE_URL: 'https://power.larc.nasa.gov/api/temporal',
-  
+
   PARAMETERS: {
     // Solar
     ALLSKY_SFC_SW_DWN: 'All Sky Surface Shortwave Downward Irradiance',
@@ -187,7 +187,7 @@ export const NASA_POWER = {
     // Evapotranspiration
     EVPTRNS: 'Evapotranspiration'
   },
-  
+
   getDataUrl: (lat: number, lng: number, start: string, end: string, params: string[]) => {
     return `${NASA_POWER.BASE_URL}/daily/point?parameters=${params.join(',')}&community=AG&longitude=${lng}&latitude=${lat}&start=${start}&end=${end}&format=JSON`;
   }
@@ -201,56 +201,56 @@ export const TILE_LAYERS = {
     attribution: 'Tiles &copy; Esri',
     maxZoom: 18
   },
-  
+
   // Dark terrain
   terrain: {
     url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
     attribution: '&copy; OSM &copy; CARTO',
     maxZoom: 18
   },
-  
+
   // Light base map (for overlays)
   light: {
     url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
     attribution: '&copy; OSM &copy; CARTO',
     maxZoom: 18
   },
-  
+
   // NASA GIBS NDVI (dynamic date)
   getNDVILayer: (date: string) => ({
     url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/${date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,
     attribution: 'NDVI &copy; NASA GIBS MODIS',
     maxZoom: 9
   }),
-  
+
   // NASA GIBS Soil Moisture
   getSoilMoistureLayer: (date: string) => ({
     url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/SMAP_L4_Analyzed_Surface_Soil_Moisture/default/${date}/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png`,
     attribution: 'Soil Moisture &copy; NASA SMAP',
     maxZoom: 7
   }),
-  
+
   // NASA GIBS Land Surface Temperature
   getLSTLayer: (date: string) => ({
     url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_Land_Surface_Temp_Day/default/${date}/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png`,
     attribution: 'LST &copy; NASA MODIS',
     maxZoom: 7
   }),
-  
+
   // NASA GIBS Precipitation
   getPrecipitationLayer: (date: string) => ({
     url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/GPM_IMERG_Precipitation_Rate/default/${date}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,
     attribution: 'Precipitation &copy; NASA GPM',
     maxZoom: 6
   }),
-  
+
   // NASA GIBS Flood Detection
   getFloodLayer: (date: string) => ({
     url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Combined_Flood_14Day_3Day/default/${date}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`,
     attribution: 'Flood Detection &copy; NASA MODIS',
     maxZoom: 8
   }),
-  
+
   // NASA GIBS True Color
   getTrueColorLayer: (date: string) => ({
     url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_CorrectedReflectance_TrueColor/default/${date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
@@ -261,8 +261,8 @@ export const TILE_LAYERS = {
 
 // ============= Helper Functions =============
 
-// Get date string for NASA GIBS (most layers have ~10 day delay)
-export function getGIBSDate(daysBack: number = 10): string {
+// Get date string for NASA GIBS (most layers have ~10-14 day delay for "best" archival quality)
+export function getGIBSDate(daysBack: number = 14): string {
   const date = new Date();
   date.setDate(date.getDate() - daysBack);
   return date.toISOString().split('T')[0];

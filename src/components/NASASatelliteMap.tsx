@@ -388,8 +388,12 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   }, []);
 
   return (
-    <div className="relative rounded-xl overflow-hidden border border-border bg-background h-full min-h-[250px] sm:min-h-[400px]">
-      <div ref={mapContainer} className={cn("absolute inset-0 z-0", (loading || mapError) && "invisible")} />
+    <div className="relative rounded-xl overflow-hidden border border-border bg-background h-full min-h-[400px]">
+      <div
+        ref={mapContainer}
+        className={cn("absolute inset-0 z-0 leaflet-container", (loading || mapError) && "invisible")}
+        style={{ background: '#000' }}
+      />
 
       {mapError && (
         <div className="absolute inset-0 z-10 flex items-center justify-center bg-muted">
