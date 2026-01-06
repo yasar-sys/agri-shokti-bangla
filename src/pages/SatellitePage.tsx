@@ -1,10 +1,8 @@
-import { useEffect, useState } from "react";
-import { ArrowLeft, Satellite, RefreshCw, Loader2, Calendar, ChevronDown, Play, Pause, SkipBack, SkipForward } from "lucide-react";
+import { useEffect, useState, useCallback } from "react";
+import { ArrowLeft, Satellite, RefreshCw, Loader2, Calendar, ChevronDown, SplitSquareHorizontal, Wifi, WifiOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Slider } from "@/components/ui/slider";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useLocation } from "@/hooks/useLocation";
 import { useNDVIData } from "@/hooks/useNDVIData";
@@ -12,6 +10,11 @@ import { useDroneRoutes } from "@/hooks/useDroneRoutes";
 import { supabase } from "@/integrations/supabase/client";
 import { NASASatelliteMap } from "@/components/NASASatelliteMap";
 import { useToast } from "@/hooks/use-toast";
+import { TimelapseControls } from "@/components/satellite/TimelapseControls";
+import { SatelliteComparison } from "@/components/satellite/SatelliteComparison";
+import { MobileSatelliteControls } from "@/components/satellite/MobileSatelliteControls";
+import { useSatelliteServiceWorker } from "@/hooks/useSatelliteServiceWorker";
+import { nasaApiClient } from "@/lib/nasaApiClient";
 
 const SATELLITE_OPTIONS = [
   { id: 'modis', name: 'MODIS', resolution: '250m' },
@@ -19,17 +22,24 @@ const SATELLITE_OPTIONS = [
   { id: 'sentinel', name: 'Sentinel-2', resolution: '10m' },
 ];
 
+type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
+
 export default function SatellitePage() {
   const [userId, setUserId] = useState<string | null>(null);
   const [selectedSatellite, setSelectedSatellite] = useState('modis');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isPlaying, setIsPlaying] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
+  const [showComparison, setShowComparison] = useState(false);
+  const [activeLayer, setActiveLayer] = useState<TileLayer>('ndvi');
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [apiHealth, setApiHealth] = useState<'healthy' | 'degraded' | 'down'>('healthy');
   
   const location = useLocation();
   const { fieldZones, loading: ndviLoading, refetch: refreshNDVI } = useNDVIData(userId);
   const { routes, loading: droneLoading, refetch: refreshDrone } = useDroneRoutes(userId);
   const { toast } = useToast();
+  const serviceWorker = useSatelliteServiceWorker();
 
   // Generate 30 days of dates
   const dates = Array.from({ length: 30 }, (_, i) => {
@@ -48,6 +58,42 @@ export default function SatellitePage() {
     getCurrentUser();
   }, []);
 
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      toast({ title: "অনলাইন", description: "ইন্টারনেট সংযোগ পুনরুদ্ধার হয়েছে" });
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+      toast({ 
+        title: "অফলাইন", 
+        description: "ক্যাশ করা ডেটা ব্যবহার করা হচ্ছে",
+        variant: "destructive" 
+      });
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [toast]);
+
+  useEffect(() => {
+    const checkAPIHealth = () => {
+      const health = nasaApiClient.getOverallHealth();
+      setApiHealth(health);
+    };
+
+    checkAPIHealth();
+    const interval = setInterval(checkAPIHealth, 30000);
+
+    return () => clearInterval(interval);
+  }, []);
+
   // Auto-play timeline
   useEffect(() => {
     if (isPlaying && currentDateIndex < dates.length - 1) {
@@ -58,11 +104,35 @@ export default function SatellitePage() {
     }
   }, [isPlaying, currentDateIndex, dates]);
 
-  const handleRefresh = async () => {
+  const handleRefresh = useCallback(async () => {
     if (!userId) return;
-    await Promise.all([refreshNDVI(), refreshDrone()]);
-    toast({ title: "রিফ্রেশ সম্পন্ন", description: "সর্বশেষ NASA ডেটা লোড হয়েছে" });
-  };
+    try {
+      await Promise.all([refreshNDVI(), refreshDrone()]);
+      toast({ title: "রিফ্রেশ সম্পন্ন", description: "সর্বশেষ NASA ডেটা লোড হয়েছে" });
+    } catch (error) {
+      toast({ 
+        title: "রিফ্রেশ ব্যর্থ", 
+        description: "পরে আবার চেষ্টা করুন",
+        variant: "destructive" 
+      });
+    }
+  }, [userId, refreshNDVI, refreshDrone, toast]);
+
+  const handleCompare = useCallback((mode: any) => {
+    console.log('Comparison mode:', mode);
+    setShowComparison(false);
+    toast({ 
+      title: "তুলনা মোড সক্রিয়", 
+      description: `${mode.leftDate.toLocaleDateString('bn-BD')} vs ${mode.rightDate.toLocaleDateString('bn-BD')}` 
+    });
+  }, [toast]);
+
+  const handleExportTimelapse = useCallback(() => {
+    toast({ 
+      title: "এক্সপোর্ট শুরু হচ্ছে", 
+      description: "টাইমলাপস ভিডিও তৈরি হচ্ছে..." 
+    });
+  }, [toast]);
 
   const isLoading = ndviLoading || droneLoading;
 
@@ -85,6 +155,17 @@ export default function SatellitePage() {
                 <Badge variant="secondary" className="bg-green-500/10 text-green-600 border-green-500/20 text-xs">
                   NASA
                 </Badge>
+                {!isOnline && (
+                  <Badge variant="outline" className="bg-orange-500/10 text-orange-600 border-orange-500/20 text-xs gap-1">
+                    <WifiOff className="w-3 h-3" />
+                    অফলাইন
+                  </Badge>
+                )}
+                {serviceWorker.isRegistered && (
+                  <Badge variant="outline" className="bg-blue-500/10 text-blue-600 border-blue-500/20 text-xs hidden sm:flex">
+                    PWA
+                  </Badge>
+                )}
               </div>
             </div>
 
@@ -112,6 +193,17 @@ export default function SatellitePage() {
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
+
+              {/* Comparison Toggle */}
+              <Button
+                variant={showComparison ? "secondary" : "outline"}
+                size="sm"
+                className="h-9 gap-2 hidden sm:flex"
+                onClick={() => setShowComparison(!showComparison)}
+              >
+                <SplitSquareHorizontal className="w-4 h-4" />
+                <span className="hidden md:inline">তুলনা</span>
+              </Button>
 
               {/* Timeline Toggle */}
               <Button
@@ -152,70 +244,52 @@ export default function SatellitePage() {
           droneRoutes={routes}
         />
 
+        {/* Mobile Controls */}
+        <MobileSatelliteControls
+          activeLayer={activeLayer}
+          onLayerChange={setActiveLayer}
+          onComparisonToggle={() => setShowComparison(!showComparison)}
+          onTimelapseToggle={() => setShowTimeline(!showTimeline)}
+        />
+
+        {/* Comparison Panel */}
+        {showComparison && (
+          <SatelliteComparison
+            dates={dates}
+            onCompare={handleCompare}
+            onClose={() => setShowComparison(false)}
+          />
+        )}
+
         {/* Timeline Panel */}
         {showTimeline && (
-          <div className="absolute bottom-0 left-0 right-0 bg-background/95 backdrop-blur-md border-t border-border p-4 z-[1002]">
-            <div className="container mx-auto">
-              <div className="flex items-center gap-4">
-                {/* Playback Controls */}
-                <div className="flex items-center gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => currentDateIndex > 0 && setCurrentDate(dates[currentDateIndex - 1])}
-                    disabled={currentDateIndex === 0}
-                  >
-                    <SkipBack className="w-4 h-4" />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => setIsPlaying(!isPlaying)}
-                  >
-                    {isPlaying ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className="h-8 w-8"
-                    onClick={() => currentDateIndex < dates.length - 1 && setCurrentDate(dates[currentDateIndex + 1])}
-                    disabled={currentDateIndex === dates.length - 1}
-                  >
-                    <SkipForward className="w-4 h-4" />
-                  </Button>
-                </div>
+          <div className="absolute bottom-4 left-4 right-4 lg:bottom-8 lg:left-8 lg:right-8 z-[1002]">
+            <TimelapseControls
+              dates={dates}
+              currentIndex={currentDateIndex >= 0 ? currentDateIndex : 0}
+              onIndexChange={(index) => setCurrentDate(dates[index])}
+              onPlay={() => setIsPlaying(true)}
+              onPause={() => setIsPlaying(false)}
+              isPlaying={isPlaying}
+              onExport={handleExportTimelapse}
+            />
+          </div>
+        )}
 
-                {/* Timeline Slider */}
-                <div className="flex-1">
-                  <Slider
-                    value={[currentDateIndex >= 0 ? currentDateIndex : 0]}
-                    onValueChange={(value) => setCurrentDate(dates[value[0]])}
-                    max={dates.length - 1}
-                    step={1}
-                    className="w-full"
-                  />
-                  <div className="flex justify-between mt-1 text-xs text-muted-foreground">
-                    <span className="hidden sm:inline">{dates[0].toLocaleDateString('bn-BD')}</span>
-                    <span className="font-medium text-foreground">
-                      {currentDate.toLocaleDateString('bn-BD', { day: 'numeric', month: 'short' })}
-                    </span>
-                    <span className="hidden sm:inline">{dates[dates.length - 1].toLocaleDateString('bn-BD')}</span>
-                  </div>
-                </div>
-
-                {/* Close */}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setShowTimeline(false)}
-                  className="text-muted-foreground"
-                >
-                  বন্ধ
-                </Button>
-              </div>
-            </div>
+        {/* API Health Indicator */}
+        {apiHealth !== 'healthy' && (
+          <div className="absolute top-4 right-4 z-50">
+            <Badge 
+              variant="outline" 
+              className={cn(
+                "gap-2",
+                apiHealth === 'degraded' && "bg-yellow-500/10 text-yellow-600 border-yellow-500/20",
+                apiHealth === 'down' && "bg-red-500/10 text-red-600 border-red-500/20"
+              )}
+            >
+              <Wifi className="w-3 h-3" />
+              {apiHealth === 'degraded' ? 'NASA API ধীর' : 'NASA API বন্ধ'}
+            </Badge>
           </div>
         )}
       </main>

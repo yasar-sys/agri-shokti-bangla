@@ -5,23 +5,40 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+const tileCache = new Map<string, { data: ArrayBuffer; timestamp: number; contentType: string }>();
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
+const MAX_CACHE_SIZE = 500;
+
+function cleanCache() {
+  if (tileCache.size > MAX_CACHE_SIZE) {
+    const entries = Array.from(tileCache.entries());
+    entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
+    
+    const toRemove = entries.slice(0, Math.floor(MAX_CACHE_SIZE * 0.3));
+    toRemove.forEach(([key]) => tileCache.delete(key));
+  }
+}
+
 // Reliable tile providers with proper attribution
-const TILE_PROVIDERS: Record<string, { url: string; headers?: Record<string, string> }> = {
+const TILE_PROVIDERS: Record<string, { url: string; headers?: Record<string, string>; maxAge?: number }> = {
   satellite: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    maxAge: 7 * 24 * 60 * 60,
   },
   terrain: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}',
+    maxAge: 7 * 24 * 60 * 60,
   },
   osm: {
     url: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
     headers: {
       'User-Agent': 'AgriShokti/1.0 (Agricultural Monitoring App for Bangladesh Farmers)'
-    }
+    },
+    maxAge: 7 * 24 * 60 * 60,
   },
-  // NASA GIBS MODIS NDVI (backup)
   ndvi: {
     url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/2024-01-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png',
+    maxAge: 8 * 24 * 60 * 60,
   }
 };
 
@@ -57,6 +74,23 @@ Deno.serve(async (req: Request) => {
     }
 
     console.log(`[satellite-tiles] Request: provider=${provider}, z=${z}, x=${x}, y=${y}`);
+
+    const cacheKey = `${provider}_${z}_${x}_${y}`;
+    const cached = tileCache.get(cacheKey);
+    
+    if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
+      console.log(`[satellite-tiles] Cache hit: ${cacheKey}`);
+      return new Response(cached.data, {
+        status: 200,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': cached.contentType,
+          'Cache-Control': `public, max-age=${Math.floor((CACHE_TTL_MS - (Date.now() - cached.timestamp)) / 1000)}`,
+          'X-Cache': 'HIT',
+          'X-Tile-Source': provider
+        }
+      });
+    }
 
     // Validate provider
     if (!TILE_PROVIDERS[provider]) {
@@ -132,13 +166,25 @@ Deno.serve(async (req: Request) => {
 
     console.log(`[satellite-tiles] Success: ${body.byteLength} bytes`);
 
+    tileCache.set(cacheKey, {
+      data: body,
+      timestamp: Date.now(),
+      contentType
+    });
+    
+    cleanCache();
+
+    const maxAge = tileConfig.maxAge || 86400;
+
     return new Response(body, {
       status: 200,
       headers: {
         ...corsHeaders,
         'Content-Type': contentType,
-        'Cache-Control': 'public, max-age=86400', // Cache for 24 hours
-        'X-Tile-Source': provider
+        'Cache-Control': `public, max-age=${maxAge}, s-maxage=${maxAge}, stale-while-revalidate=3600`,
+        'X-Cache': 'MISS',
+        'X-Tile-Source': provider,
+        'ETag': `"${provider}-${z}-${x}-${y}"`,
       }
     });
 

@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
+import { useEffect, useState, useMemo, useRef, memo, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { Loader2, AlertTriangle, RefreshCw, ChevronDown, Leaf, Satellite, Droplets, Thermometer, CloudRain, AlertCircle, Map as MapIcon, Navigation, BarChart3, Radio } from 'lucide-react';
@@ -58,7 +58,7 @@ const LAYER_INFO: Record<TileLayer, { name: string; nameBn: string; icon: typeof
   precipitation: { name: 'Rainfall', nameBn: 'বৃষ্টিপাত', icon: CloudRain, color: '#8b5cf6' },
 };
 
-export function NASASatelliteMap({ 
+export const NASASatelliteMap = memo(function NASASatelliteMap({ 
   latitude = 23.8103, 
   longitude = 90.4125, 
   zones = [], 
@@ -293,7 +293,7 @@ export function NASASatelliteMap({
   }, []);
 
   return (
-    <div className="relative rounded-xl overflow-hidden border border-border bg-background h-full min-h-[400px]">
+    <div className="relative rounded-xl overflow-hidden border border-border bg-background h-full min-h-[250px] sm:min-h-[400px]">
       <div ref={mapContainer} className={cn("absolute inset-0 z-0", (loading || mapError) && "invisible")} />
       
       {mapError && (
@@ -466,6 +466,6 @@ export function NASASatelliteMap({
       )}
     </div>
   );
-}
+});
 
 export default NASASatelliteMap;
