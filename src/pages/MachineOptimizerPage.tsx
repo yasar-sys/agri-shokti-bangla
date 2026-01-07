@@ -1,4 +1,4 @@
-import { ArrowLeft, Tractor, Fuel, Gauge, Timer, AlertCircle, CheckCircle2 } from "lucide-react";
+import { ArrowLeft, Tractor, Fuel, Gauge, Timer, AlertCircle, CheckCircle2, Wrench, Droplets, Zap, Settings, Sprout } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -7,9 +7,16 @@ import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import { Input } from "@/components/ui/input";
 
 const machines = [
-  { id: 1, name: "ট্রাক্টর", emoji: "🚜", status: "ভালো", lastService: "১৫ দিন আগে" },
-  { id: 2, name: "পাওয়ার টিলার", emoji: "⚙️", status: "সার্ভিস দরকার", lastService: "৪৫ দিন আগে" },
-  { id: 3, name: "পাম্প মেশিন", emoji: "🔧", status: "ভালো", lastService: "১০ দিন আগে" },
+  { id: 1, name: "ট্রাক্টর", emoji: "🚜", status: "ভালো", lastService: "১৫ দিন আগে", type: "tractor" },
+  { id: 2, name: "পাওয়ার টিলার", emoji: "⚙️", status: "সার্ভিস দরকার", lastService: "৪৫ দিন আগে", type: "tiller" },
+  { id: 3, name: "পাম্প মেশিন", emoji: "💧", status: "ভালো", lastService: "১০ দিন আগে", type: "pump" },
+  { id: 4, name: "হারভেস্টার", emoji: "🌾", status: "ভালো", lastService: "৭ দিন আগে", type: "harvester" },
+  { id: 5, name: "স্প্রেয়ার মেশিন", emoji: "🔫", status: "সার্ভিস দরকার", lastService: "৬০ দিন আগে", type: "sprayer" },
+  { id: 6, name: "থ্রেশার", emoji: "🌀", status: "ভালো", lastService: "২০ দিন আগে", type: "thresher" },
+  { id: 7, name: "সিডার/বপন যন্ত্র", emoji: "🌱", status: "ভালো", lastService: "৩০ দিন আগে", type: "seeder" },
+  { id: 8, name: "কাল্টিভেটর", emoji: "🔧", status: "সার্ভিস দরকার", lastService: "৫৫ দিন আগে", type: "cultivator" },
+  { id: 9, name: "রোটাভেটর", emoji: "⚡", status: "ভালো", lastService: "১২ দিন আগে", type: "rotavator" },
+  { id: 10, name: "ধান কাটার যন্ত্র (রিপার)", emoji: "✂️", status: "ভালো", lastService: "৫ দিন আগে", type: "reaper" },
 ];
 
 const optimizationTips = [
@@ -21,6 +28,7 @@ const optimizationTips = [
       "২.৫ একরে ৮ লিটার ডিজেল যথেষ্ট",
       "সকাল ৬-৮টায় কাজ করলে ১৫% কম জ্বালানি লাগে",
       "RPM ১৮০০-২০০০ রাখুন",
+      "এয়ার ফিল্টার পরিষ্কার রাখলে ১০% সাশ্রয়",
     ]
   },
   {
@@ -31,6 +39,7 @@ const optimizationTips = [
       "নরম মাটিতে: ৩-৪ কিমি/ঘণ্টা",
       "শক্ত মাটিতে: ২-৩ কিমি/ঘণ্টা",
       "ভেজা মাটিতে চাষ করবেন না",
+      "হারভেস্টার: ২-৩ কিমি/ঘণ্টা সেরা",
     ]
   },
   {
@@ -41,6 +50,18 @@ const optimizationTips = [
       "প্রতি ঘণ্টায় ১০ মিনিট বিশ্রাম",
       "একটানা ৪ ঘণ্টার বেশি না চালানো",
       "সন্ধ্যার আগে কাজ শেষ করুন",
+      "সপ্তাহে একদিন রক্ষণাবেক্ষণ",
+    ]
+  },
+  {
+    title: "রক্ষণাবেক্ষণ",
+    icon: Wrench,
+    color: "text-primary",
+    tips: [
+      "প্রতি ১০০ ঘণ্টায় তেল বদলান",
+      "প্রতি সপ্তাহে ফিল্টার চেক করুন",
+      "বেল্ট টান ঠিক রাখুন",
+      "ব্যাটারি টার্মিনাল পরিষ্কার রাখুন",
     ]
   },
 ];
@@ -95,17 +116,22 @@ export default function MachineOptimizerPage() {
 
       {/* My Machines */}
       <section className="px-4 py-4">
-        <h2 className="text-base font-semibold text-foreground mb-3">আমার যন্ত্রপাতি</h2>
-        <div className="space-y-2">
+        <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Settings className="w-4 h-4 text-primary" />
+          আমার যন্ত্রপাতি ({machines.length}টি)
+        </h2>
+        <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-1">
           {machines.map((machine) => (
             <div key={machine.id} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-3 flex items-center gap-3">
-              <div className="text-3xl">{machine.emoji}</div>
-              <div className="flex-1">
-                <p className="text-sm font-medium text-foreground">{machine.name}</p>
+              <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-chart-2/20 flex items-center justify-center text-2xl">
+                {machine.emoji}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-foreground truncate">{machine.name}</p>
                 <p className="text-xs text-muted-foreground">শেষ সার্ভিস: {machine.lastService}</p>
               </div>
               <div className={cn(
-                "flex items-center gap-1 text-xs px-2 py-1 rounded-full",
+                "flex items-center gap-1 text-xs px-2 py-1 rounded-full whitespace-nowrap",
                 machine.status === "ভালো" ? "bg-secondary/20 text-secondary" : "bg-destructive/20 text-destructive"
               )}>
                 {machine.status === "ভালো" ? (
@@ -185,8 +211,11 @@ export default function MachineOptimizerPage() {
 
       {/* Optimization Tips */}
       <section className="px-4 mb-4">
-        <h2 className="text-base font-semibold text-foreground mb-3">AI অপ্টিমাইজেশন টিপস</h2>
-        <div className="space-y-3">
+        <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
+          <Zap className="w-4 h-4 text-chart-2" />
+          AI অপ্টিমাইজেশন টিপস
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {optimizationTips.map((section, idx) => (
             <div key={idx} className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4">
               <h3 className="text-sm font-semibold text-foreground mb-2 flex items-center gap-2">
@@ -203,6 +232,34 @@ export default function MachineOptimizerPage() {
               </ul>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Machine-specific tips */}
+      <section className="px-4 mb-4">
+        <div className="bg-gradient-to-r from-chart-3/20 to-chart-4/20 border border-chart-3/30 rounded-xl p-4 backdrop-blur-sm">
+          <h3 className="text-sm font-semibold text-foreground mb-3 flex items-center gap-2">
+            <Sprout className="w-4 h-4 text-chart-3" />
+            যন্ত্র অনুযায়ী পরামর্শ
+          </h3>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="bg-card/50 rounded-lg p-2">
+              <span className="font-medium">🚜 ট্রাক্টর:</span>
+              <p className="text-muted-foreground">৫০ ঘণ্টায় গ্রিস দিন</p>
+            </div>
+            <div className="bg-card/50 rounded-lg p-2">
+              <span className="font-medium">⚙️ টিলার:</span>
+              <p className="text-muted-foreground">ব্লেড মাসে ১ বার চেক</p>
+            </div>
+            <div className="bg-card/50 rounded-lg p-2">
+              <span className="font-medium">💧 পাম্প:</span>
+              <p className="text-muted-foreground">সিল প্রতি ৬ মাসে বদলান</p>
+            </div>
+            <div className="bg-card/50 rounded-lg p-2">
+              <span className="font-medium">🌾 হারভেস্টার:</span>
+              <p className="text-muted-foreground">চেইন টেনশন নিয়মিত চেক</p>
+            </div>
+          </div>
         </div>
       </section>
 

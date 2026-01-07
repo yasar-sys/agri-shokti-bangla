@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { useMarketPrices } from "@/hooks/useMarketPrices";
 import { SEOHead } from "@/components/seo/SEOHead";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { MarketAIChat } from "@/components/market/MarketAIChat";
 
 const getTrendIcon = (change: number) => {
   if (change > 0) return <TrendingUp className="w-4 h-4" />;
@@ -143,6 +144,13 @@ export default function MarketPage() {
               <p className="text-muted-foreground text-sm">{t('loadingMarket')}</p>
             </div>
           </div>
+        )}
+
+        {/* AI Chat Assistant */}
+        {!loading && (
+          <section className="px-5 py-4">
+            <MarketAIChat />
+          </section>
         )}
 
         {/* AI Recommendations */}
