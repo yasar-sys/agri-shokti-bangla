@@ -1,12 +1,13 @@
-import { Award, Star, Target, Trophy, Leaf, ArrowLeft, Zap, Medal, Crown, Gift, RefreshCw } from "lucide-react";
+import { Award, Star, Target, Trophy, Leaf, ArrowLeft, Zap, Medal, Crown, Gift, RefreshCw, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useBadgeNotification } from "@/hooks/useBadgeNotification";
 
 interface UserStats {
   totalScans: number;
@@ -169,6 +170,13 @@ export default function GamificationPage() {
     }));
   }, [userStats]);
 
+  // Badge notification hook - triggers confetti and notification on new badges
+  const badgesForNotification = useMemo(() => 
+    badgesData.map(b => ({ id: b.id, title: b.title, description: b.description, earned: b.earned, xp: b.xp })),
+    [badgesData]
+  );
+  const { celebrateBadge, triggerConfetti } = useBadgeNotification(badgesForNotification);
+
   const rewards = [
     { name: "১০০ XP বোনাস", cost: 200, icon: Zap, available: true },
     { name: "বিশেষ ব্যাজ", cost: 500, icon: Medal, available: false },
@@ -316,22 +324,28 @@ export default function GamificationPage() {
             {badgesData.map((badge, index) => (
               <div
                 key={index}
+                onClick={() => badge.earned && celebrateBadge(badge)}
                 className={cn(
                   "relative p-4 rounded-xl border backdrop-blur-sm transition-all",
                   badge.earned
-                    ? "bg-gradient-to-br from-secondary/20 to-primary/10 border-secondary/50"
+                    ? "bg-gradient-to-br from-secondary/20 to-primary/10 border-secondary/50 cursor-pointer hover:scale-105 active:scale-95"
                     : "bg-card/80 border-border opacity-75"
                 )}
               >
                 {badge.earned && (
-                  <div className="absolute top-2 right-2">
-                    <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center">
-                      <span className="text-xs">✓</span>
+                  <>
+                    <div className="absolute top-2 right-2">
+                      <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center animate-pulse">
+                        <span className="text-xs">✓</span>
+                      </div>
                     </div>
-                  </div>
+                    <div className="absolute -top-1 -left-1">
+                      <Sparkles className="w-4 h-4 text-secondary animate-pulse" />
+                    </div>
+                  </>
                 )}
                 <div className={cn(
-                  "w-12 h-12 rounded-xl flex items-center justify-center mb-2",
+                  "w-12 h-12 rounded-xl flex items-center justify-center mb-2 transition-transform",
                   badge.earned ? "bg-secondary/30" : "bg-muted"
                 )}>
                   <badge.icon className={cn("w-6 h-6", badge.earned ? badge.color : "text-muted-foreground")} />
@@ -347,6 +361,12 @@ export default function GamificationPage() {
                     <Progress value={badge.progress} className="h-1.5" />
                     <p className="text-xs text-muted-foreground mt-1">{Math.round(badge.progress)}% সম্পন্ন</p>
                   </div>
+                )}
+                {badge.earned && (
+                  <p className="text-xs text-secondary mt-2 flex items-center gap-1">
+                    <Sparkles className="w-3 h-3" />
+                    ট্যাপ করে উদযাপন করুন!
+                  </p>
                 )}
               </div>
             ))}
