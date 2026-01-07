@@ -194,6 +194,74 @@ export const NASA_POWER = {
 };
 
 // ============= Tile Layer Configurations for Leaflet =============
+
+// Fallback providers when primary fails
+export const FALLBACK_TILE_PROVIDERS = {
+  osm: {
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+    attribution: '&copy; OpenStreetMap contributors',
+    maxZoom: 19,
+    name: 'OpenStreetMap',
+    nameBn: 'ওপেনস্ট্রিটম্যাপ'
+  },
+  esri: {
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri',
+    maxZoom: 18,
+    name: 'Esri Satellite',
+    nameBn: 'এসরি স্যাটেলাইট'
+  },
+  carto_light: {
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OSM &copy; CARTO',
+    maxZoom: 19,
+    name: 'Carto Light',
+    nameBn: 'কার্টো লাইট'
+  },
+  stadia: {
+    url: 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; Stadia Maps',
+    maxZoom: 20,
+    name: 'Stadia',
+    nameBn: 'স্ট্যাডিয়া'
+  }
+};
+
+export type TileErrorReason = 'rate_limit' | 'not_found' | 'timeout' | 'network' | 'cors' | 'unknown';
+
+export interface TileLoadError {
+  reason: TileErrorReason;
+  message: string;
+  messageBn: string;
+  status?: number;
+  provider: string;
+}
+
+export function getTileErrorReason(error: Error | Response | number): TileLoadError {
+  if (typeof error === 'number') {
+    if (error === 429) return { reason: 'rate_limit', message: 'Too many requests', messageBn: 'অনেক বেশি রিকোয়েস্ট', status: 429, provider: '' };
+    if (error === 404) return { reason: 'not_found', message: 'Tile not found', messageBn: 'টাইল পাওয়া যায়নি', status: 404, provider: '' };
+    if (error >= 500) return { reason: 'unknown', message: 'Server error', messageBn: 'সার্ভার ত্রুটি', status: error, provider: '' };
+  }
+
+  if (error instanceof Response) {
+    return getTileErrorReason(error.status);
+  }
+
+  const errMsg = error instanceof Error ? error.message.toLowerCase() : '';
+  if (errMsg.includes('timeout') || errMsg.includes('aborted')) {
+    return { reason: 'timeout', message: 'Request timed out', messageBn: 'রিকোয়েস্ট সময়সীমা পার', provider: '' };
+  }
+  if (errMsg.includes('network') || errMsg.includes('fetch')) {
+    return { reason: 'network', message: 'Network error', messageBn: 'নেটওয়ার্ক সমস্যা', provider: '' };
+  }
+  if (errMsg.includes('cors')) {
+    return { reason: 'cors', message: 'CORS blocked', messageBn: 'CORS ব্লকড', provider: '' };
+  }
+
+  return { reason: 'unknown', message: 'Unknown error', messageBn: 'অজানা ত্রুটি', provider: '' };
+}
+
 export const TILE_LAYERS = {
   // Satellite imagery
   satellite: {

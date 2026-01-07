@@ -22,8 +22,9 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { TILE_LAYERS, getGIBSDate, getNDVIColor, getSoilMoistureColor } from '@/lib/nasaDataSources';
+import { TILE_LAYERS, getGIBSDate, getNDVIColor, getSoilMoistureColor, FALLBACK_TILE_PROVIDERS, getTileErrorReason, TileLoadError } from '@/lib/nasaDataSources';
 import { AppEEARSPanel } from './AppEEARSPanel';
+import { Badge } from '@/components/ui/badge';
 
 interface FieldZone {
   id: string;
@@ -118,6 +119,10 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   const [isMapReady, setIsMapReady] = useState(false);
   const [showAppEEARS, setShowAppEEARS] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(50);
+  const [tileError, setTileError] = useState<TileLoadError | null>(null);
+  const [usingFallback, setUsingFallback] = useState(false);
+  const [fallbackProvider, setFallbackProvider] = useState<string | null>(null);
+  const tileErrorCount = useRef(0);
 
   // Keep internal layer in sync with page-level selection
   useEffect(() => {
@@ -236,11 +241,58 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
     }
   }, [sliderPosition]);
 
+  // Helper to switch to fallback provider
+  const switchToFallback = useCallback(() => {
+    if (!map.current || !isMapReady) return;
+
+    const fallbackProviders = Object.keys(FALLBACK_TILE_PROVIDERS) as (keyof typeof FALLBACK_TILE_PROVIDERS)[];
+    const nextFallback = fallbackProviders.find(p => p !== fallbackProvider);
+
+    if (!nextFallback) return;
+
+    console.log(`[SatelliteMap] Switching to fallback: ${nextFallback}`);
+    const fallback = FALLBACK_TILE_PROVIDERS[nextFallback];
+
+    if (overlayLayerRef.current) {
+      map.current.removeLayer(overlayLayerRef.current);
+      overlayLayerRef.current = null;
+    }
+    if (tileLayerRef.current) {
+      map.current.removeLayer(tileLayerRef.current);
+      tileLayerRef.current = null;
+    }
+
+    tileLayerRef.current = L.tileLayer(fallback.url, { maxZoom: fallback.maxZoom }).addTo(map.current);
+    setUsingFallback(true);
+    setFallbackProvider(nextFallback);
+    tileErrorCount.current = 0;
+  }, [isMapReady, fallbackProvider]);
+
+  // Handle tile errors and auto-fallback
+  const handleTileError = useCallback((layer: L.TileLayer, providerName: string) => {
+    layer.on('tileerror', (e: L.TileErrorEvent) => {
+      tileErrorCount.current += 1;
+      console.warn(`[SatelliteMap] Tile error #${tileErrorCount.current} from ${providerName}:`, e.tile.src);
+
+      // If multiple errors in a short time, switch to fallback
+      if (tileErrorCount.current >= 3 && !usingFallback) {
+        const errInfo = getTileErrorReason(new Error('Tile load failed'));
+        errInfo.provider = providerName;
+        setTileError(errInfo);
+        switchToFallback();
+      }
+    });
+  }, [switchToFallback, usingFallback]);
+
   // Switch layers and handle comparison (avoid clearing the whole map to prevent "shaking")
   useEffect(() => {
     if (!map.current || !isMapReady) return;
 
     const m = map.current;
+
+    // Reset error state on layer change
+    setTileError(null);
+    tileErrorCount.current = 0;
 
     // Remove only our dynamic tile layers
     if (tileLayerRef.current) {
@@ -254,6 +306,14 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
     if (comparisonLayerRef.current) {
       m.removeLayer(comparisonLayerRef.current);
       comparisonLayerRef.current = null;
+    }
+
+    // If using fallback, continue with fallback
+    if (usingFallback && fallbackProvider) {
+      const fallback = FALLBACK_TILE_PROVIDERS[fallbackProvider as keyof typeof FALLBACK_TILE_PROVIDERS];
+      tileLayerRef.current = L.tileLayer(fallback.url, { maxZoom: fallback.maxZoom }).addTo(m);
+      handleTileError(tileLayerRef.current, fallbackProvider);
+      return;
     }
 
     if (comparisonMode) {
@@ -275,11 +335,13 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
         maxZoom: leftConfig.maxZoom,
         opacity: 1,
       }).addTo(m);
+      handleTileError(tileLayerRef.current, 'NASA GIBS');
 
       comparisonLayerRef.current = L.tileLayer(rightConfig.url, {
         maxZoom: rightConfig.maxZoom,
         opacity: 1,
       }).addTo(m);
+      handleTileError(comparisonLayerRef.current, 'NASA GIBS');
 
       const timer = setTimeout(() => updateLayerClip(), 60);
       return () => clearTimeout(timer);
@@ -292,13 +354,15 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
         maxZoom: layerConfig.maxZoom,
         opacity: layerConfig.opacity || 0.85,
       }).addTo(m);
+      handleTileError(overlayLayerRef.current, `NASA GIBS (${activeLayer})`);
     } else {
       tileLayerRef.current = L.tileLayer(layerConfig.url, {
         maxZoom: layerConfig.maxZoom,
         opacity: 1,
       }).addTo(m);
+      handleTileError(tileLayerRef.current, activeLayer === 'satellite' ? 'Esri' : 'NASA GIBS');
     }
-  }, [activeLayer, isMapReady, comparisonMode, tileLayers, updateLayerClip]);
+  }, [activeLayer, isMapReady, comparisonMode, tileLayers, updateLayerClip, usingFallback, fallbackProvider, handleTileError]);
 
   useEffect(() => {
     if (comparisonMode) {
@@ -456,6 +520,41 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
 
       {!loading && !mapError && (
         <>
+          {/* Tile Error / Fallback Banner */}
+          {(tileError || usingFallback) && (
+            <div className="absolute top-3 left-1/2 -translate-x-1/2 z-[1001] max-w-[90%] sm:max-w-md">
+              <div className={cn(
+                "flex items-center gap-2 px-3 py-2 rounded-lg shadow-lg border text-sm backdrop-blur-md",
+                tileError ? "bg-destructive/10 border-destructive/30 text-destructive" : "bg-amber-500/10 border-amber-500/30 text-amber-700 dark:text-amber-400"
+              )}>
+                <AlertTriangle className="w-4 h-4 shrink-0" />
+                <div className="flex-1 min-w-0">
+                  {tileError ? (
+                    <span className="truncate">{tileError.messageBn} ({tileError.provider})</span>
+                  ) : (
+                    <span className="truncate">
+                      ফলব্যাক ব্যবহার হচ্ছে: {FALLBACK_TILE_PROVIDERS[fallbackProvider as keyof typeof FALLBACK_TILE_PROVIDERS]?.nameBn || fallbackProvider}
+                    </span>
+                  )}
+                </div>
+                {usingFallback && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="h-6 px-2 text-xs"
+                    onClick={() => {
+                      setUsingFallback(false);
+                      setFallbackProvider(null);
+                      setTileError(null);
+                      tileErrorCount.current = 0;
+                    }}
+                  >
+                    রিসেট
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
           {/* Main Controls - Clean Dropdown Menu */}
           <div className="absolute top-3 left-3 z-[1000] flex gap-2">
             {/* Layer Selector Dropdown */}
