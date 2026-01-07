@@ -263,24 +263,24 @@ export function getTileErrorReason(error: Error | Response | number): TileLoadEr
 }
 
 export const TILE_LAYERS = {
-  // Satellite imagery
+  // Satellite imagery - Esri World Imagery (primary satellite base)
   satellite: {
     url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
     attribution: 'Tiles &copy; Esri',
     maxZoom: 18
   },
 
-  // Dark terrain
+  // Satellite terrain hybrid
   terrain: {
-    url: 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; OSM &copy; CARTO',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri',
     maxZoom: 18
   },
 
-  // Light base map (for overlays)
+  // Light satellite (same as satellite for consistency)
   light: {
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
-    attribution: '&copy; OSM &copy; CARTO',
+    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Tiles &copy; Esri',
     maxZoom: 18
   },
 
