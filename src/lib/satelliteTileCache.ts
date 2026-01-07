@@ -2,6 +2,7 @@ import { openDB, DBSchema, IDBPDatabase } from 'idb';
 
 interface TileCacheDB extends DBSchema {
   tiles: {
+    // Primary key is the tile URL
     key: string;
     value: {
       url: string;
@@ -9,6 +10,11 @@ interface TileCacheDB extends DBSchema {
       timestamp: number;
       layer: string;
       date: string;
+    };
+    // Required so `createIndex()` is typed correctly in idb v8+
+    indexes: {
+      timestamp: number;
+      layer: string;
     };
   };
   metadata: {

@@ -119,6 +119,15 @@ export default function SatellitePage() {
     return () => clearInterval(interval);
   }, []);
 
+  const comparisonMode = useMemo(() => {
+    if (!showComparison) return null;
+    return {
+      type: 'slider' as const,
+      leftDate: dates[0] || new Date(),
+      rightDate: dates[dates.length - 1] || new Date(),
+    };
+  }, [showComparison, dates]);
+
   // Auto-play timeline
   useEffect(() => {
     if (isPlaying && currentDateIndex < dates.length - 1) {
@@ -266,11 +275,9 @@ export default function SatellitePage() {
             longitude={location?.longitude ?? 90.4125}
             zones={fieldZones}
             droneRoutes={routes}
-            comparisonMode={useMemo(() => showComparison ? {
-              type: 'slider',
-              leftDate: dates[0] || new Date(),
-              rightDate: dates[dates.length - 1] || new Date(),
-            } : null, [showComparison, dates])}
+            selectedLayer={activeLayer}
+            onLayerChange={setActiveLayer}
+            comparisonMode={comparisonMode}
           />
 
           {/* AI Insight Panel - Positioned top-right on desktop, bottom on mobile */}

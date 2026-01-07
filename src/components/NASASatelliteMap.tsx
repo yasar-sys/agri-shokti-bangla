@@ -71,6 +71,9 @@ interface NASASatelliteMapProps {
   showHeatmap?: boolean;
   showDroneRoutes?: boolean;
   comparisonMode?: ComparisonMode | null;
+  // Controlled layer (optional) - used by page-level controls to prevent UI mismatch
+  selectedLayer?: TileLayer;
+  onLayerChange?: (layer: TileLayer) => void;
 }
 
 type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
@@ -91,10 +94,13 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   onZoneClick,
   showHeatmap = true,
   showDroneRoutes = true,
-  comparisonMode = null
+  comparisonMode = null,
+  selectedLayer,
+  onLayerChange,
 }: NASASatelliteMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
+  const baseLayerRef = useRef<L.TileLayer | null>(null);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
   const overlayLayerRef = useRef<L.TileLayer | null>(null);
   const comparisonLayerRef = useRef<L.TileLayer | null>(null);
@@ -103,7 +109,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
 
   const [loading, setLoading] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
-  const [activeLayer, setActiveLayer] = useState<TileLayer>('ndvi');
+  const [activeLayer, setActiveLayer] = useState<TileLayer>(selectedLayer ?? 'ndvi');
   const [refreshing, setRefreshing] = useState(false);
   const [liveZones, setLiveZones] = useState<FieldZone[]>(zones);
   const [liveRoutes, setLiveRoutes] = useState<DroneRoute[]>(droneRoutes);
@@ -112,6 +118,14 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   const [isMapReady, setIsMapReady] = useState(false);
   const [showAppEEARS, setShowAppEEARS] = useState(false);
   const [sliderPosition, setSliderPosition] = useState(50);
+
+  // Keep internal layer in sync with page-level selection
+  useEffect(() => {
+    if (selectedLayer && selectedLayer !== activeLayer) {
+      setActiveLayer(selectedLayer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedLayer]);
 
   const gibsDate = useMemo(() => getGIBSDate(14), []);
 
@@ -126,9 +140,9 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   useEffect(() => { setLiveZones(zones); }, [zones]);
   useEffect(() => { setLiveRoutes(droneRoutes); }, [droneRoutes]);
 
-  // Real-time subscription
+  // Real-time subscriptions
   useEffect(() => {
-    const channel = supabase
+    const zonesChannel = supabase
       .channel('ndvi-realtime-updates')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'field_zones' }, (payload) => {
         if (payload.eventType === 'UPDATE') {
@@ -140,7 +154,24 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
         }
       })
       .subscribe();
-    return () => { supabase.removeChannel(channel); };
+
+    const routesChannel = supabase
+      .channel('drone-routes-realtime-updates')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'drone_routes' }, (payload) => {
+        if (payload.eventType === 'UPDATE') {
+          setLiveRoutes(prev => prev.map(r => r.id === (payload.new as DroneRoute).id ? { ...r, ...payload.new } : r));
+        } else if (payload.eventType === 'INSERT') {
+          setLiveRoutes(prev => [...prev, payload.new as DroneRoute]);
+        } else if (payload.eventType === 'DELETE') {
+          setLiveRoutes(prev => prev.filter(r => r.id !== (payload.old as { id: string }).id));
+        }
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(zonesChannel);
+      supabase.removeChannel(routesChannel);
+    };
   }, []);
 
   // Initialize map
@@ -155,7 +186,8 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
         attributionControl: false,
       });
 
-      const baseLayer = L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
+      // Keep a stable base layer to avoid "shaking" when switching overlays.
+      baseLayerRef.current = L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
 
       const initialLayerConfig = tileLayers[activeLayer];
       if (activeLayer !== 'satellite') {
@@ -164,8 +196,10 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
           opacity: initialLayerConfig.opacity || 0.85,
         }).addTo(map.current);
       } else {
-        map.current.removeLayer(baseLayer);
-        tileLayerRef.current = L.tileLayer(initialLayerConfig.url, { maxZoom: 18 }).addTo(map.current);
+        tileLayerRef.current = L.tileLayer(initialLayerConfig.url, {
+          maxZoom: 18,
+          opacity: 1,
+        }).addTo(map.current);
       }
 
       markersLayer.current = L.layerGroup().addTo(map.current);
@@ -180,7 +214,10 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
     }
 
     return () => {
-      if (map.current) { map.current.remove(); map.current = null; }
+      if (map.current) {
+        map.current.remove();
+        map.current = null;
+      }
     };
   }, []);
 
@@ -199,18 +236,25 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
     }
   }, [sliderPosition]);
 
-  // Switch layers and handle comparison
+  // Switch layers and handle comparison (avoid clearing the whole map to prevent "shaking")
   useEffect(() => {
     if (!map.current || !isMapReady) return;
 
-    // Clear existing tile layers
-    map.current.eachLayer((layer) => {
-      if (layer instanceof L.TileLayer) map.current!.removeLayer(layer);
-    });
+    const m = map.current;
 
-    tileLayerRef.current = null;
-    overlayLayerRef.current = null;
-    comparisonLayerRef.current = null;
+    // Remove only our dynamic tile layers
+    if (tileLayerRef.current) {
+      m.removeLayer(tileLayerRef.current);
+      tileLayerRef.current = null;
+    }
+    if (overlayLayerRef.current) {
+      m.removeLayer(overlayLayerRef.current);
+      overlayLayerRef.current = null;
+    }
+    if (comparisonLayerRef.current) {
+      m.removeLayer(comparisonLayerRef.current);
+      comparisonLayerRef.current = null;
+    }
 
     if (comparisonMode) {
       const leftDateStr = comparisonMode.leftDate.toISOString().split('T')[0];
@@ -219,48 +263,42 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
       const leftLayerType = comparisonMode.leftLayer || activeLayer;
       const rightLayerType = comparisonMode.rightLayer || activeLayer;
 
-      // Base layer
-      L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
-
-      // Left Layer (Bottom)
       const leftConfig = leftLayerType === 'satellite'
         ? TILE_LAYERS.satellite
         : TILE_LAYERS.getNDVILayer(leftDateStr);
 
-      tileLayerRef.current = L.tileLayer(leftConfig.url, {
-        maxZoom: leftConfig.maxZoom,
-        opacity: 1,
-      }).addTo(map.current);
-
-      // Right Layer (Top with clip)
       const rightConfig = rightLayerType === 'satellite'
         ? TILE_LAYERS.satellite
         : TILE_LAYERS.getNDVILayer(rightDateStr);
 
+      tileLayerRef.current = L.tileLayer(leftConfig.url, {
+        maxZoom: leftConfig.maxZoom,
+        opacity: 1,
+      }).addTo(m);
+
       comparisonLayerRef.current = L.tileLayer(rightConfig.url, {
         maxZoom: rightConfig.maxZoom,
         opacity: 1,
-      }).addTo(map.current);
+      }).addTo(m);
 
-      // Apply initial clip
-      const timer = setTimeout(() => {
-        updateLayerClip();
-      }, 100);
+      const timer = setTimeout(() => updateLayerClip(), 60);
       return () => clearTimeout(timer);
-    } else {
-      const layerConfig = tileLayers[activeLayer];
-
-      if (needsBaseMap.includes(activeLayer)) {
-        tileLayerRef.current = L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
-        overlayLayerRef.current = L.tileLayer(layerConfig.url, {
-          maxZoom: layerConfig.maxZoom,
-          opacity: layerConfig.opacity || 0.85,
-        }).addTo(map.current);
-      } else {
-        tileLayerRef.current = L.tileLayer(layerConfig.url, { maxZoom: layerConfig.maxZoom }).addTo(map.current);
-      }
     }
-  }, [activeLayer, isMapReady, comparisonMode, tileLayers]);
+
+    const layerConfig = tileLayers[activeLayer];
+
+    if (needsBaseMap.includes(activeLayer)) {
+      overlayLayerRef.current = L.tileLayer(layerConfig.url, {
+        maxZoom: layerConfig.maxZoom,
+        opacity: layerConfig.opacity || 0.85,
+      }).addTo(m);
+    } else {
+      tileLayerRef.current = L.tileLayer(layerConfig.url, {
+        maxZoom: layerConfig.maxZoom,
+        opacity: 1,
+      }).addTo(m);
+    }
+  }, [activeLayer, isMapReady, comparisonMode, tileLayers, updateLayerClip]);
 
   useEffect(() => {
     if (comparisonMode) {
@@ -438,7 +476,10 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
                   return (
                     <DropdownMenuItem
                       key={layer}
-                      onClick={() => setActiveLayer(layer)}
+                      onClick={() => {
+                        setActiveLayer(layer);
+                        onLayerChange?.(layer);
+                      }}
                       className={cn("gap-3 cursor-pointer", activeLayer === layer && "bg-accent")}
                     >
                       <Icon className="w-4 h-4" style={{ color: info.color }} />
