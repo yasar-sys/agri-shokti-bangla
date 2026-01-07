@@ -61,14 +61,14 @@ export function useSatelliteServiceWorker() {
         }));
       }
 
-      let refreshing = false;
-      navigator.serviceWorker.addEventListener('controllerchange', () => {
-        if (!refreshing) {
-          refreshing = true;
-          console.log('[SW] Controller changed, reloading...');
-          window.location.reload();
-        }
-      });
+      // Avoid forced reload loops on some browsers/networks.
+      // We'll surface "update available" and let the user refresh manually.
+      const onControllerChange = () => {
+        console.log('[SW] Controller changed');
+        setState((prev) => ({ ...prev, isUpdateAvailable: true }));
+      };
+
+      navigator.serviceWorker.addEventListener('controllerchange', onControllerChange);
     } catch (error) {
       console.error('[SW] Service Worker registration failed:', error);
     }
