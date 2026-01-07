@@ -1,46 +1,181 @@
-import { Award, Star, Target, Trophy, Leaf, ArrowLeft, Zap, Medal, Crown, Gift } from "lucide-react";
+import { Award, Star, Target, Trophy, Leaf, ArrowLeft, Zap, Medal, Crown, Gift, RefreshCw } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
-const userStats = {
-  totalScans: 5,
-  diseasesDetected: 3,
-  daysActive: 7,
-  level: 2,
-  xp: 450,
-  nextLevelXp: 1000,
-  rank: "নতুন কৃষক",
+interface UserStats {
+  totalScans: number;
+  diseasesDetected: number;
+  daysActive: number;
+  level: number;
+  xp: number;
+  nextLevelXp: number;
+  rank: string;
+}
+
+const calculateLevel = (xp: number) => {
+  if (xp >= 5000) return { level: 10, rank: "মাস্টার কৃষক" };
+  if (xp >= 3000) return { level: 8, rank: "বিশেষজ্ঞ কৃষক" };
+  if (xp >= 2000) return { level: 6, rank: "অভিজ্ঞ কৃষক" };
+  if (xp >= 1000) return { level: 4, rank: "উন্নত কৃষক" };
+  if (xp >= 500) return { level: 3, rank: "সক্রিয় কৃষক" };
+  if (xp >= 200) return { level: 2, rank: "শিক্ষানবিস" };
+  return { level: 1, rank: "নতুন কৃষক" };
 };
 
-const badgesData = [
-  { icon: Leaf, title: "প্রথম স্ক্যান", description: "আপনার প্রথম ফসল স্ক্যান করেছেন", earned: true, xp: 50, color: "text-secondary" },
-  { icon: Target, title: "৫টি স্ক্যান", description: "৫টি ফসল সফলভাবে স্ক্যান করেছেন", earned: true, xp: 100, color: "text-primary" },
-  { icon: Trophy, title: "রোগ বিশেষজ্ঞ", description: "১০টি রোগ সঠিকভাবে শনাক্ত করেছেন", earned: false, progress: 30, xp: 200, color: "text-chart-2" },
-  { icon: Award, title: "আবহাওয়া পর্যবেক্ষক", description: "৭ দিন ধারাবাহিকভাবে আবহাওয়া চেক করেছেন", earned: true, xp: 75, color: "text-chart-3" },
-  { icon: Star, title: "সুপার কৃষক", description: "২০টি ফসল স্ক্যান করে সুপার কৃষক হন", earned: false, progress: 25, xp: 300, color: "text-chart-4" },
-  { icon: Crown, title: "মাস্টার কৃষক", description: "৫০টি ফসল স্ক্যান করে মাস্টার কৃষক হন", earned: false, progress: 10, xp: 500, color: "text-chart-5" },
-];
-
-const rewards = [
-  { name: "১০০ XP বোনাস", cost: 200, icon: Zap, available: true },
-  { name: "বিশেষ ব্যাজ", cost: 500, icon: Medal, available: false },
-  { name: "প্রিমিয়াম টিপস", cost: 300, icon: Gift, available: true },
-];
-
-const leaderboard = [
-  { rank: 1, name: "রহিম উদ্দিন", xp: 2450, avatar: "👨‍🌾" },
-  { rank: 2, name: "ফাতেমা বেগম", xp: 1980, avatar: "👩‍🌾" },
-  { rank: 3, name: "আব্দুল হক", xp: 1750, avatar: "👨" },
-  { rank: 4, name: "আপনি", xp: userStats.xp, avatar: "🌾", isUser: true },
-];
+const getNextLevelXp = (level: number) => {
+  const xpMap: Record<number, number> = {
+    1: 200, 2: 500, 3: 1000, 4: 2000, 5: 3000, 6: 4000, 7: 5000, 8: 6000, 9: 8000, 10: 10000
+  };
+  return xpMap[level] || 10000;
+};
 
 export default function GamificationPage() {
-  const progressPercent = (userStats.xp / userStats.nextLevelXp) * 100;
+  const [userStats, setUserStats] = useState<UserStats>({
+    totalScans: 0,
+    diseasesDetected: 0,
+    daysActive: 0,
+    level: 1,
+    xp: 0,
+    nextLevelXp: 200,
+    rank: "নতুন কৃষক",
+  });
+  const [isLoading, setIsLoading] = useState(true);
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<"badges" | "rewards" | "leaderboard">("badges");
+
+  // Fetch real user stats
+  const fetchUserStats = async () => {
+    try {
+      setIsLoading(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (user) {
+        // Fetch profile with stats
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (profile) {
+          const xp = profile.xp_points || 0;
+          const { level, rank } = calculateLevel(xp);
+          
+          setUserStats({
+            totalScans: profile.total_scans || 0,
+            diseasesDetected: profile.diseases_detected || 0,
+            daysActive: profile.days_active || 0,
+            level,
+            xp,
+            nextLevelXp: getNextLevelXp(level),
+            rank,
+          });
+        }
+
+        // Fetch user's achievements
+        const { data: achievements } = await supabase
+          .from('user_achievements')
+          .select('*')
+          .eq('user_id', user.id);
+
+        if (achievements) {
+          // Update badges based on achievements
+          const earnedBadges = achievements.map(a => a.achievement_type);
+          setBadgesData(prev => prev.map(badge => ({
+            ...badge,
+            earned: earnedBadges.includes(badge.id) || badge.earned
+          })));
+        }
+      }
+
+      // Fetch leaderboard from profiles
+      const { data: topUsers } = await supabase
+        .from('profiles')
+        .select('full_name, xp_points, user_id')
+        .order('xp_points', { ascending: false })
+        .limit(10);
+
+      if (topUsers) {
+        const leaderboardData = topUsers.map((u, idx) => ({
+          rank: idx + 1,
+          name: u.full_name || `কৃষক ${idx + 1}`,
+          xp: u.xp_points || 0,
+          avatar: idx === 0 ? "🏆" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : "👨‍🌾",
+          isUser: user?.id === u.user_id
+        }));
+        setLeaderboard(leaderboardData);
+      }
+
+    } catch (error) {
+      console.error('Error fetching stats:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchUserStats();
+  }, []);
+
+  const [badgesData, setBadgesData] = useState([
+    { id: "first_scan", icon: Leaf, title: "প্রথম স্ক্যান", description: "আপনার প্রথম ফসল স্ক্যান করেছেন", earned: false, xp: 50, color: "text-secondary" },
+    { id: "five_scans", icon: Target, title: "৫টি স্ক্যান", description: "৫টি ফসল সফলভাবে স্ক্যান করেছেন", earned: false, xp: 100, color: "text-primary" },
+    { id: "disease_expert", icon: Trophy, title: "রোগ বিশেষজ্ঞ", description: "১০টি রোগ সঠিকভাবে শনাক্ত করেছেন", earned: false, progress: 0, xp: 200, color: "text-chart-2" },
+    { id: "weather_watcher", icon: Award, title: "আবহাওয়া পর্যবেক্ষক", description: "৭ দিন ধারাবাহিকভাবে আবহাওয়া চেক করেছেন", earned: false, xp: 75, color: "text-chart-3" },
+    { id: "super_farmer", icon: Star, title: "সুপার কৃষক", description: "২০টি ফসল স্ক্যান করে সুপার কৃষক হন", earned: false, progress: 0, xp: 300, color: "text-chart-4" },
+    { id: "master_farmer", icon: Crown, title: "মাস্টার কৃষক", description: "৫০টি ফসল স্ক্যান করে মাস্টার কৃষক হন", earned: false, progress: 0, xp: 500, color: "text-chart-5" },
+  ]);
+
+  // Update badge progress based on user stats
+  useEffect(() => {
+    setBadgesData(prev => prev.map(badge => {
+      if (badge.id === "first_scan") {
+        return { ...badge, earned: userStats.totalScans >= 1 };
+      }
+      if (badge.id === "five_scans") {
+        return { ...badge, earned: userStats.totalScans >= 5 };
+      }
+      if (badge.id === "disease_expert") {
+        return { 
+          ...badge, 
+          earned: userStats.diseasesDetected >= 10,
+          progress: Math.min(100, (userStats.diseasesDetected / 10) * 100)
+        };
+      }
+      if (badge.id === "weather_watcher") {
+        return { ...badge, earned: userStats.daysActive >= 7 };
+      }
+      if (badge.id === "super_farmer") {
+        return { 
+          ...badge, 
+          earned: userStats.totalScans >= 20,
+          progress: Math.min(100, (userStats.totalScans / 20) * 100)
+        };
+      }
+      if (badge.id === "master_farmer") {
+        return { 
+          ...badge, 
+          earned: userStats.totalScans >= 50,
+          progress: Math.min(100, (userStats.totalScans / 50) * 100)
+        };
+      }
+      return badge;
+    }));
+  }, [userStats]);
+
+  const rewards = [
+    { name: "১০০ XP বোনাস", cost: 200, icon: Zap, available: true },
+    { name: "বিশেষ ব্যাজ", cost: 500, icon: Medal, available: false },
+    { name: "প্রিমিয়াম টিপস", cost: 300, icon: Gift, available: true },
+  ];
+
+  const progressPercent = (userStats.xp / userStats.nextLevelXp) * 100;
 
   return (
     <div className="min-h-screen pb-24 relative">
@@ -57,17 +192,30 @@ export default function GamificationPage() {
       </div>
 
       {/* Header */}
-      <header className="px-4 pt-6 pb-4 flex items-center gap-3">
-        <Link
-          to="/home"
-          className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
-        >
-          <ArrowLeft className="w-5 h-5 text-foreground" />
-        </Link>
-        <div>
-          <h1 className="text-xl font-bold text-foreground">আপনার অগ্রগতি</h1>
-          <p className="text-xs text-muted-foreground">ব্যাজ সংগ্রহ করুন এবং লেভেল আপ করুন!</p>
+      <header className="px-4 pt-6 pb-4 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <Link
+            to="/home"
+            className="w-10 h-10 rounded-xl bg-card flex items-center justify-center border border-border"
+          >
+            <ArrowLeft className="w-5 h-5 text-foreground" />
+          </Link>
+          <div>
+            <h1 className="text-xl font-bold text-foreground">আপনার অগ্রগতি</h1>
+            <p className="text-xs text-muted-foreground">ব্যাজ সংগ্রহ করুন এবং লেভেল আপ করুন!</p>
+          </div>
         </div>
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          className="rounded-xl"
+          onClick={() => {
+            fetchUserStats();
+            toast.success("ডেটা আপডেট হচ্ছে...");
+          }}
+        >
+          <RefreshCw className={`w-5 h-5 ${isLoading ? 'animate-spin' : ''}`} />
+        </Button>
       </header>
 
       {/* Hero Stats Card */}
@@ -96,13 +244,13 @@ export default function GamificationPage() {
               <div className="flex justify-between text-sm text-white/90 mb-2">
                 <span className="flex items-center gap-1">
                   <Zap className="w-4 h-4" />
-                  {userStats.xp} XP
+                  {userStats.xp.toLocaleString('bn-BD')} XP
                 </span>
-                <span>{userStats.nextLevelXp} XP</span>
+                <span>{userStats.nextLevelXp.toLocaleString('bn-BD')} XP</span>
               </div>
               <Progress value={progressPercent} className="h-3 bg-white/30" />
               <p className="text-xs text-white/70 mt-1 text-center">
-                পরবর্তী লেভেলে আরো {userStats.nextLevelXp - userStats.xp} XP দরকার
+                পরবর্তী লেভেলে আরো {(userStats.nextLevelXp - userStats.xp).toLocaleString('bn-BD')} XP দরকার
               </p>
             </div>
           </div>
@@ -116,21 +264,21 @@ export default function GamificationPage() {
             <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-secondary/20 flex items-center justify-center">
               <Target className="w-5 h-5 text-secondary" />
             </div>
-            <p className="text-2xl font-bold text-foreground">{userStats.totalScans}</p>
+            <p className="text-2xl font-bold text-foreground">{userStats.totalScans.toLocaleString('bn-BD')}</p>
             <p className="text-xs text-muted-foreground">মোট স্ক্যান</p>
           </div>
           <div className="p-4 rounded-xl bg-card/80 backdrop-blur-sm border border-border text-center">
             <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-destructive/20 flex items-center justify-center">
               <Award className="w-5 h-5 text-destructive" />
             </div>
-            <p className="text-2xl font-bold text-foreground">{userStats.diseasesDetected}</p>
+            <p className="text-2xl font-bold text-foreground">{userStats.diseasesDetected.toLocaleString('bn-BD')}</p>
             <p className="text-xs text-muted-foreground">রোগ শনাক্ত</p>
           </div>
           <div className="p-4 rounded-xl bg-card/80 backdrop-blur-sm border border-border text-center">
             <div className="w-10 h-10 mx-auto mb-2 rounded-full bg-primary/20 flex items-center justify-center">
               <Star className="w-5 h-5 text-primary" />
             </div>
-            <p className="text-2xl font-bold text-foreground">{userStats.daysActive}</p>
+            <p className="text-2xl font-bold text-foreground">{userStats.daysActive.toLocaleString('bn-BD')}</p>
             <p className="text-xs text-muted-foreground">সক্রিয় দিন</p>
           </div>
         </div>
@@ -194,10 +342,10 @@ export default function GamificationPage() {
                   <Zap className="w-3 h-3 text-primary" />
                   <span className="text-xs text-primary font-medium">+{badge.xp} XP</span>
                 </div>
-                {!badge.earned && badge.progress && (
+                {!badge.earned && badge.progress !== undefined && (
                   <div className="mt-2">
                     <Progress value={badge.progress} className="h-1.5" />
-                    <p className="text-xs text-muted-foreground mt-1">{badge.progress}% সম্পন্ন</p>
+                    <p className="text-xs text-muted-foreground mt-1">{Math.round(badge.progress)}% সম্পন্ন</p>
                   </div>
                 )}
               </div>
@@ -240,7 +388,7 @@ export default function GamificationPage() {
       {/* Leaderboard Tab */}
       {activeTab === "leaderboard" && (
         <section className="px-4 space-y-2">
-          {leaderboard.map((user, index) => (
+          {leaderboard.length > 0 ? leaderboard.map((user, index) => (
             <div
               key={index}
               className={cn(
@@ -269,7 +417,7 @@ export default function GamificationPage() {
                 </p>
                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                   <Zap className="w-3 h-3" />
-                  {user.xp} XP
+                  {user.xp.toLocaleString('bn-BD')} XP
                 </p>
               </div>
               {user.isUser && (
@@ -278,7 +426,12 @@ export default function GamificationPage() {
                 </span>
               )}
             </div>
-          ))}
+          )) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Crown className="w-12 h-12 mx-auto mb-2 opacity-50" />
+              <p>লিডারবোর্ড লোড হচ্ছে...</p>
+            </div>
+          )}
         </section>
       )}
 

@@ -73,28 +73,52 @@ const knowledgeContent: Record<string, { title: string; content: string }[]> = {
   ],
   books: [
     {
-      title: "আধুনিক ধান চাষ",
-      content: "লেখক: বাংলাদেশ ধান গবেষণা ইনস্টিটিউট (BRRI)। ধান চাষের A-Z গাইড, জাত নির্বাচন, রোগ ব্যবস্থাপনা ও ফলন বৃদ্ধির কৌশল।"
+      title: "আধুনিক ধান চাষ প্রযুক্তি",
+      content: "প্রকাশক: বাংলাদেশ ধান গবেষণা ইনস্টিটিউট (BRRI)। ISBN: 978-984-8945-35-2। BRRI উদ্ভাবিত সকল জাতের বিস্তারিত তথ্য, রোগ-পোকা ব্যবস্থাপনা ও উচ্চ ফলনশীল চাষাবাদ পদ্ধতি।"
     },
     {
-      title: "সমন্বিত বালাই ব্যবস্থাপনা (IPM)",
-      content: "লেখক: কৃষি সম্প্রসারণ অধিদপ্তর। জৈব ও রাসায়নিক পদ্ধতির সমন্বয়ে পোকামাকড় দমনের বিস্তারিত গাইড।"
+      title: "সমন্বিত বালাই ব্যবস্থাপনা (IPM) হ্যান্ডবুক",
+      content: "প্রকাশক: কৃষি সম্প্রসারণ অধিদপ্তর (DAE), ২০২৩। জৈব ও রাসায়নিক পদ্ধতির সমন্বয়ে পোকামাকড় দমনের বিজ্ঞানভিত্তিক গাইড।"
     },
     {
-      title: "মাটি ও সার ব্যবস্থাপনা",
-      content: "লেখক: মৃত্তিকা সম্পদ উন্নয়ন ইনস্টিটিউট (SRDI)। মাটির স্বাস্থ্য, pH ব্যবস্থাপনা ও সার প্রয়োগের সঠিক নিয়ম।"
+      title: "মৃত্তিকা ও সার সুপারিশমালা",
+      content: "প্রকাশক: মৃত্তিকা সম্পদ উন্নয়ন ইনস্টিটিউট (SRDI)। ফসলভিত্তিক সুষম সার প্রয়োগের সরকারি নির্দেশিকা।"
     },
     {
-      title: "সবজি উৎপাদন হ্যান্ডবুক",
-      content: "লেখক: BARI। বাংলাদেশের প্রধান সবজি চাষের কৌশল, বীজ বপন থেকে ফসল তোলা পর্যন্ত।"
+      title: "সবজি উৎপাদন প্রযুক্তি",
+      content: "প্রকাশক: BARI, গাজীপুর। ISBN: 978-984-523-089-7। বাংলাদেশের প্রধান ৫০+ সবজির চাষ প্রযুক্তি ও রোগ ব্যবস্থাপনা।"
     },
     {
-      title: "ফল চাষ প্রযুক্তি",
-      content: "লেখক: BARI। আম, লিচু, কলা, পেয়ারা ইত্যাদি ফল চাষের আধুনিক পদ্ধতি।"
+      title: "ফলদ বৃক্ষ রোপণ ও পরিচর্যা",
+      content: "প্রকাশক: BARI হর্টিকালচার বিভাগ। আম, লিচু, কাঁঠাল, পেয়ারা ও কলার বাণিজ্যিক চাষ পদ্ধতি।"
     },
     {
-      title: "জৈব কৃষি ম্যানুয়াল",
-      content: "লেখক: Bangladesh Organic Products Manufacturers Association। রাসায়নিক সার ছাড়া টেকসই কৃষির গাইড।"
+      title: "জৈব কৃষি নির্দেশিকা",
+      content: "প্রকাশক: কৃষি মন্ত্রণালয়, ২০২২। রাসায়নিক সার ছাড়া টেকসই কৃষির সরকারি গাইডলাইন।"
+    },
+    {
+      title: "Bangladesh Journal of Agricultural Research",
+      content: "ISSN: 0258-7122। BARI প্রকাশিত ত্রৈমাসিক বৈজ্ঞানিক জার্নাল। কৃষি গবেষণার সর্বশেষ ফলাফল প্রকাশিত হয়।"
+    },
+    {
+      title: "Journal of Bangladesh Agricultural University",
+      content: "ISSN: 1810-3030। বাংলাদেশ কৃষি বিশ্ববিদ্যালয়ের গবেষণা জার্নাল। ফসল উন্নয়ন ও প্রযুক্তি বিষয়ক প্রবন্ধ।"
+    },
+    {
+      title: "ধান গবেষণা সাময়িকী",
+      content: "প্রকাশক: BRRI। বার্ষিক প্রকাশনা। ধান সংক্রান্ত সর্বশেষ গবেষণা ও প্রযুক্তি।"
+    },
+    {
+      title: "কৃষকের কৃষি প্রযুক্তি হাতবই",
+      content: "প্রকাশক: BARC (Bangladesh Agricultural Research Council)। কৃষকদের জন্য সহজ ভাষায় লেখা প্রযুক্তি সংকলন।"
+    },
+    {
+      title: "ফসল উৎপাদন ক্যালেন্ডার",
+      content: "প্রকাশক: DAE। মৌসুম ভিত্তিক ফসল চাষের সময়সূচি ও কৃষি কর্মপঞ্জি।"
+    },
+    {
+      title: "Plant Disease Journal - BARI",
+      content: "ISSN: 2414-4576। ফসলের রোগ সনাক্তকরণ ও ব্যবস্থাপনা বিষয়ক গবেষণা জার্নাল।"
     },
   ],
   team: [],
@@ -102,23 +126,31 @@ const knowledgeContent: Record<string, { title: string; content: string }[]> = {
 };
 
 const bookReferences = [
-  { name: "আধুনিক ধান চাষ পদ্ধতি", author: "BRRI", year: "2023" },
-  { name: "সমন্বিত বালাই ব্যবস্থাপনা", author: "DAE", year: "2022" },
-  { name: "মাটি ও সার গাইড", author: "SRDI", year: "2023" },
-  { name: "সবজি উৎপাদন প্রযুক্তি", author: "BARI", year: "2024" },
+  { name: "আধুনিক ধান চাষ প্রযুক্তি", author: "BRRI", year: "2023", isbn: "978-984-8945-35-2" },
+  { name: "সমন্বিত বালাই ব্যবস্থাপনা হ্যান্ডবুক", author: "DAE", year: "2023", isbn: "" },
+  { name: "মৃত্তিকা ও সার সুপারিশমালা", author: "SRDI", year: "2024", isbn: "" },
+  { name: "সবজি উৎপাদন প্রযুক্তি", author: "BARI", year: "2023", isbn: "978-984-523-089-7" },
+  { name: "Bangladesh Journal of Agricultural Research", author: "BARI", year: "Quarterly", isbn: "ISSN: 0258-7122" },
+  { name: "Journal of BAU", author: "BAU", year: "Biannual", isbn: "ISSN: 1810-3030" },
+  { name: "কৃষকের কৃষি প্রযুক্তি হাতবই", author: "BARC", year: "2024", isbn: "" },
+  { name: "ফসল উৎপাদন ক্যালেন্ডার", author: "DAE", year: "2024", isbn: "" },
 ];
 
 const dataSources = [
-  { name: "Open-Meteo", description: "আবহাওয়ার রিয়েল-টাইম ডেটা", url: "https://open-meteo.com" },
-  { name: "OpenStreetMap Nominatim", description: "জিওলোকেশন ও ঠিকানা সার্ভিস", url: "https://nominatim.openstreetmap.org" },
-  { name: "SoilGrids", description: "মাটির গুণাগুণ ও বৈশিষ্ট্য ডেটা", url: "https://soilgrids.org" },
-  { name: "BRRI (Bangladesh Rice Research Institute)", description: "ধান গবেষণা তথ্য", url: "https://brri.gov.bd" },
-  { name: "BARI (Bangladesh Agricultural Research Institute)", description: "কৃষি গবেষণা তথ্য", url: "https://bari.gov.bd" },
-  { name: "DAE (Department of Agricultural Extension)", description: "কৃষি সম্প্রসারণ তথ্য", url: "https://dae.gov.bd" },
-  { name: "BMD (Bangladesh Meteorological Department)", description: "আবহাওয়া পূর্বাভাস", url: "https://bmd.gov.bd" },
-  { name: "PlantVillage Dataset", description: "ফসলের রোগ সনাক্তকরণ AI মডেল", url: "https://plantvillage.psu.edu" },
-  { name: "FAO (Food and Agriculture Organization)", description: "আন্তর্জাতিক কৃষি তথ্য", url: "https://fao.org" },
-  { name: "Sentinel/Landsat Satellite", description: "স্যাটেলাইট ইমেজারি ও NDVI", url: "https://sentinel.esa.int" },
+  { name: "Open-Meteo API", description: "রিয়েল-টাইম আবহাওয়া ও পূর্বাভাস ডেটা", url: "https://open-meteo.com", type: "API" },
+  { name: "NASA GIBS", description: "স্যাটেলাইট টাইল ও NDVI ইমেজারি", url: "https://earthdata.nasa.gov/gibs", type: "Satellite" },
+  { name: "Sentinel-2 (ESA)", description: "ইউরোপীয় স্যাটেলাইট ইমেজ ও ভেজিটেশন ইনডেক্স", url: "https://sentinel.esa.int", type: "Satellite" },
+  { name: "OpenStreetMap", description: "জিওলোকেশন ও ম্যাপ ডেটা সার্ভিস", url: "https://openstreetmap.org", type: "Map" },
+  { name: "SoilGrids (ISRIC)", description: "বৈশ্বিক মাটির গুণাগুণ ও বৈশিষ্ট্য ডেটা", url: "https://soilgrids.org", type: "Data" },
+  { name: "BRRI", description: "বাংলাদেশ ধান গবেষণা ইনস্টিটিউট - ধান জাত ও প্রযুক্তি", url: "https://brri.gov.bd", type: "Research" },
+  { name: "BARI", description: "বাংলাদেশ কৃষি গবেষণা ইনস্টিটিউট - ফসল গবেষণা", url: "https://bari.gov.bd", type: "Research" },
+  { name: "DAE", description: "কৃষি সম্প্রসারণ অধিদপ্তর - কৃষি তথ্য সেবা", url: "https://dae.gov.bd", type: "Govt" },
+  { name: "BMD", description: "বাংলাদেশ আবহাওয়া অধিদপ্তর - স্থানীয় আবহাওয়া", url: "https://bmd.gov.bd", type: "Govt" },
+  { name: "DAM", description: "কৃষি বিপণন অধিদপ্তর - বাজার দর তথ্য", url: "https://dam.gov.bd", type: "Govt" },
+  { name: "SRDI", description: "মৃত্তিকা সম্পদ উন্নয়ন ইনস্টিটিউট - মাটি তথ্য", url: "https://srdi.gov.bd", type: "Research" },
+  { name: "PlantVillage (Penn State)", description: "ফসলের রোগ সনাক্তকরণ AI ডেটাসেট", url: "https://plantvillage.psu.edu", type: "AI" },
+  { name: "FAO STAT", description: "জাতিসংঘ খাদ্য ও কৃষি সংস্থার পরিসংখ্যান", url: "https://fao.org/faostat", type: "Data" },
+  { name: "Lovable AI Gateway", description: "Gemini/GPT মডেল ইন্টিগ্রেশন", url: "https://lovable.dev", type: "AI" },
 ];
 
 export default function KnowledgePage() {

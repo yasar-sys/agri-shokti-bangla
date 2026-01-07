@@ -690,103 +690,28 @@ export default function ImpactAnalyticsPage() {
             </div>
           </section>
 
-          {/* Success Stories */}
+          {/* Feature Usage Stats */}
           <section className="glass-card rounded-2xl p-5 border border-border/30">
-            <h2 className="text-lg font-bold text-foreground mb-4">🌾 সাফল্যের গল্প</h2>
-            <div className="space-y-3">
-              <div className="bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-xl p-4 border border-emerald-500/20">
-                <p className="text-sm text-foreground font-medium">
-                  "AgriShokti এর AI দিয়ে আমার ধানের ব্লাস্ট রোগ সনাক্ত করে সময়মতো চিকিৎসা করেছি। এখন ফলন ৩০% বেশি!"
-                </p>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-muted-foreground">— রহিম উদ্দিন, বগুড়া</p>
-                  <span className="text-xs font-bold text-green-500">৳১২,০০০ সাশ্রয়</span>
-                </div>
-              </div>
-              <div className="bg-gradient-to-r from-blue-500/10 to-cyan-500/10 rounded-xl p-4 border border-blue-500/20">
-                <p className="text-sm text-foreground font-medium">
-                  "বাজার দর ফিচার দিয়ে আমি আমার সবজি সঠিক সময়ে বিক্রি করে ২০% বেশি লাভ পেয়েছি।"
-                </p>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-muted-foreground">— ফাতেমা বেগম, যশোর</p>
-                  <span className="text-xs font-bold text-green-500">৳৮,৫০০ অতিরিক্ত</span>
-                </div>
-              </div>
-              <div className="bg-gradient-to-r from-purple-500/10 to-violet-500/10 rounded-xl p-4 border border-purple-500/20">
-                <p className="text-sm text-foreground font-medium">
-                  "আবহাওয়া সতর্কতায় ঝড়ের আগেই ফসল কেটে নিয়েছি। বড় ক্ষতি থেকে বেঁচে গেছি!"
-                </p>
-                <div className="flex items-center justify-between mt-2">
-                  <p className="text-xs text-muted-foreground">— আব্দুল করিম, সিলেট</p>
-                  <span className="text-xs font-bold text-green-500">৳২৫,০০০ রক্ষা</span>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Competition Score Summary */}
-          <section className="glass-card rounded-2xl p-5 border border-secondary/30 bg-gradient-to-br from-secondary/10 to-primary/10">
-            <h2 className="text-lg font-bold text-foreground mb-4 text-center">
-              🏆 প্রতিযোগিতা মূল্যায়ন সারসংক্ষেপ
-            </h2>
-            <div className="space-y-3">
-              {[
-                { label: "Innovation & Creativity", score: "8/10", weight: "25%", color: "from-purple-500 to-violet-500" },
-                { label: "Technical Implementation", score: "8.5/10", weight: "25%", color: "from-blue-500 to-cyan-500" },
-                { label: "Scalability & Feasibility", score: "8/10", weight: "20%", color: "from-green-500 to-emerald-500" },
-                { label: "Social & Economic Impact", score: "9/10", weight: "20%", color: "from-yellow-500 to-amber-500" },
-                { label: "Presentation & Storytelling", score: "7/10", weight: "10%", color: "from-rose-500 to-pink-500" },
-              ].map((item, idx) => (
-                <div key={idx} className="flex items-center justify-between bg-background/50 rounded-lg p-3">
-                  <div className="flex items-center gap-2">
-                    <div className={`w-2 h-8 rounded-full bg-gradient-to-b ${item.color}`} />
-                    <div>
-                      <p className="text-xs font-medium text-foreground">{item.label}</p>
-                      <p className="text-[10px] text-muted-foreground">Weight: {item.weight}</p>
-                    </div>
-                  </div>
-                  <p className="text-lg font-bold text-secondary">{item.score}</p>
-                </div>
-              ))}
-              <div className="text-center pt-3 border-t border-border/30">
-                <p className="text-sm text-muted-foreground">আনুমানিক মোট স্কোর</p>
-                <p className="text-3xl font-bold text-gradient-premium">8.2/10</p>
-              </div>
-            </div>
-          </section>
-
-          {/* App Features Summary */}
-          <section className="glass-card rounded-2xl p-5 border border-secondary/30 bg-gradient-to-br from-secondary/5 to-primary/5">
-            <h2 className="text-lg font-bold text-foreground mb-4 text-center">
-              🚀 AgriShokti এর বৈশিষ্ট্য
+            <h2 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-secondary" />
+              ফিচার ব্যবহার পরিসংখ্যান
             </h2>
             <div className="grid grid-cols-2 gap-3">
               {[
-                { icon: "🔬", label: "AI রোগ সনাক্তকরণ" },
-                { icon: "💬", label: "বাংলা AI চ্যাটবট" },
-                { icon: "📊", label: "বাজার মূল্য বিশ্লেষণ" },
-                { icon: "🌦️", label: "আবহাওয়া পূর্বাভাস" },
-                { icon: "🗺️", label: "পোকামাকড় ম্যাপ" },
-                { icon: "📅", label: "ফসল ক্যালেন্ডার" },
-                { icon: "🧪", label: "সার সুপারিশ" },
-                { icon: "🏛️", label: "সরকারি সেবা" },
-              ].map((feature, idx) => (
-                <div key={idx} className="flex items-center gap-2 bg-background/50 rounded-lg p-2.5">
-                  <span className="text-lg">{feature.icon}</span>
-                  <span className="text-xs font-medium text-foreground">{feature.label}</span>
+                { label: "রোগ সনাক্তকরণ", value: liveStats.totalScans, icon: "🔬", color: "text-rose-500" },
+                { label: "AI চ্যাট", value: liveStats.totalChats, icon: "🤖", color: "text-blue-500" },
+                { label: "কমিউনিটি পোস্ট", value: liveStats.totalPosts, icon: "📝", color: "text-green-500" },
+                { label: "মোট ব্যবহারকারী", value: liveStats.totalUsers, icon: "👥", color: "text-purple-500" },
+              ].map((stat, idx) => (
+                <div key={idx} className="bg-muted/30 rounded-xl p-4 text-center">
+                  <span className="text-2xl">{stat.icon}</span>
+                  <p className={`text-2xl font-bold ${stat.color} mt-2`}>
+                    {formatBengaliNumber(stat.value || 0)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">{stat.label}</p>
                 </div>
               ))}
             </div>
-          </section>
-
-          {/* Download Report Button */}
-          <section className="text-center pb-4">
-            <Link to="/submission">
-              <Button className="w-full rounded-xl bg-gradient-to-r from-secondary to-primary">
-                <Download className="w-4 h-4 mr-2" />
-                সম্পূর্ণ রিপোর্ট ডাউনলোড করুন
-              </Button>
-            </Link>
           </section>
         </div>
       </div>
