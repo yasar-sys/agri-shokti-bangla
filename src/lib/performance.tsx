@@ -38,15 +38,19 @@ export function withLazy<P extends object>(
   importFn: () => Promise<{ default: React.ComponentType<P> }>,
   fallback?: React.ReactNode
 ) {
-  const LazyComponent = React.lazy(importFn);
-  
-  return function LazyWrapper(props: P) {
+  // React.lazy has some rough edges with generics in TS; we keep runtime behavior
+  // but loosen the type at the boundary to avoid invalid JSX props inference.
+  const LazyComponent = React.lazy(importFn) as unknown as React.ComponentType<any>;
+
+  const LazyWrapper: React.FC<P> = (props) => {
     return (
       <React.Suspense fallback={fallback || <div>Loading...</div>}>
-        <LazyComponent {...props} />
+        <LazyComponent {...(props as any)} />
       </React.Suspense>
     );
   };
+
+  return LazyWrapper;
 }
 
 // Performance monitoring HOC
