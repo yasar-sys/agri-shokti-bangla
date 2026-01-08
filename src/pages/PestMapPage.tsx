@@ -203,126 +203,133 @@ export default function PestMapPage() {
         </div>
       </header>
 
-      {/* Report Form Modal */}
+      {/* Report Form Modal - Fixed for mobile */}
       {showReportForm && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center p-4">
-          <div className="bg-card border border-border rounded-2xl w-full max-w-md max-h-[80vh] overflow-y-auto">
-            <div className="sticky top-0 bg-card border-b border-border px-4 py-3 flex items-center justify-between">
-              <h2 className="font-semibold text-foreground">পোকার রিপোর্ট দিন</h2>
-              <button onClick={() => setShowReportForm(false)}>
-                <X className="w-5 h-5 text-muted-foreground" />
-              </button>
-            </div>
-            
-            <div className="p-4 space-y-4">
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">জেলা *</label>
-                <select
-                  value={reportForm.district}
-                  onChange={(e) => setReportForm({...reportForm, district: e.target.value})}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
-                >
-                  <option value="">জেলা নির্বাচন করুন</option>
-                  {bangladeshDistricts.map(d => (
-                    <option key={d.name} value={d.name}>{d.name_bn}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">পোকার নাম *</label>
-                <select
-                  value={reportForm.pest_name_bn}
-                  onChange={(e) => {
-                    const pest = commonPests.find(p => p.name_bn === e.target.value);
-                    setReportForm({
-                      ...reportForm, 
-                      pest_name_bn: e.target.value,
-                      pest_name: pest?.name || e.target.value
-                    });
-                  }}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
-                >
-                  <option value="">পোকা নির্বাচন করুন</option>
-                  {commonPests.map(p => (
-                    <option key={p.name} value={p.name_bn}>{p.name_bn}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">ফসল *</label>
-                <input
-                  type="text"
-                  value={reportForm.crop_type}
-                  onChange={(e) => setReportForm({...reportForm, crop_type: e.target.value})}
-                  placeholder="যেমন: ধান, গম, আলু"
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm"
-                />
-              </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">তীব্রতা</label>
-                <div className="flex gap-2">
-                  {['low', 'medium', 'high'].map(level => (
-                    <button
-                      key={level}
-                      onClick={() => setReportForm({...reportForm, severity: level})}
-                      className={cn(
-                        "flex-1 py-2 rounded-lg text-sm font-medium transition-colors",
-                        reportForm.severity === level
-                          ? level === 'high' 
-                            ? 'bg-destructive text-destructive-foreground'
-                            : level === 'medium'
-                            ? 'bg-primary text-primary-foreground'
-                            : 'bg-secondary text-secondary-foreground'
-                          : 'bg-muted text-muted-foreground'
-                      )}
-                    >
-                      {level === 'high' ? 'উচ্চ' : level === 'medium' ? 'মাঝারি' : 'কম'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <div>
-                <label className="text-sm text-muted-foreground mb-1 block">বিবরণ (ঐচ্ছিক)</label>
-                <textarea
-                  value={reportForm.description}
-                  onChange={(e) => setReportForm({...reportForm, description: e.target.value})}
-                  placeholder="আক্রমণের বিস্তারিত লিখুন..."
-                  rows={3}
-                  className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm resize-none"
-                />
-              </div>
-
-              <Button 
-                className="w-full"
-                onClick={handleSubmitReport}
-                disabled={!reportForm.district || !reportForm.pest_name_bn || !reportForm.crop_type}
+        <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-[9999] flex flex-col">
+          {/* Modal Header - Fixed at top */}
+          <div className="bg-card border-b border-border px-4 py-3 flex items-center justify-between flex-shrink-0 safe-top">
+            <h2 className="font-semibold text-foreground text-lg">পোকার রিপোর্ট দিন</h2>
+            <button 
+              onClick={() => setShowReportForm(false)} 
+              className="p-2 hover:bg-muted rounded-full transition-colors"
+            >
+              <X className="w-5 h-5 text-muted-foreground" />
+            </button>
+          </div>
+          
+          {/* Scrollable Content */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">জেলা *</label>
+              <select
+                value={reportForm.district}
+                onChange={(e) => setReportForm({...reportForm, district: e.target.value})}
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base appearance-none"
               >
-                <Send className="w-4 h-4 mr-2" />
-                রিপোর্ট জমা দিন
-              </Button>
+                <option value="">জেলা নির্বাচন করুন</option>
+                {bangladeshDistricts.map(d => (
+                  <option key={d.name} value={d.name}>{d.name_bn}</option>
+                ))}
+              </select>
             </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">পোকার নাম *</label>
+              <select
+                value={reportForm.pest_name_bn}
+                onChange={(e) => {
+                  const pest = commonPests.find(p => p.name_bn === e.target.value);
+                  setReportForm({
+                    ...reportForm, 
+                    pest_name_bn: e.target.value,
+                    pest_name: pest?.name || e.target.value
+                  });
+                }}
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base appearance-none"
+              >
+                <option value="">পোকা নির্বাচন করুন</option>
+                {commonPests.map(p => (
+                  <option key={p.name} value={p.name_bn}>{p.name_bn}</option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">ফসল *</label>
+              <input
+                type="text"
+                value={reportForm.crop_type}
+                onChange={(e) => setReportForm({...reportForm, crop_type: e.target.value})}
+                placeholder="যেমন: ধান, গম, আলু"
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base"
+              />
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">তীব্রতা</label>
+              <div className="flex gap-3">
+                {['low', 'medium', 'high'].map(level => (
+                  <button
+                    key={level}
+                    type="button"
+                    onClick={() => setReportForm({...reportForm, severity: level})}
+                    className={cn(
+                      "flex-1 py-3 rounded-xl text-sm font-medium transition-all",
+                      reportForm.severity === level
+                        ? level === 'high' 
+                          ? 'bg-destructive text-destructive-foreground shadow-lg'
+                          : level === 'medium'
+                          ? 'bg-primary text-primary-foreground shadow-lg'
+                          : 'bg-secondary text-secondary-foreground shadow-lg'
+                        : 'bg-muted text-muted-foreground hover:bg-muted/80'
+                    )}
+                  >
+                    {level === 'high' ? 'উচ্চ' : level === 'medium' ? 'মাঝারি' : 'কম'}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div>
+              <label className="text-sm font-medium text-foreground mb-2 block">বিবরণ (ঐচ্ছিক)</label>
+              <textarea
+                value={reportForm.description}
+                onChange={(e) => setReportForm({...reportForm, description: e.target.value})}
+                placeholder="আক্রমণের বিস্তারিত লিখুন..."
+                rows={4}
+                className="w-full bg-background border border-border rounded-xl px-4 py-3 text-base resize-none"
+              />
+            </div>
+          </div>
+
+          {/* Fixed Submit Button at Bottom */}
+          <div className="bg-card border-t border-border p-4 flex-shrink-0 safe-bottom">
+            <Button 
+              className="w-full h-12 text-base font-medium"
+              onClick={handleSubmitReport}
+              disabled={!reportForm.district || !reportForm.pest_name_bn || !reportForm.crop_type}
+            >
+              <Send className="w-5 h-5 mr-2" />
+              রিপোর্ট জমা দিন
+            </Button>
           </div>
         </div>
       )}
 
-      {/* Stats Row */}
-      <section className="px-4 mb-4">
+      {/* Stats Row - Fixed positioning so it doesn't overlap with map */}
+      <section className="px-4 mb-4 relative z-10">
         <div className="grid grid-cols-3 gap-2">
-          <div className="bg-destructive/20 border border-destructive/30 rounded-xl p-3 text-center">
+          <div className="bg-destructive/20 border border-destructive/30 rounded-xl p-3 text-center backdrop-blur-sm">
             <Flame className="w-5 h-5 text-destructive mx-auto mb-1" />
             <p className="text-lg font-bold text-destructive">{highRiskCount}</p>
             <p className="text-xs text-muted-foreground">ঝুঁকিপূর্ণ জেলা</p>
           </div>
-          <div className="bg-card border border-border rounded-xl p-3 text-center">
+          <div className="bg-card/95 border border-border rounded-xl p-3 text-center backdrop-blur-sm">
             <Bug className="w-5 h-5 text-primary mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">{totalReports}</p>
             <p className="text-xs text-muted-foreground">রিপোর্ট (৭ দিনে)</p>
           </div>
-          <div className="bg-card border border-border rounded-xl p-3 text-center">
+          <div className="bg-card/95 border border-border rounded-xl p-3 text-center backdrop-blur-sm">
             <Users className="w-5 h-5 text-secondary mx-auto mb-1" />
             <p className="text-lg font-bold text-foreground">{districtStats.length}</p>
             <p className="text-xs text-muted-foreground">পর্যবেক্ষণ জেলা</p>

@@ -37,7 +37,7 @@ export function SatelliteComparison({
 
   return (
     <div className={cn(
-      'absolute top-4 right-4 bg-background/95 backdrop-blur-md border rounded-lg shadow-lg p-4 w-80 z-50',
+      'absolute top-4 left-4 bg-background/95 backdrop-blur-md border rounded-lg shadow-lg p-4 w-80 z-[1003]',
       className
     )}>
       <div className="flex items-center justify-between mb-4">

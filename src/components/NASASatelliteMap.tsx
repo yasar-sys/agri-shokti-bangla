@@ -22,7 +22,7 @@ import { Button } from '@/components/ui/button';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator, DropdownMenuLabel } from '@/components/ui/dropdown-menu';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
-import { TILE_LAYERS, getGIBSDate, getNDVIColor, getSoilMoistureColor, FALLBACK_TILE_PROVIDERS, getTileErrorReason, TileLoadError } from '@/lib/nasaDataSources';
+import { TILE_LAYERS, getNDVIColor, getSoilMoistureColor, FALLBACK_TILE_PROVIDERS, getTileErrorReason, TileLoadError } from '@/lib/nasaDataSources';
 import { AppEEARSPanel } from './AppEEARSPanel';
 import { Badge } from '@/components/ui/badge';
 
@@ -132,15 +132,16 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedLayer]);
 
-  const gibsDate = useMemo(() => getGIBSDate(14), []);
+  // Get current date for real-time layers
+  const currentDate = useMemo(() => new Date().toISOString().split('T')[0], []);
 
   const tileLayers = useMemo<Record<TileLayer, { url: string; attribution: string; maxZoom: number; opacity?: number }>>(() => ({
     satellite: { ...TILE_LAYERS.satellite, maxZoom: 18 },
-    ndvi: { ...TILE_LAYERS.getNDVILayer(gibsDate), maxZoom: 9, opacity: 0.85 },
-    soil_moisture: { ...TILE_LAYERS.getSoilMoistureLayer(gibsDate), maxZoom: 7, opacity: 0.8 },
-    lst: { ...TILE_LAYERS.getLSTLayer(gibsDate), maxZoom: 7, opacity: 0.8 },
-    precipitation: { ...TILE_LAYERS.getPrecipitationLayer(gibsDate), maxZoom: 6, opacity: 0.7 },
-  }), [gibsDate]);
+    ndvi: { ...TILE_LAYERS.getNDVILayer(), maxZoom: 9, opacity: 0.85 },
+    soil_moisture: { ...TILE_LAYERS.getSoilMoistureLayer(), maxZoom: 7, opacity: 0.8 },
+    lst: { ...TILE_LAYERS.getLSTLayer(), maxZoom: 7, opacity: 0.8 },
+    precipitation: { ...TILE_LAYERS.getPrecipitationLayer(), maxZoom: 6, opacity: 0.7 },
+  }), [currentDate]);
 
   useEffect(() => { setLiveZones(zones); }, [zones]);
   useEffect(() => { setLiveRoutes(droneRoutes); }, [droneRoutes]);
