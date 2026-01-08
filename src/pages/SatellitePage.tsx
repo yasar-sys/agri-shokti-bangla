@@ -1,14 +1,8 @@
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { ArrowLeft, Satellite, RefreshCw, Loader2, Calendar, ChevronDown, SplitSquareHorizontal, Wifi, WifiOff } from "lucide-react";
+import { ArrowLeft, Satellite, RefreshCw, Loader2, Calendar, SplitSquareHorizontal, Wifi, WifiOff } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { useLocation } from "@/hooks/useLocation";
 import { useNDVIData } from "@/hooks/useNDVIData";
@@ -23,18 +17,13 @@ import { useSatelliteServiceWorker } from "@/hooks/useSatelliteServiceWorker";
 import { nasaApiClient } from "@/lib/nasaApiClient";
 import { ComponentErrorBoundary } from "@/components/ui/component-error-boundary";
 import { SatelliteAIInsight } from "@/components/satellite/SatelliteAIInsight";
-
-const SATELLITE_OPTIONS = [
-  { id: 'modis', name: 'MODIS', resolution: '250m' },
-  { id: 'landsat', name: 'Landsat 8/9', resolution: '30m' },
-  { id: 'sentinel', name: 'Sentinel-2', resolution: '10m' },
-];
+import { SatelliteSourceSelector, type SatelliteSource } from "@/components/satellite/SatelliteSourceSelector";
 
 type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
 
 export default function SatellitePage() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [selectedSatellite, setSelectedSatellite] = useState('modis');
+  const [selectedSatellite, setSelectedSatellite] = useState<SatelliteSource>('modis');
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isPlaying, setIsPlaying] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
@@ -204,28 +193,12 @@ export default function SatellitePage() {
 
               {/* Right Section */}
               <div className="flex items-center gap-2">
-                {/* Satellite Selector */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="sm" className="h-9 gap-2 hidden sm:flex">
-                      <Satellite className="w-4 h-4" />
-                      {SATELLITE_OPTIONS.find(s => s.id === selectedSatellite)?.name}
-                      <ChevronDown className="w-3 h-3 opacity-50" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44">
-                    {SATELLITE_OPTIONS.map((sat) => (
-                      <DropdownMenuItem
-                        key={sat.id}
-                        onClick={() => setSelectedSatellite(sat.id)}
-                        className="justify-between"
-                      >
-                        <span>{sat.name}</span>
-                        <span className="text-xs text-muted-foreground">{sat.resolution}</span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                {/* Satellite Source Selector */}
+                <SatelliteSourceSelector
+                  selectedSource={selectedSatellite}
+                  onSourceChange={setSelectedSatellite}
+                  className="hidden sm:flex"
+                />
 
                 {/* Comparison Toggle */}
                 <Button
@@ -295,6 +268,8 @@ export default function SatellitePage() {
             onLayerChange={setActiveLayer}
             onComparisonToggle={() => setShowComparison(!showComparison)}
             onTimelapseToggle={() => setShowTimeline(!showTimeline)}
+            selectedSatellite={selectedSatellite}
+            onSatelliteChange={setSelectedSatellite}
           />
 
           {/* Comparison Panel */}
