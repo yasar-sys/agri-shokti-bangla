@@ -277,54 +277,127 @@ export const TILE_LAYERS = {
     maxZoom: 18
   },
 
-  // Light satellite (same as satellite for consistency)
+  // Light base map for overlays
   light: {
-    url: 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-    attribution: 'Tiles &copy; Esri',
-    maxZoom: 18
+    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    attribution: '&copy; OSM &copy; CARTO',
+    maxZoom: 19
   },
 
-  // NASA GIBS NDVI (dynamic date)
-  getNDVILayer: (date: string) => ({
-    url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/${date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,
-    attribution: 'NDVI &copy; NASA GIBS MODIS',
-    maxZoom: 9
-  }),
+  // NASA GIBS NDVI - Real-time with dynamic date (8-day composite, ~3 day delay for near real-time)
+  getNDVILayer: (date?: string) => {
+    const useDate = date || getGIBSDate(3); // Use 3-day delay for near real-time
+    return {
+      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/${useDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,
+      attribution: `NDVI &copy; NASA GIBS MODIS (${useDate})`,
+      maxZoom: 9,
+      date: useDate
+    };
+  },
 
-  // NASA GIBS Soil Moisture
-  getSoilMoistureLayer: (date: string) => ({
-    url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/SMAP_L4_Analyzed_Surface_Soil_Moisture/default/${date}/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png`,
-    attribution: 'Soil Moisture &copy; NASA SMAP',
-    maxZoom: 7
-  }),
+  // NASA GIBS Soil Moisture - Real-time SMAP data
+  getSoilMoistureLayer: (date?: string) => {
+    const useDate = date || getGIBSDate(2); // SMAP has ~2 day latency
+    return {
+      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/SMAP_L4_Analyzed_Surface_Soil_Moisture/default/${useDate}/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png`,
+      attribution: `আর্দ্রতা &copy; NASA SMAP (${useDate})`,
+      maxZoom: 7,
+      date: useDate
+    };
+  },
 
-  // NASA GIBS Land Surface Temperature
-  getLSTLayer: (date: string) => ({
-    url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_Land_Surface_Temp_Day/default/${date}/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png`,
-    attribution: 'LST &copy; NASA MODIS',
-    maxZoom: 7
-  }),
+  // NASA GIBS Land Surface Temperature - Real-time MODIS
+  getLSTLayer: (date?: string) => {
+    const useDate = date || getGIBSDate(1); // LST is available next day
+    return {
+      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_Land_Surface_Temp_Day/default/${useDate}/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png`,
+      attribution: `তাপমাত্রা &copy; NASA MODIS (${useDate})`,
+      maxZoom: 7,
+      date: useDate
+    };
+  },
 
-  // NASA GIBS Precipitation
-  getPrecipitationLayer: (date: string) => ({
-    url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/GPM_IMERG_Precipitation_Rate/default/${date}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,
-    attribution: 'Precipitation &copy; NASA GPM',
-    maxZoom: 6
-  }),
+  // NASA GIBS Precipitation - Real-time GPM IMERG
+  getPrecipitationLayer: (date?: string) => {
+    const useDate = date || getGIBSDate(1); // GPM available ~4 hours after observation
+    return {
+      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/GPM_IMERG_Precipitation_Rate/default/${useDate}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,
+      attribution: `বৃষ্টিপাত &copy; NASA GPM (${useDate})`,
+      maxZoom: 6,
+      date: useDate
+    };
+  },
 
   // NASA GIBS Flood Detection
-  getFloodLayer: (date: string) => ({
-    url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Combined_Flood_14Day_3Day/default/${date}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`,
-    attribution: 'Flood Detection &copy; NASA MODIS',
-    maxZoom: 8
+  getFloodLayer: (date?: string) => {
+    const useDate = date || getGIBSDate(3);
+    return {
+      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Combined_Flood_14Day_3Day/default/${useDate}/GoogleMapsCompatible_Level8/{z}/{y}/{x}.png`,
+      attribution: `বন্যা &copy; NASA MODIS (${useDate})`,
+      maxZoom: 8,
+      date: useDate
+    };
+  },
+
+  // NASA GIBS True Color - VIIRS Near Real-Time
+  getTrueColorLayer: (date?: string) => {
+    const useDate = date || getGIBSDate(1);
+    return {
+      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_CorrectedReflectance_TrueColor/default/${useDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+      attribution: `True Color &copy; NASA VIIRS (${useDate})`,
+      maxZoom: 9,
+      date: useDate
+    };
+  },
+
+  // Field Zone overlay - Custom styled markers (handled in map component)
+  getFieldZoneLayer: () => ({
+    type: 'marker_overlay' as const,
+    name: 'ফিল্ড জোন',
+    icon: 'field'
   }),
 
-  // NASA GIBS True Color
-  getTrueColorLayer: (date: string) => ({
-    url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_CorrectedReflectance_TrueColor/default/${date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
-    attribution: 'True Color &copy; NASA VIIRS',
-    maxZoom: 9
-  })
+  // Drone Route overlay - Custom polylines (handled in map component)
+  getDroneRouteLayer: () => ({
+    type: 'polyline_overlay' as const,
+    name: 'ড্রোন রুট',
+    icon: 'drone'
+  }),
+
+  // MODIS Real-time layers
+  getMODISLayer: (date?: string) => {
+    const useDate = date || getGIBSDate(1);
+    return {
+      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_CorrectedReflectance_TrueColor/default/${useDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg`,
+      attribution: `MODIS &copy; NASA (${useDate})`,
+      maxZoom: 9,
+      date: useDate,
+      satellite: 'MODIS Terra',
+      resolution: '250m'
+    };
+  },
+
+  // Landsat 8/9 layers (via USGS/ESRI services)
+  getLandsatLayer: () => ({
+    url: 'https://services.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+    attribution: 'Landsat 8/9 &copy; USGS/Esri',
+    maxZoom: 18,
+    satellite: 'Landsat 8/9',
+    resolution: '30m'
+  }),
+
+  // Sentinel-2 layers (via Sentinel Hub or AWS)
+  getSentinelLayer: (date?: string) => {
+    const useDate = date || getGIBSDate(5);
+    return {
+      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/HLS_S30_Nadir_BRDF_Adjusted_Reflectance/default/${useDate}/GoogleMapsCompatible_Level12/{z}/{y}/{x}.png`,
+      attribution: `Sentinel-2 &copy; ESA/NASA (${useDate})`,
+      maxZoom: 12,
+      date: useDate,
+      satellite: 'Sentinel-2',
+      resolution: '10m'
+    };
+  }
 };
 
 // ============= Helper Functions =============

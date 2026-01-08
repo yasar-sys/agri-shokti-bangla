@@ -280,8 +280,8 @@ export default function SatellitePage() {
             comparisonMode={comparisonMode}
           />
 
-          {/* AI Insight Panel - Positioned top-right on desktop, bottom on mobile */}
-          <div className="absolute top-4 right-4 z-[1002] hidden lg:block w-80">
+          {/* AI Insight Panel - Positioned bottom-right on desktop to avoid overlapping comparison */}
+          <div className="absolute bottom-4 right-4 z-[1001] hidden lg:block w-80">
             <SatelliteAIInsight
               ndviValue={healthData?.history?.[healthData.history.length - 1]?.ndvi ?? 0.7}
               moistureValue={healthData?.history?.[healthData.history.length - 1]?.moisture_index ?? 0.5}
