@@ -7,6 +7,7 @@ import { satelliteTileCache, getAdjacentTileCoords } from '@/lib/satelliteTileCa
 import { nasaApiClient } from '@/lib/nasaApiClient';
 import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
+import { MobileSatelliteSourceSelector, type SatelliteSource } from './SatelliteSourceSelector';
 
 type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
 
@@ -15,6 +16,8 @@ interface MobileSatelliteControlsProps {
   onLayerChange: (layer: TileLayer) => void;
   onComparisonToggle: () => void;
   onTimelapseToggle: () => void;
+  selectedSatellite?: SatelliteSource;
+  onSatelliteChange?: (source: SatelliteSource) => void;
   className?: string;
 }
 
@@ -31,6 +34,8 @@ export function MobileSatelliteControls({
   onLayerChange,
   onComparisonToggle,
   onTimelapseToggle,
+  selectedSatellite = 'modis',
+  onSatelliteChange,
   className,
 }: MobileSatelliteControlsProps) {
   const [cacheStats, setCacheStats] = useState({ count: 0, sizeMB: 0 });
@@ -105,32 +110,43 @@ export function MobileSatelliteControls({
             </SheetHeader>
 
             <div className="p-4 space-y-4 overflow-y-auto h-[calc(70vh-60px)]">
+              {/* Satellite Source Selection */}
+              {onSatelliteChange && (
+                <MobileSatelliteSourceSelector
+                  selectedSource={selectedSatellite}
+                  onSourceChange={onSatelliteChange}
+                />
+              )}
+
               {/* Layer Selection */}
-              <div className="grid grid-cols-2 gap-3">
-                {LAYERS.map((layer) => {
-                  const Icon = layer.icon;
-                  return (
-                    <button
-                      key={layer.id}
-                      onClick={() => {
-                        onLayerChange(layer.id);
-                        setIsOpen(false);
-                      }}
-                      className={cn(
-                        'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all',
-                        activeLayer === layer.id
-                          ? 'border-primary bg-primary/10'
-                          : 'border-border hover:border-primary/50'
-                      )}
-                    >
-                      <Icon
-                        className="w-8 h-8"
-                        style={{ color: activeLayer === layer.id ? layer.color : undefined }}
-                      />
-                      <span className="text-sm font-medium text-center">{layer.name}</span>
-                    </button>
-                  );
-                })}
+              <div className="space-y-2">
+                <h4 className="text-sm font-semibold">লেয়ার</h4>
+                <div className="grid grid-cols-2 gap-3">
+                  {LAYERS.map((layer) => {
+                    const Icon = layer.icon;
+                    return (
+                      <button
+                        key={layer.id}
+                        onClick={() => {
+                          onLayerChange(layer.id);
+                          setIsOpen(false);
+                        }}
+                        className={cn(
+                          'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all',
+                          activeLayer === layer.id
+                            ? 'border-primary bg-primary/10'
+                            : 'border-border hover:border-primary/50'
+                        )}
+                      >
+                        <Icon
+                          className="w-8 h-8"
+                          style={{ color: activeLayer === layer.id ? layer.color : undefined }}
+                        />
+                        <span className="text-sm font-medium text-center">{layer.name}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
 
               {/* Quick Actions */}
