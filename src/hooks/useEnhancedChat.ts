@@ -48,7 +48,6 @@ export function useEnhancedChat() {
       const { data, error: invokeError } = await supabase.functions.invoke('chat', {
         body: {
           messages,
-          model: useGroq ? 'fast' : 'default', // 'fast' maps to Llama 3.1
           temperature,
           max_tokens
         }
@@ -65,9 +64,9 @@ export function useEnhancedChat() {
 
       const response: ChatResponse = {
         message: data.response,
-        provider: useGroq ? 'Lovable Groq (Llama 3.1)' : 'Lovable Gemini',
-        model: useGroq ? 'llama-3.1-8b-instruct' : 'gemini-2.5-flash',
-        fast_mode: useGroq
+        provider: 'Lovable Gemini',
+        model: 'gemini-2.5-flash',
+        fast_mode: false
       };
 
       setLastProvider(response.provider);

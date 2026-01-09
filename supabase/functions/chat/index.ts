@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { messages, model: requestedModel } = await req.json();
+    const { messages } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
@@ -20,13 +20,7 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    // Map 'fast' or 'groq' to a high-speed Llama model via Groq/OpenRouter
-    // Using a standard OpenRouter-style ID supported by Lovable's gateway
-    const modelToUse = requestedModel === 'fast' || requestedModel === 'groq'
-      ? 'meta-llama/llama-3.1-8b-instruct'
-      : 'google/gemini-2.5-flash';
-
-    console.log(`Sending request to Lovable AI (${modelToUse}) with messages:`, messages.length);
+    console.log('Sending request to Lovable AI with messages:', messages.length);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -35,7 +29,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: modelToUse,
+        model: 'google/gemini-2.5-flash',
         messages: [
           {
             role: 'system',
