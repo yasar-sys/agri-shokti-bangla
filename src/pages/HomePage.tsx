@@ -36,8 +36,7 @@ import {
   Shield,
   BarChart3,
   ArrowLeftRight,
-  Video,
-  Quote
+  Video
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -54,8 +53,6 @@ import { useLocation } from "@/hooks/useLocation";
 import { useWeather } from "@/hooks/useWeather";
 import { useMarketPrices } from "@/hooks/useMarketPrices";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useAgricultureQuotes } from "@/hooks/useAgricultureQuotes";
-import { useFarmingTips } from "@/hooks/useFarmingTips";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -85,8 +82,6 @@ export default function HomePage() {
   const { prices: marketPrices, loading: marketLoading } = useMarketPrices();
   const { trackPageView, trackFeatureUse } = useAnalyticsTracker();
   const { t, language } = useLanguage();
-  const { currentQuote } = useAgricultureQuotes();
-  const { currentTip } = useFarmingTips();
 
   // Services array with translation keys
   const services = [
@@ -519,7 +514,7 @@ export default function HomePage() {
                 {t('todayTip')}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {currentTip?.tip_text || t('todayTipText')}
+                {t('todayTipText')}
               </p>
             </div>
           </div>
@@ -679,21 +674,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Agriculture Quote Banner - Production Ready */}
+      {/* Community Banner */}
       <section className="px-5 mb-5">
-        <div className="glass-card rounded-2xl p-5 border border-secondary/30 bg-gradient-to-br from-secondary/5 to-primary/5">
-          <div className="flex items-start gap-4">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-secondary/20 to-secondary/10 flex items-center justify-center flex-shrink-0">
-              <Quote className="w-5 h-5 text-secondary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-sm text-foreground leading-relaxed italic mb-2">
-                "{currentQuote?.text_bn || 'মাটি, মানুষ, প্রযুক্তি - কৃষির নতুন শক্তি'}"
-              </p>
-              <p className="text-xs text-muted-foreground font-medium">
-                — {currentQuote?.author_bn || 'agriশক্তি'}
-              </p>
-            </div>
+        <div className="glass-card rounded-2xl p-4 text-center border border-border/30">
+          <div className="flex items-center justify-center gap-2 text-sm">
+            <UsersRound className="w-4 h-4 text-secondary" />
+            <p className="text-muted-foreground">
+              {t('farmersUsingApp')} <span className="text-secondary font-bold">{t('farmersCount')}</span> {t('farmersUsingSuffix')}
+            </p>
           </div>
         </div>
       </section>

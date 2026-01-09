@@ -32,9 +32,3 @@ verify_jwt = false
 
 [functions.send-push-notification]
 verify_jwt = false
-
-[functions.bangla-tts]
-verify_jwt = false
-
-[functions.market-ai]
-verify_jwt = false
