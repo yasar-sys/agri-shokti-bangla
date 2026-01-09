@@ -165,6 +165,18 @@ export const OPEN_METEO = {
   }
 };
 
+// ============= AgroMonitoring API =============
+// High-resolution satellite imagery + NDVI
+export const AGRO_MONITORING = {
+  BASE_URL: 'https://api.agromonitoring.com/agro/1.0',
+  TILE_URL: 'https://api.agromonitoring.com/tile/1.0',
+
+  // Note: Needs API Key (appid)
+  getTileUrl: (z: number, x: number, y: number, polyId: string, appId: string) => {
+    return `${AGRO_MONITORING.TILE_URL}/{z}/{x}/{y}/${polyId}?appid=${appId}`;
+  }
+};
+
 // ============= NASA POWER (Prediction Of Worldwide Energy Resources) =============
 // Agroclimatology data
 export const NASA_POWER = {
@@ -284,11 +296,22 @@ export const TILE_LAYERS = {
     maxZoom: 19
   },
 
+  // AgroMonitoring NDVI - High resolution (requires appid and polygon)
+  getAgroNDVILayer: (polyId: string, appId: string) => ({
+    url: `https://api.agromonitoring.com/tile/1.0/{z}/{x}/{y}/${polyId}?appid=${appId}`,
+    attribution: 'NDVI &copy; AgroMonitoring',
+    maxZoom: 18,
+    opacity: 0.85
+  }),
+
   // NASA GIBS NDVI - Real-time with dynamic date (8-day composite, ~3 day delay for near real-time)
   getNDVILayer: (date?: string) => {
-    const useDate = date || getGIBSDate(3); // Use 3-day delay for near real-time
+    const useDate = date || getGIBSDate(3);
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const proxyUrl = `${baseUrl}/functions/v1/satellite-tiles/ndvi/{z}/{x}/{y}?date=${useDate}`;
+
     return {
-      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/${useDate}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png`,
+      url: proxyUrl,
       attribution: `NDVI &copy; NASA GIBS MODIS (${useDate})`,
       maxZoom: 9,
       date: useDate
@@ -297,9 +320,12 @@ export const TILE_LAYERS = {
 
   // NASA GIBS Soil Moisture - Real-time SMAP data
   getSoilMoistureLayer: (date?: string) => {
-    const useDate = date || getGIBSDate(2); // SMAP has ~2 day latency
+    const useDate = date || getGIBSDate(2);
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const proxyUrl = `${baseUrl}/functions/v1/satellite-tiles/soil_moisture/{z}/{x}/{y}?date=${useDate}`;
+
     return {
-      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/SMAP_L4_Analyzed_Surface_Soil_Moisture/default/${useDate}/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png`,
+      url: proxyUrl,
       attribution: `আর্দ্রতা &copy; NASA SMAP (${useDate})`,
       maxZoom: 7,
       date: useDate
@@ -308,9 +334,12 @@ export const TILE_LAYERS = {
 
   // NASA GIBS Land Surface Temperature - Real-time MODIS
   getLSTLayer: (date?: string) => {
-    const useDate = date || getGIBSDate(1); // LST is available next day
+    const useDate = date || getGIBSDate(1);
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const proxyUrl = `${baseUrl}/functions/v1/satellite-tiles/lst/{z}/{x}/{y}?date=${useDate}`;
+
     return {
-      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_Land_Surface_Temp_Day/default/${useDate}/GoogleMapsCompatible_Level7/{z}/{y}/{x}.png`,
+      url: proxyUrl,
       attribution: `তাপমাত্রা &copy; NASA MODIS (${useDate})`,
       maxZoom: 7,
       date: useDate
@@ -319,9 +348,12 @@ export const TILE_LAYERS = {
 
   // NASA GIBS Precipitation - Real-time GPM IMERG
   getPrecipitationLayer: (date?: string) => {
-    const useDate = date || getGIBSDate(1); // GPM available ~4 hours after observation
+    const useDate = date || getGIBSDate(1);
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const proxyUrl = `${baseUrl}/functions/v1/satellite-tiles/precipitation/{z}/{x}/{y}?date=${useDate}`;
+
     return {
-      url: `https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/GPM_IMERG_Precipitation_Rate/default/${useDate}/GoogleMapsCompatible_Level6/{z}/{y}/{x}.png`,
+      url: proxyUrl,
       attribution: `বৃষ্টিপাত &copy; NASA GPM (${useDate})`,
       maxZoom: 6,
       date: useDate
@@ -478,6 +510,7 @@ export default {
   OPEN_METEO,
   NASA_POWER,
   TILE_LAYERS,
+  AGRO_MONITORING,
   getGIBSDate,
   getDateRange,
   latLngToTile,

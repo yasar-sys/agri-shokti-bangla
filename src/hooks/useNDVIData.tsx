@@ -43,7 +43,10 @@ export function useNDVIData(userId: string | null) {
 
   // Fetch field zones
   const fetchFieldZones = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase

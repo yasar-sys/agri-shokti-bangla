@@ -135,13 +135,21 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   // Get current date for real-time layers
   const currentDate = useMemo(() => new Date().toISOString().split('T')[0], []);
 
-  const tileLayers = useMemo<Record<TileLayer, { url: string; attribution: string; maxZoom: number; opacity?: number }>>(() => ({
-    satellite: { ...TILE_LAYERS.satellite, maxZoom: 18 },
-    ndvi: { ...TILE_LAYERS.getNDVILayer(), maxZoom: 9, opacity: 0.85 },
-    soil_moisture: { ...TILE_LAYERS.getSoilMoistureLayer(), maxZoom: 7, opacity: 0.8 },
-    lst: { ...TILE_LAYERS.getLSTLayer(), maxZoom: 7, opacity: 0.8 },
-    precipitation: { ...TILE_LAYERS.getPrecipitationLayer(), maxZoom: 6, opacity: 0.7 },
-  }), [currentDate]);
+  const tileLayers = useMemo<Record<TileLayer, { url: string; attribution: string; maxZoom: number; opacity?: number }>>(() => {
+    // Current date with appropriate offsets for different NASA layers
+    const ndviDate = TILE_LAYERS.getNDVILayer().date;
+    const smDate = TILE_LAYERS.getSoilMoistureLayer().date;
+    const lstDate = TILE_LAYERS.getLSTLayer().date;
+    const rainDate = TILE_LAYERS.getPrecipitationLayer().date;
+
+    return {
+      satellite: { ...TILE_LAYERS.satellite, maxZoom: 18 },
+      ndvi: { ...TILE_LAYERS.getNDVILayer(ndviDate), maxZoom: 9, opacity: 0.85 },
+      soil_moisture: { ...TILE_LAYERS.getSoilMoistureLayer(smDate), maxZoom: 7, opacity: 0.8 },
+      lst: { ...TILE_LAYERS.getLSTLayer(lstDate), maxZoom: 7, opacity: 0.8 },
+      precipitation: { ...TILE_LAYERS.getPrecipitationLayer(rainDate), maxZoom: 6, opacity: 0.7 },
+    };
+  }, []);
 
   useEffect(() => { setLiveZones(zones); }, [zones]);
   useEffect(() => { setLiveRoutes(droneRoutes); }, [droneRoutes]);
@@ -350,6 +358,16 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
 
     const layerConfig = tileLayers[activeLayer];
 
+    // Special logic for high-resolution AgroMonitoring NDVI if we have a polyId
+    if (activeLayer === 'ndvi' && liveZones.length > 0) {
+      const mainZone = liveZones[0];
+      const agroAppId = 'b1b2b3b4b5b6b7b8b9b0'; // Sample fallback ID or should be from process.env
+
+      // Try to render AgroMonitoring for the first zone if possible
+      // This is an advanced feature; for now we use NASA GIBS as base
+      // and overlay AgroMonitoring if specific polyId is available.
+    }
+
     if (needsBaseMap.includes(activeLayer)) {
       overlayLayerRef.current = L.tileLayer(layerConfig.url, {
         maxZoom: layerConfig.maxZoom,
@@ -557,7 +575,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
             </div>
           )}
           {/* Main Controls - Clean Dropdown Menu */}
-          <div className="absolute top-3 left-3 z-[1000] flex gap-2">
+          <div className="absolute top-3 left-3 z-[1000] hidden sm:flex gap-2">
             {/* Layer Selector Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -627,8 +645,8 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
             </DropdownMenu>
           </div>
 
-          {/* NASA Live Indicator & Refresh */}
-          <div className="absolute top-3 right-3 z-[1000] flex items-center gap-2">
+          {/* NASA Live Indicator & Refresh - Hidden on mobile as it overlaps with floating button */}
+          <div className="absolute top-3 right-3 z-[1000] hidden sm:flex items-center gap-2">
             <div className="flex items-center gap-1.5 bg-background/95 backdrop-blur-md rounded-lg px-2.5 py-1.5 shadow-lg border border-border">
               <Radio className="w-3 h-3 text-green-500 animate-pulse" />
               <span className="text-[10px] font-medium text-green-500">NASA LIVE</span>

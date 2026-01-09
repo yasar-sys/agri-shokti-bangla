@@ -31,7 +31,10 @@ export function useDroneRoutes(userId: string | null) {
 
   // Fetch drone routes
   const fetchRoutes = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) {
+      setLoading(false);
+      return;
+    }
 
     try {
       const { data, error } = await supabase
@@ -42,7 +45,7 @@ export function useDroneRoutes(userId: string | null) {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      
+
       // Type assertion for JSONB fields and status
       const typedData = (data || []).map(route => ({
         ...route,
@@ -50,7 +53,7 @@ export function useDroneRoutes(userId: string | null) {
         waypoints: (route.waypoints || []) as DroneRoute['waypoints'],
         optimized_path: (route.optimized_path || []) as DroneRoute['optimized_path']
       }));
-      
+
       setRoutes(typedData);
     } catch (error) {
       console.error('Error fetching drone routes:', error);
@@ -239,11 +242,11 @@ export function useDroneRoutes(userId: string | null) {
               waypoints: (payload.new.waypoints || []) as DroneRoute['waypoints'],
               optimized_path: (payload.new.optimized_path || []) as DroneRoute['optimized_path']
             } as DroneRoute;
-            setRoutes(prev => 
+            setRoutes(prev =>
               prev.map(r => r.id === updatedRoute.id ? updatedRoute : r)
             );
           } else if (payload.eventType === 'DELETE') {
-            setRoutes(prev => 
+            setRoutes(prev =>
               prev.filter(r => r.id !== (payload.old as DroneRoute).id)
             );
           }

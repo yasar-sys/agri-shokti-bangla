@@ -94,8 +94,8 @@ export function MobileSatelliteControls({
           <SheetTrigger asChild>
             <Button
               size="icon"
-              className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-[1001]"
-              style={{ backgroundColor: LAYERS.find(l => l.id === activeLayer)?.color }}
+              className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-[1001] active:scale-95 transition-transform"
+              style={{ backgroundColor: LAYERS.find(l => l.id === activeLayer)?.color || '#22c55e' }}
             >
               {(() => {
                 const Icon = LAYERS.find(l => l.id === activeLayer)?.icon || Layers;

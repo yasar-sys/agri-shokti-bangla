@@ -13,7 +13,7 @@ function cleanCache() {
   if (tileCache.size > MAX_CACHE_SIZE) {
     const entries = Array.from(tileCache.entries());
     entries.sort((a, b) => a[1].timestamp - b[1].timestamp);
-    
+
     const toRemove = entries.slice(0, Math.floor(MAX_CACHE_SIZE * 0.3));
     toRemove.forEach(([key]) => tileCache.delete(key));
   }
@@ -37,10 +37,22 @@ const TILE_PROVIDERS: Record<string, { url: string; headers?: Record<string, str
     maxAge: 7 * 24 * 60 * 60,
   },
   ndvi: {
-    url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/2024-01-01/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png',
+    // Note: We use the 8-day composite. We'll derive the date dynamically in the handler.
+    url: 'https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/MODIS_Terra_NDVI_8Day/default/{date}/GoogleMapsCompatible_Level9/{z}/{y}/{x}.png',
     maxAge: 8 * 24 * 60 * 60,
+  },
+  agromonitoring: {
+    // Needs polyid and appid
+    url: 'https://api.agromonitoring.com/tile/1.0/{z}/{x}/{y}/{polyid}?appid={appid}',
+    maxAge: 24 * 60 * 60,
   }
 };
+
+function getGIBSDate(daysBack = 14) {
+  const date = new Date();
+  date.setDate(date.getDate() - daysBack);
+  return date.toISOString().split('T')[0];
+}
 
 Deno.serve(async (req: Request) => {
   // Handle CORS preflight
@@ -51,11 +63,11 @@ Deno.serve(async (req: Request) => {
   try {
     const url = new URL(req.url);
     const pathParts = url.pathname.split('/');
-    
+
     // Support both query params and path-based routing
     // Path format: /satellite-tiles/{provider}/{z}/{x}/{y}
     // Query format: ?provider=satellite&z=8&x=100&y=50
-    
+
     let provider: string;
     let z: number, x: number, y: number;
 
@@ -77,7 +89,7 @@ Deno.serve(async (req: Request) => {
 
     const cacheKey = `${provider}_${z}_${x}_${y}`;
     const cached = tileCache.get(cacheKey);
-    
+
     if (cached && Date.now() - cached.timestamp < CACHE_TTL_MS) {
       console.log(`[satellite-tiles] Cache hit: ${cacheKey}`);
       return new Response(cached.data, {
@@ -111,10 +123,17 @@ Deno.serve(async (req: Request) => {
     }
 
     const tileConfig = TILE_PROVIDERS[provider];
-    const tileUrl = tileConfig.url
+    const date = url.searchParams.get('date') || getGIBSDate(3);
+    const polyid = url.searchParams.get('polyid') || '';
+    const appid = url.searchParams.get('appid') || Deno.env.get('AGRO_MONITORING_API_KEY') || '';
+
+    let tileUrl = tileConfig.url
       .replace('{z}', z.toString())
       .replace('{x}', x.toString())
-      .replace('{y}', y.toString());
+      .replace('{y}', y.toString())
+      .replace('{date}', date)
+      .replace('{polyid}', polyid)
+      .replace('{appid}', appid);
 
     console.log(`[satellite-tiles] Fetching: ${tileUrl}`);
 
@@ -131,7 +150,7 @@ Deno.serve(async (req: Request) => {
 
     if (!response.ok) {
       console.error(`[satellite-tiles] Upstream error: ${response.status} ${response.statusText}`);
-      
+
       // Try fallback provider
       if (provider === 'satellite') {
         console.log('[satellite-tiles] Trying terrain fallback...');
@@ -139,7 +158,7 @@ Deno.serve(async (req: Request) => {
           .replace('{z}', z.toString())
           .replace('{x}', x.toString())
           .replace('{y}', y.toString());
-        
+
         const fallbackResponse = await fetch(fallbackUrl);
         if (fallbackResponse.ok) {
           const body = await fallbackResponse.arrayBuffer();
@@ -171,7 +190,7 @@ Deno.serve(async (req: Request) => {
       timestamp: Date.now(),
       contentType
     });
-    
+
     cleanCache();
 
     const maxAge = tileConfig.maxAge || 86400;
