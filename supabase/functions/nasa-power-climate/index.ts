@@ -64,19 +64,34 @@ serve(async (req) => {
     // Call NASA POWER API
     const nasaUrl = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=${params.join(',')}&community=AG&longitude=${longitude}&latitude=${latitude}&start=${start}&end=${end}&format=JSON`;
 
-    console.log('Calling NASA POWER API...');
-    const response = await fetch(nasaUrl, {
-      headers: {
-        'User-Agent': 'AgriShokti-Bangla/1.0'
+    let paramData;
+    let nasaData;
+    let isSimulated = false;
+
+    try {
+      console.log('Calling NASA POWER API...');
+      const response = await fetch(nasaUrl, {
+        headers: {
+          'User-Agent': 'AgriShokti-Bangla/1.0'
+        },
+        signal: AbortSignal.timeout(8000) // 8 second timeout
+      });
+
+      if (!response.ok) {
+        throw new Error(`NASA POWER API returned ${response.status}`);
       }
-    });
 
-    if (!response.ok) {
-      throw new Error(`NASA POWER API returned ${response.status}`);
+      nasaData = await response.json();
+      paramData = nasaData.properties.parameter;
+    } catch (apiError) {
+      console.warn('NASA POWER API failed, using smart fallback:', apiError);
+      isSimulated = true;
+      paramData = generateMockClimateData(latitude, longitude, days);
+      nasaData = {
+        geometry: { coordinates: [longitude, latitude] },
+        properties: { parameter: { ELEV: 5, TZ: 6 } }
+      };
     }
-
-    const nasaData = await response.json();
-    const paramData = nasaData.properties.parameter;
 
     // Process the data
     const getLatestValue = (dataObj: any): number | null => {
@@ -105,13 +120,13 @@ serve(async (req) => {
       const values = Object.values(dataObj) as number[];
       const validValues = values.filter(v => v !== -999 && v !== null);
       if (validValues.length < 2) return 'stable';
-      
+
       const firstHalf = validValues.slice(0, Math.floor(validValues.length / 2));
       const secondHalf = validValues.slice(Math.floor(validValues.length / 2));
-      
+
       const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
       const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-      
+
       const diff = secondAvg - firstAvg;
       if (diff > 1) return 'increasing';
       if (diff < -1) return 'decreasing';
@@ -169,8 +184,8 @@ serve(async (req) => {
         min: getLatestValue(paramData.T2M_MIN),
         average: calculateAverage(paramData.T2M),
         trend: calculateTrend(paramData.T2M),
-        trend_bn: calculateTrend(paramData.T2M) === 'increasing' ? 'বৃদ্ধি পাচ্ছে' : 
-                  calculateTrend(paramData.T2M) === 'decreasing' ? 'হ্রাস পাচ্ছে' : 'স্থিতিশীল'
+        trend_bn: calculateTrend(paramData.T2M) === 'increasing' ? 'বৃদ্ধি পাচ্ছে' :
+          calculateTrend(paramData.T2M) === 'decreasing' ? 'হ্রাস পাচ্ছে' : 'স্থিতিশীল'
       },
       precipitation: {
         total: calculateSum(paramData.PRECTOTCORR),
@@ -205,7 +220,8 @@ serve(async (req) => {
         longitude: nasaData.geometry.coordinates[0],
         elevation: nasaData.properties.parameter.ELEV,
         timezone: nasaData.properties.parameter.TZ || 6,
-        source: 'NASA POWER API',
+        source: isSimulated ? 'Historical Simulation' : 'NASA POWER API',
+        is_simulated: isSimulated,
         date_range: { start, end },
         timestamp: new Date().toISOString()
       }
@@ -226,7 +242,7 @@ serve(async (req) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
     console.error('NASA POWER function error:', error);
-    
+
     return new Response(
       JSON.stringify({
         success: false,
@@ -240,3 +256,67 @@ serve(async (req) => {
     );
   }
 });
+
+/**
+ * Generates realistic agricultural climate data for Bangladesh region
+ * based on coordinates and current season.
+ */
+function generateMockClimateData(lat: number, lng: number, days: number) {
+  const isBangladesh = lat > 20 && lat < 27 && lng > 88 && lng < 93;
+  const currentMonth = new Date().getMonth(); // 0-11
+
+  // Seasonal constants for Bangladesh
+  const seasons = [
+    { name: 'Winter', temp: 18, rain: 0.1, humidity: 45 },    // Jan
+    { name: 'Winter', temp: 21, rain: 0.2, humidity: 40 },    // Feb
+    { name: 'Pre-Monsoon', temp: 28, rain: 2.0, humidity: 55 }, // Mar
+    { name: 'Pre-Monsoon', temp: 31, rain: 5.0, humidity: 65 }, // Apr
+    { name: 'Pre-Monsoon', temp: 32, rain: 8.0, humidity: 75 }, // May
+    { name: 'Monsoon', temp: 30, rain: 15.0, humidity: 85 },     // Jun
+    { name: 'Monsoon', temp: 29, rain: 20.0, humidity: 90 },     // Jul
+    { name: 'Monsoon', temp: 29, rain: 18.0, humidity: 88 },     // Aug
+    { name: 'Monsoon', temp: 28, rain: 12.0, humidity: 85 },     // Sep
+    { name: 'Post-Monsoon', temp: 27, rain: 4.0, humidity: 75 }, // Oct
+    { name: 'Winter', temp: 23, rain: 0.5, humidity: 60 },      // Nov
+    { name: 'Winter', temp: 19, rain: 0.1, humidity: 50 },      // Dec
+  ];
+
+  const season = seasons[currentMonth];
+  const paramData: any = {
+    T2M: {},
+    T2M_MAX: {},
+    T2M_MIN: {},
+    PRECTOTCORR: {},
+    RH2M: {},
+    WS2M: {},
+    ALLSKY_SFC_SW_DWN: {},
+    T2MDEW: {},
+    PS: {},
+    ELEV: 5,
+    TZ: 6
+  };
+
+  const now = new Date();
+  for (let i = 0; i < days; i++) {
+    const d = new Date();
+    d.setDate(now.getDate() - i);
+    const dateStr = d.toISOString().split('T')[0].replace(/-/g, '');
+
+    // Add some random variation
+    const varTemp = (Math.random() - 0.5) * 4;
+    const varRain = Math.random() > 0.8 ? Math.random() * 10 : 0;
+    const varHum = (Math.random() - 0.5) * 10;
+
+    paramData.T2M[dateStr] = season.temp + varTemp;
+    paramData.T2M_MAX[dateStr] = season.temp + varTemp + 3;
+    paramData.T2M_MIN[dateStr] = season.temp + varTemp - 3;
+    paramData.PRECTOTCORR[dateStr] = Math.max(0, season.rain + varRain);
+    paramData.RH2M[dateStr] = Math.max(10, Math.min(100, season.humidity + varHum));
+    paramData.WS2M[dateStr] = 3 + Math.random() * 5;
+    paramData.ALLSKY_SFC_SW_DWN[dateStr] = 15 + Math.random() * 10;
+    paramData.T2MDEW[dateStr] = season.temp - 5;
+    paramData.PS[dateStr] = 101;
+  }
+
+  return paramData;
+}

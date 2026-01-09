@@ -96,6 +96,11 @@ export const NASAClimateDetails: React.FC<NASAClimateDetailsProps> = ({ data, lo
                     <Badge variant="outline" className="ml-2 bg-primary/5 text-[10px] uppercase tracking-wider">
                         NASA POWER API
                     </Badge>
+                    {data.metadata?.is_simulated && (
+                        <Badge variant="outline" className="ml-2 bg-orange-500/10 text-orange-600 border-orange-500/20 text-[10px] uppercase tracking-wider animate-pulse">
+                            Simulated Backup
+                        </Badge>
+                    )}
                 </div>
             </div>
 
