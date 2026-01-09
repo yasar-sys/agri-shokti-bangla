@@ -1,55 +1,48 @@
-# AI Core: Data Flow & Decision Logic Details
+# AI Core: AgriTech Challenge Logic Details
 
-This document details the **"Technical Nervous System"** of **Agri Shokti**, explaining how raw data is transformed into validated agricultural intelligence.
-
----
-
-## 1. Data Ingestion & Preprocessing (Senses)
-The foundation of our AI's judgment is built on high-fidelity, processed data.
-*   **Multi-Source Ingestion**: Data is ingested from three primary streams:
-    *   **External Knowledge**: BARI crop manuals, DAE pest datasets, and NASA Soil/NDVI spectral data.
-    *   **User Context**: Personalized soil history, previous crop cycles, and regional identifiers.
-    *   **Live Inputs**: Multimodal data (Voice queries, Leaf photos, Fertilizer sack images).
-*   **Preprocessing Pipeline**: 
-    *   **Cleaning**: Removal of noise from voice/image inputs to optimize LLM comprehension.
-    *   **Anonymization**: PII (Personally Identifiable Information) is stripped at the Edge layer to ensure **Ethics & Privacy** compliance.
-    *   **Embedding**: Raw text is converted into 1536-dimensional vectors using **text-embedding-004**, specifically optimized for Bangla-English technical terminology.
+This document provides a technical deep-dive into the AI architecture and "Innovation Edge" features that allow **Agri Shokti** to deliver 10X impact in the precision agriculture sector.
 
 ---
 
-## 2. Core Reasoning Chain (The Brain)
-*   **User Profiling**: Every query is contextualized with the user's past data (e.g., "Rice farmer in Sylhet with previous Blast history").
-*   **RAG Retrieval**: The system performs a semantic similarity search in our **Supabase PG Vector** database, retrieving the specific BARI protocol relevant to the current stressor.
-*   **Agentic Orchestration (MCP)**: The master logic engine (Gemini 2.5 Flash) coordinates multiple **specialist agents**:
-    *   One agent identifies the pest via image analysis.
-    *   Another agent retrieves the legal pesticide dosage from the RAG store.
-    *   The orchestrator synthesizes both into a final, safe recommendation.
+## 1. Problem Statement & Target Users
+*   **Gap**: Bangladeshi smallholders lack access to scientifically grounded, localized, and real-time advice. General LLMs "hallucinate" local dosages, and satellite data is often too technical for farmers to interpret.
+*   **Target Users**: Individual smallholders (primary), agricultural cooperatives (secondary), and regional policy planners (tertiary).
+*   **Mission**: Bridge the gap between sophisticated **NASA/Sentinel-2** data and ground-level farmer reality.
 
 ---
 
-## 3. Decision Validation & Guardrails (Judgment)
-To achieve **"Explainable AI,"** our system includes rigorous validation layers:
-*   **Explainability Layer**: Every diagnosis includes a "Reasoning Logic" block that explains *why* the AI reached its conclusion based on visual symptoms and BARI data.
-*   **Hallucination Guardrail**: A dedicated "Fact-Check Pass" compares the final advice against the source PDF context. If they conflict, the system downgrades the confidence score and requests a photo for expert human-in-the-loop review.
-*   **Safety Thresholds**: Decisions affecting chemical dosage or harvesting require a confidence score >85% before an automated action is triggered.
+## 2. The 4-Stage Reasoning Chain
+Our "Agri-Logic" pipeline performs adaptive reasoning across four distinct phases:
+1.  **Contextual Sensing**: The Geospatial Agent ingests Sentinel-2 spectral data to create a **Field Health Map**.
+2.  **Adaptive Reasoning**: The central LLM (Gemini 2.5 Flash) processes the health map alongside ground-level data (Soil pH/Moisture) to diagnose stress factors.
+3.  **Expert Validation (RAG)**: The diagnosis is cross-verified against **BARC (Bangladesh Agricultural Research Council)** guidelines stored in **Supabase pgvector**.
+4.  **Hyper-Localized Delivery**: Actionable advice is delivered through a **voice-first interface in Bangla**, ensuring accessibility for low-literacy users.
 
 ---
 
-## 4. Output Generation & Automation (Muscle)
-*   **Multimodal Delivery**: The logic is converted into context-rich **Bangla Voice**, technical **PDF Dashboards**, or simple **SMS Alerts** for low-connectivity users.
-*   **Automation Triggers**: Using **Supabase Edge Functions**, the system triggers real-world events:
-    *   Updating the community **Pest Heatmap**.
-    *   Triggering a **Climate Alert** push notification.
-    *   Initiating a **Drone Route** optimization plan.
+## 3. The "Innovation Edge" (10X Mindset)
+To deliver a generational leap in technology, we implement the following disruptive features:
+*   **Climate Twin (Harvest Simulation)**: A model that simulates future harvests under different climate scenarios (e.g., "What happens to my crop if rainfall increases by 20% in Sylhet?").
+*   **Satellite-to-Farmer Feedback Loop**: The system identifies health drops from space and asks the farmer to "verify" via a photo. This ground-truth data creates a self-learning system that refines its own sensing accuracy.
+*   **Hybrid-Edge Logic**: Critical agricultural logic is architected to work efficiently on low-bandwidth connections, leveraging cached context from the farmer's previous field cycles.
 
 ---
 
-## 5. Self-Evolving Feedback Loop (Growth)
-*   **Interaction Logging**: Every AI interaction (Input -> Logic -> Output) is logged in our `ai_feedback` table.
-*   **Continuous Improvement**: We analyze common failures or low-confidence scores to identify "Knowledge Gaps" in our RAG store.
-*   **Self-Evolving Genome**: Periodically, successful human-verified interactions are re-embedded into the Knowledge Base, allowing the system to "learn" from localized farming nuances over time.
+## 4. Impact Metrics (Success Measurement)
+We measure success through three "North Star" metrics:
+*   **Yield Increase (%)**: Targeted 15-20% boost via precision planting and disease prevention.
+*   **Input Waste Reduction**: targeted 30% reduction in unnecessary fertilizer/pesticide usage through exact BARI dosage recommendations.
+*   **Engagement**: Number of weekly active farmers transitioning from trial to habitual decision-making using the platform.
 
 ---
 
-> [!IMPORTANT]
-> **Technical Implementation Summary**: This flow ensures that **Agri Shokti** acts as a reliable, traceable, and improving agricultural brain, rather than a static chatbot.
+> [!NOTE]
+> **Agricultural Consultant Analogy**: Agri Shokti is your digital consultant. The satellite data is its **eyes**; the BARC database is its **library**; the LLM is its **brain**; and the Bangla voice interface is its **voice**.
+
+---
+
+## 5. Technical Stack
+*   **Geospatial Processing**: Sentinel Hub API, Google Earth Engine.
+*   **AI Core**: Gemini 2.5 Flash, text-embedding-004.
+*   **Automation**: n8n-style workflow triggers via Supabase Edge.
+*   **Database**: Supabase PostgreSQL with pgvector extension.
