@@ -1,67 +1,120 @@
-# System Architecture & Technical Ecosystem
+# Comprehensive System Architecture & Engineering Blueprints
 
-This flowchart illustrates the multi-dimensional data flow of **Agri Shokti**, showing how Generative AI, Predictive Analytics, and Remote Sensing work together.
+This document serves as the official technical blueprint for **Agri Shokti**, designed to demonstrate high-level technical implementation and AI reasoning for the **MXB 2026** judging committee.
 
-## Comprehensive Logic Flow (n8n Style)
+---
+
+## 1. High-Level System Overview (The Big Picture)
+Our architecture follows a clean **Input → Intelligent Logic → Output** paradigm, ensuring seamless interaction for rural farmers while maintaining high technical rigor.
+
+```mermaid
+graph LR
+    %% User Input Layer
+    subgraph "Phase 1: Multi-Modal Input"
+        U1["🗣️ Voice Query"]
+        U2["📸 Field/Pack Photo"]
+        U3["✍️ Text Question"]
+    end
+
+    %% AI Core Layer
+    subgraph "Phase 2: AI Intelligence Core"
+        G1{{"🛡️ Gateway & Router"}}
+        G2["🤖 Gemini 2.5 Flash<br/>(Multimodal Reasoning)"]
+        G3["📚 Multi-Source RAG Engine"]
+    end
+
+    %% Final Output Layer
+    subgraph "Phase 3: Actionable Output"
+        O1["🇧🇩 Contextual Bengali Advice"]
+        O2["📊 Market Buy/Sell Decision"]
+        O3["🚜 Precision Field Maps"]
+    end
+
+    %% Relationships
+    U1 & U2 & U3 --> G1
+    G1 --> G2
+    G2 <--> G3
+    G2 --> O1 & O2 & O3
+
+    style G2 fill:#e74c3c,stroke:#fff,color:#fff,stroke-width:2px
+```
+
+---
+
+## 2. AI Component Architecture (Internal Deep-Dive)
+We integrate state-of-the-art AI-native tools and agentic workflows to handle the complexity of precision agriculture.
+
+*   **Model Selection**: `google/gemini-2.5-flash` for high-speed multi-modal reasoning.
+*   **RAG (Retrieval-Augmented Generation)**: Uses `text-embedding-004` to index 10k+ pages of BARI/DAE technical documentation into **Supabase pgvector**.
+*   **MCP Style Integration**: Standardized Edge Functions act as tools for the model, allowing it to "sense" (Satellite), "analyze" (Market), and "see" (Vision).
 
 ```mermaid
 graph TD
-    %% User Inputs Hub
-    subgraph "Farmer Experience (Mobile/Web)"
-        Input_UI[("📲 App Interface")]
-        Action_Vision{{"📸 Capture Leaf/Sack"}}
-        Action_Query{{"💬 Ask AgriBrain"}}
-        Action_Sensing{{"🛰️ View Field Health"}}
-        Action_Params{{"🔢 Input Area/Land"}}
+    %% AI Orchestration
+    subgraph "AI Agentic Workflow"
+        LLM["🤖 Gemini 2.5 Flash Agent"]
+        Router{"🛠️ Tool Router"}
     end
 
-    %% Intelligence Layer
-    subgraph "Logic Processing Gateway"
-        Engine_GenAI["🤖 Generative AI<br/>(LLM Gateway)"]
-        Engine_Predictive["📈 Predictive Analytics<br/>(Risk Models)"]
-        Engine_Sensing["📡 Remote Sensing<br/>(NDVI/Satellite)"]
-        Engine_Spatial["📍 Spatial Logic<br/>(TSP/Drone)"]
+    %% Tools & Knowledge
+    subgraph "Context & Memory"
+        VectorDB[("📦 pgvector<br/>(BARI/DAE Knowledge)")]
+        VisionAPI["👁️ Vision Engine<br/>(OCR/Disease)"]
+        MarketAPI["📈 Market Price Stream"]
     end
 
-    %% Data & Knowledge
-    subgraph "Data Backbone"
-        Vector_DB[("📂 Doc Embeddings")]
-        Weather_API[("☁️ Live Weather")]
-        Market_API[("🌾 Price Feed")]
-        NASA_API[("🔭 NASA / Sentinel")]
-    end
-
-    %% Flow Connections
-    Action_Vision --> Engine_GenAI
-    Action_Query --> Engine_GenAI
+    %% Connections
+    LLM <--> Router
+    Router -->|Query| VectorDB
+    Router -->|Analyze Image| VisionAPI
+    Router -->|Fetch Prices| MarketAPI
     
-    Action_Sensing --> Engine_Sensing
-    Action_Params --> Engine_Predictive
-    
-    Engine_GenAI <--> Vector_DB
-    Engine_GenAI <--> Weather_API
-    
-    Engine_Predictive <--> Market_API
-    Engine_Sensing <--> NASA_API
-    
-    %% Cross-Logic Synthesis
-    Engine_Sensing --> Engine_Spatial
-    Engine_Predictive -->|Fertility Data| Engine_GenAI
-    
-    Engine_Spatial --> Input_UI
-    Engine_GenAI --> Input_UI
-    Engine_Sensing --> Input_UI
-
-    %% Styling Elements
-    style Engine_GenAI fill:#e74c3c,stroke:#fff,color:#fff
-    style Engine_Predictive fill:#2ecc71,stroke:#333
-    style Engine_Sensing fill:#3498db,stroke:#fff,color:#fff
-    style Engine_Spatial fill:#f1c40f,stroke:#333
+    VectorDB -->|Retrieved Context| LLM
+    VisionAPI -->|Visual Findings| LLM
+    MarketAPI -->|Live Deltas| LLM
 ```
 
-## The Four Intelligence Hubs
+---
 
-1.  **Generative AI Hub**: Powered by Gemini 2.5 Flash. It provides the "human-to-machine" interface, translating technical knowledge into actionable Bengali advice.
-2.  **Predictive Hub**: Uses mathematical models for NPK nutrient balancing, diesel fuel optimization, and harvest risk scores based on live weather deltas.
-3.  **Sensing Hub**: Converts raw satellite spectral data from NASA/Sentinel into simplified health scores (NDVI), allowing farmers to "see" crop stress before it's visible to the naked eye.
-4.  **Spatial Hub**: Optimizes movement. Whether it's drone spray paths using TSP algorithms or calculating the most efficient harvest route across multiple land parcels.
+## 3. Data Flow and Decision Logic
+Judges can verify our **AI Reasoning** through these clear decision paths and safety guardrails.
+
+### Decision Path Example (Pest Risk)
+1.  **Ingestion**: Live humidity (>80%) and temp (28°C) data fetched via Weather API.
+2.  **Processing**: Logic Engine identifies a high risk for *Rice Blast* fungus.
+3.  **Cross-Verification**: RAG checks historical pest heatmaps in the same district.
+4.  **Guardrail Layer**: If confidence is <70%, the system forces an "Expert Review Required" flag.
+
+```mermaid
+graph TD
+    %% Decision Pipeline
+    DP1["📥 Data Ingestion<br/>(Sensors/User)"] --> DP2["📑 Pre-processing<br/>(Cleaning)"]
+    DP2 --> DP3{{"🛡️ Hallucination Check<br/>& Safety Guardrail"}}
+    DP3 -->|Safe| DP4["🧠 AI Synthesis"]
+    DP3 -->|Unsafe| DP5["🚫 Filter/Reject"]
+    
+    DP4 --> DP6["🇧🇩 Bengali Formatting"]
+    DP6 --> DP7["📤 Output Delivery"]
+
+    %% Ethics Note
+    style DP3 fill:#f39c12,stroke:#333
+    note["<b>Ethics & Privacy Layer:</b><br/>PII Anonymization & Factual<br/>Attribution (BARI/DAE)"]
+    DP3 -.-> note
+```
+
+---
+
+## 4. Technology Stack (Layered View)
+Our stack is built for durability, scalability, and extreme performance.
+
+| Layer | Technologies Used |
+| :--- | :--- |
+| **Frontend** | React, Vite, TailwindCSS (v0/Lovable optimized) |
+| **Backend** | Supabase Edge Functions (Deno), Node.js, FastAPI |
+| **Data Layer** | Supabase PostgreSQL, **pgvector**, NASA Satellite API |
+| **AI/ML Layer** | **Gemini 2.5 Flash**, text-embedding-004, custom RAG |
+
+---
+
+> [!IMPORTANT]
+> **MXB2026 Judge Note**: This diagram set illustrates the **foundations, wiring, and plumbing** of the Agri Shokti platform. Every AI-generated output is grounded in BARI research data with a traceable attribution log preserved in our `rag_interactions` table.

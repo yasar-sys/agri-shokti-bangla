@@ -33,6 +33,14 @@ Beyond LLMs, the platform utilizes specialized algorithms to process environment
 
 ---
 
+## Data Provenance, Ethics & Safety
+*   **Citations**: All RAG-generated responses include mandatory source attribution (e.g., "Source: BARI Rice Manual").
+*   **Safety Thresholds**: If confidence for a diagnosis falls below 70%, the system automatically flags an "Expert Consultation Recommended" alert.
+*   **Privacy Layer**: Sensitive user query data is anonymized before log analysis; specifically, PII (Personally Identifiable Information) is never used as part of training or retrieval contexts.
+*   **Hallucination Check**: Our multi-step prompting includes a "Factual Verification" pass which compares raw LLM output against the retrieved vector context to ensure no English-to-Bengali translation drift.
+
+---
+
 ## 3. Spatial & Mechanical Optimization
 
 ### A. Drone Route Optimization
