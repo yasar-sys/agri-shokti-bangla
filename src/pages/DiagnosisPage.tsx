@@ -1,10 +1,11 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Share2, Download, AlertTriangle, CheckCircle, Leaf, Droplets, FlaskConical, Zap, Shield, Clock, TrendingDown, FileText, Loader2 } from "lucide-react";
+import { ArrowLeft, Share2, Download, AlertTriangle, CheckCircle, Leaf, Droplets, FlaskConical, Zap, Shield, Clock, TrendingDown, FileText, Loader2, Volume2, VolumeX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { toast } from "sonner";
+import { useBanglaTextToSpeech } from "@/hooks/useBanglaTextToSpeech";
 
 interface DiseaseResult {
   diseaseName: string;
@@ -31,6 +32,7 @@ export default function DiagnosisPage() {
   const [diseaseData, setDiseaseData] = useState<DiseaseResult | null>(null);
   const [scannedImage, setScannedImage] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const { speakDiseaseSolution, stop, isPlaying, isLoading: ttsLoading } = useBanglaTextToSpeech();
 
   useEffect(() => {
     const storedResult = sessionStorage.getItem('diseaseResult');

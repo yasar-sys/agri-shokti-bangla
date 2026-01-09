@@ -6,10 +6,16 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useScanHistory } from "@/hooks/useScanHistory";
+
+// Production image upload limit: 10MB
+const MAX_IMAGE_SIZE_MB = 10;
+const MAX_IMAGE_SIZE_BYTES = MAX_IMAGE_SIZE_MB * 1024 * 1024;
 
 export default function CameraPage() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { saveScan } = useScanHistory();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [capturedImage, setCapturedImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -19,8 +25,21 @@ export default function CameraPage() {
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 4 * 1024 * 1024) {
-        toast.error(t('imageSizeError'));
+      // Production upload limit: 10MB
+      if (file.size > MAX_IMAGE_SIZE_BYTES) {
+        toast.error(
+          t('imageSizeError') || `ছবির সাইজ ${MAX_IMAGE_SIZE_MB}MB এর বেশি হতে পারবে না`,
+          { description: `আপনার ছবি: ${(file.size / (1024 * 1024)).toFixed(2)}MB` }
+        );
+        return;
+      }
+      
+      // Validate file type
+      const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/heic', 'image/heif'];
+      if (!validTypes.includes(file.type) && !file.name.match(/\.(jpg|jpeg|png|webp|heic|heif)$/i)) {
+        toast.error('অবৈধ ফাইল ফরম্যাট', { 
+          description: 'JPG, PNG, WebP বা HEIC ছবি আপলোড করুন' 
+        });
         return;
       }
       
@@ -72,6 +91,15 @@ export default function CameraPage() {
 
       setProgress(100);
       setStatusText(t('analysisComplete'));
+
+      // Save scan to user's history (if logged in)
+      await saveScan({
+        disease_name: data.result.diseaseName,
+        health_score: data.result.confidence,
+        symptoms: data.result.symptoms,
+        treatment: data.result.treatment,
+        fertilizer_advice: data.result.fertilizer
+      });
 
       sessionStorage.setItem('diseaseResult', JSON.stringify(data.result));
       sessionStorage.setItem('scannedImage', capturedImage);
