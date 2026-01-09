@@ -18,6 +18,8 @@ import { nasaApiClient } from "@/lib/nasaApiClient";
 import { ComponentErrorBoundary } from "@/components/ui/component-error-boundary";
 import { SatelliteAIInsight } from "@/components/satellite/SatelliteAIInsight";
 import { SatelliteSourceSelector, type SatelliteSource } from "@/components/satellite/SatelliteSourceSelector";
+import { useNASAPowerClimate } from "@/hooks/useNASAPowerClimate";
+import { NASAClimateDetails } from "@/components/satellite/NASAClimateDetails";
 
 type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
 
@@ -38,6 +40,17 @@ export default function SatellitePage() {
   const { routes, loading: droneLoading, refetch: refreshDrone } = useDroneRoutes(userId);
   const { toast } = useToast();
   const serviceWorker = useSatelliteServiceWorker();
+
+  // NASA POWER Climate Integration
+  const {
+    data: climateData,
+    loading: climateLoading,
+    refresh: refreshClimate
+  } = useNASAPowerClimate({
+    latitude: location?.latitude,
+    longitude: location?.longitude,
+    autoFetch: true
+  });
 
   const fetchNDVIHistory = useCallback(async () => {
     if (!userId) return;
@@ -130,7 +143,7 @@ export default function SatellitePage() {
   const handleRefresh = useCallback(async () => {
     if (!userId) return;
     try {
-      await Promise.all([refreshNDVI(), refreshDrone()]);
+      await Promise.all([refreshNDVI(), refreshDrone(), refreshClimate()]);
       toast({ title: "রিফ্রেশ সম্পন্ন", description: "সর্বশেষ NASA ডেটা লোড হয়েছে" });
     } catch (error) {
       toast({
@@ -313,6 +326,11 @@ export default function SatellitePage() {
             </div>
           )}
         </main>
+
+        {/* NASA Climate Insights Section */}
+        <section className="container mx-auto px-4 pb-12">
+          <NASAClimateDetails data={climateData} loading={climateLoading} />
+        </section>
       </div>
     </ComponentErrorBoundary>
   );
