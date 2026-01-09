@@ -12,15 +12,21 @@ serve(async (req) => {
   }
 
   try {
-    const { messages } = await req.json();
+    const { messages, model: requestedModel } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    
+
     if (!LOVABLE_API_KEY) {
       console.error('LOVABLE_API_KEY is not configured');
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
-    console.log('Sending request to Lovable AI with messages:', messages.length);
+    // Map 'fast' or 'groq' to a high-speed Llama model via Groq/OpenRouter
+    // Using a standard OpenRouter-style ID supported by Lovable's gateway
+    const modelToUse = requestedModel === 'fast' || requestedModel === 'groq'
+      ? 'meta-llama/llama-3.1-8b-instruct'
+      : 'google/gemini-2.5-flash';
+
+    console.log(`Sending request to Lovable AI (${modelToUse}) with messages:`, messages.length);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
@@ -29,10 +35,10 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
+        model: modelToUse,
         messages: [
-          { 
-            role: 'system', 
+          {
+            role: 'system',
             content: `আপনি AgriBrain AI, একজন বাংলাদেশী কৃষি বিশেষজ্ঞ সহকারী। আপনি সবসময় বাংলায় উত্তর দেবেন।
 
 আপনার দক্ষতা:
@@ -48,7 +54,7 @@ serve(async (req) => {
 2. সহজ ভাষায় ব্যাখ্যা করুন যাতে কৃষকরা বুঝতে পারেন
 3. বাস্তব ও কার্যকর পরামর্শ দিন
 4. প্রয়োজনে ধাপে ধাপে নির্দেশনা দিন
-5. উত্তর সংক্ষিপ্ত কিন্তু তথ্যপূর্ণ রাখুন` 
+5. উত্তর সংক্ষিপ্ত কিন্তু তথ্যপূর্ণ রাখুন`
           },
           ...messages,
         ],
@@ -59,27 +65,27 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI gateway error:', response.status, errorText);
-      
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'AI সার্ভিস সাময়িকভাবে অনুপলব্ধ।' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
     const aiResponse = data.choices?.[0]?.message?.content || 'দুঃখিত, উত্তর দিতে পারছি না।';
-    
+
     console.log('AI response received successfully');
 
     return new Response(

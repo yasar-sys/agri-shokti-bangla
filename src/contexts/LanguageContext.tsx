@@ -23,13 +23,13 @@ const translations: Record<Language, Record<string, string>> = {
     refresh: "রিফ্রেশ",
     search: "খুঁজুন",
     all: "সব",
-    
+
     // App
     appName: "agriশক্তি",
     tagline: "মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি",
     taglineShort: "কৃষির নতুন শক্তি",
     beta: "বেটা",
-    
+
     // Services
     diseaseDetection: "রোগ শনাক্তকরণ",
     diseaseDesc: "ফসলের রোগ চিনুন",
@@ -83,12 +83,12 @@ const translations: Record<Language, Record<string, string>> = {
     barterDesc: "সরাসরি ফসল বিনিময়",
     demoScript: "ডেমো স্ক্রিপ্ট",
     demoScriptDesc: "ভিডিও স্ক্রিপ্ট",
-    
+
     // Bottom Nav
     scanner: "স্ক্যানার",
     aiChat: "AI চ্যাট",
     support: "সাপোর্ট",
-    
+
     // Header
     loggedIn: "লগইন করা আছে",
     welcome: "স্বাগতম!",
@@ -103,27 +103,27 @@ const translations: Record<Language, Record<string, string>> = {
     registerTitle: "রেজিস্টার করুন",
     findingLocation: "লোকেশন খুঁজছি...",
     adminDashboard: "অ্যাডমিন ড্যাশবোর্ড",
-    
+
     // Stats
     scans: "স্ক্যান",
     level: "লেভেল",
     rank: "র‍্যাংক",
-    
+
     // Tips
     todayTip: "আজকের টিপস",
-    
+
     // Market
     rice: "ধান",
     potato: "আলু",
     onion: "পেঁয়াজ",
     weeklyAvg: "সাপ্তাহিক গড়",
     perKg: "টাকা/কেজি",
-    
+
     // Weather
     humidity: "আর্দ্রতা",
     wind: "বাতাস",
     feelsLike: "অনুভূত",
-    
+
     // Settings
     customizeApp: "অ্যাপ কাস্টমাইজ করুন",
     language: "ভাষা",
@@ -159,7 +159,7 @@ const translations: Record<Language, Record<string, string>> = {
     darkModeOn: "ডার্ক মোড চালু আছে",
     lightModeOn: "লাইট মোড চালু আছে",
     themeChanged: "থিম পরিবর্তন হয়েছে",
-    
+
     // Land Calculator
     landCalculatorTitle: "জমি হিসাব ক্যালকুলেটর",
     landCalculatorDesc: "জমির মাপ ও মূল্য হিসাব করুন",
@@ -177,11 +177,11 @@ const translations: Record<Language, Record<string, string>> = {
     totalPrice: "মোট মূল্য",
     conversion: "রূপান্তর",
     reset: "রিসেট",
-    
+
     // Offline
     offlineMode: "অফলাইন মোড",
     offlineMessage: "ইন্টারনেট নেই। সীমিত সুবিধা পাবেন।",
-    
+
     // Chat
     askQuestion: "প্রশ্ন করুন...",
     voiceInput: "ভয়েস ইনপুট",
@@ -202,11 +202,13 @@ const translations: Record<Language, Record<string, string>> = {
     errorGettingAnswer: "উত্তর পেতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
     sorryCantAnswer: "দুঃখিত, উত্তর দিতে পারছি না।",
     listen: "শুনুন",
+    enableAutoSpeak: "AI ভয়েস চালু করুন",
+    disableAutoSpeak: "AI ভয়েস বন্ধ করুন",
     chatQuestion1: "ধানের পাতা হলুদ হয়ে যাচ্ছে কেন?",
     chatQuestion2: "কখন সার দেওয়া উচিত?",
     chatQuestion3: "বৃষ্টিতে ফসল রক্ষা করব কীভাবে?",
     chatQuestion4: "পোকামাকড় দমন করব কীভাবে?",
-    
+
     // Auth
     email: "ইমেইল",
     password: "পাসওয়ার্ড",
@@ -236,14 +238,14 @@ const translations: Record<Language, Record<string, string>> = {
     wrongEmailPass: "ইমেইল বা পাসওয়ার্ড ভুল হয়েছে",
     emailAlreadyUsed: "এই ইমেইল দিয়ে আগে অ্যাকাউন্ট খোলা হয়েছে",
     somethingWrong: "কিছু সমস্যা হয়েছে, আবার চেষ্টা করুন",
-    
+
     // Profile
     xpPoints: "XP পয়েন্ট",
     totalScans: "মোট স্ক্যান",
     daysActive: "সক্রিয় দিন",
     diseasesDetected: "রোগ শনাক্ত",
     editProfile: "প্রোফাইল সম্পাদনা",
-    
+
     // Common Actions
     view: "দেখুন",
     viewAll: "সব দেখুন",
@@ -255,7 +257,7 @@ const translations: Record<Language, Record<string, string>> = {
     delete: "মুছুন",
     edit: "সম্পাদনা",
     add: "যোগ করুন",
-    
+
     // Weather Page
     weatherTitle: "আবহাওয়া",
     realTimeWeather: "রিয়েল-টাইম আবহাওয়া",
@@ -272,7 +274,7 @@ const translations: Record<Language, Record<string, string>> = {
     days3: "৩ দিন",
     days4: "৪ দিন",
     kmh: "কি.মি./ঘ.",
-    
+
     // Market Page
     marketTitle: "বাজার দর",
     livePrice: "লাইভ মূল্য আপডেট",
@@ -298,7 +300,7 @@ const translations: Record<Language, Record<string, string>> = {
     marketAnalysis: "বাজার বিশ্লেষণ",
     marketAnalysisText: "বর্তমানে ধান ও পাটের দাম বাড়ার প্রবণতা দেখা যাচ্ছে। আলুর দাম শীতকালে স্বাভাবিকভাবেই কমতে পারে। পেঁয়াজের দাম স্থিতিশীল থাকবে বলে ধারণা করা হচ্ছে।",
     lastUpdate: "সর্বশেষ আপডেট",
-    
+
     // Profile Page
     myProfile: "আমার প্রোফাইল",
     personalInfo: "ব্যক্তিগত তথ্য",
@@ -310,7 +312,7 @@ const translations: Record<Language, Record<string, string>> = {
     myCalendar: "আমার ক্যালেন্ডার",
     newFarmer: "নতুন কৃষক",
     farmer: "কৃষক",
-    
+
     // Support Page
     supportCenter: "সাপোর্ট সেন্টার",
     contactUs: "আমাদের সাথে যোগাযোগ করুন",
@@ -333,7 +335,7 @@ const translations: Record<Language, Record<string, string>> = {
     supportHours: "সাপোর্ট সময়",
     location: "অবস্থান",
     madeBy: "দ্বারা তৈরি",
-    
+
     // Camera Page
     aiScanner: "AI স্ক্যানার",
     uploadOrTakePhoto: "ফসলের ছবি তুলুন বা আপলোড করুন",
@@ -353,7 +355,7 @@ const translations: Record<Language, Record<string, string>> = {
     imageSizeError: "ছবির সাইজ ৪MB এর বেশি হতে পারবে না",
     analysisError: "বিশ্লেষণ করতে সমস্যা হয়েছে। আবার চেষ্টা করুন।",
     serverError: "সার্ভারে সমস্যা হয়েছে। পরে আবার চেষ্টা করুন।",
-    
+
     // Diagnosis Page
     diagnosisTitle: "রোগ নির্ণয়",
     aiAnalysisComplete: "AI বিশ্লেষণ সম্পন্ন",
@@ -374,12 +376,12 @@ const translations: Record<Language, Record<string, string>> = {
     low: "হালকা",
     healthy: "সুস্থ",
     unknown: "অজানা",
-    
+
     // History Page
     scanHistoryTitle: "স্ক্যান ইতিহাস",
     cropHealthy: "ফসল সুস্থ অবস্থায় আছে। কোন রোগ পাওয়া যায়নি।",
     diseaseFound: "রোগ শনাক্ত হয়েছে",
-    
+
     // HomePage specific
     services: "সেবা সমূহ",
     aiDiseaseDiagnosis: "AI রোগ নির্ণয়",
@@ -403,13 +405,13 @@ const translations: Record<Language, Record<string, string>> = {
     refresh: "Refresh",
     search: "Search",
     all: "All",
-    
+
     // App
     appName: "agriShokti",
     tagline: "Soil, People, Technology – New Power of Agriculture",
     taglineShort: "New Power of Agriculture",
     beta: "Beta",
-    
+
     // Services
     diseaseDetection: "Disease Detection",
     diseaseDesc: "Identify crop diseases",
@@ -463,12 +465,12 @@ const translations: Record<Language, Record<string, string>> = {
     barterDesc: "Direct crop exchange",
     demoScript: "Demo Script",
     demoScriptDesc: "Video script",
-    
+
     // Bottom Nav
     scanner: "Scanner",
     aiChat: "AI Chat",
     support: "Support",
-    
+
     // Header
     loggedIn: "Logged in as",
     welcome: "Welcome!",
@@ -483,27 +485,27 @@ const translations: Record<Language, Record<string, string>> = {
     registerTitle: "Register",
     findingLocation: "Finding location...",
     adminDashboard: "Admin Dashboard",
-    
+
     // Stats
     scans: "Scans",
     level: "Level",
     rank: "Rank",
-    
+
     // Tips
     todayTip: "Today's Tips",
-    
+
     // Market
     rice: "Rice",
     potato: "Potato",
     onion: "Onion",
     weeklyAvg: "Weekly Avg",
     perKg: "Taka/kg",
-    
+
     // Weather
     humidity: "Humidity",
     wind: "Wind",
     feelsLike: "Feels like",
-    
+
     // Settings
     customizeApp: "Customize your app",
     language: "Language",
@@ -539,7 +541,7 @@ const translations: Record<Language, Record<string, string>> = {
     darkModeOn: "Dark mode is on",
     lightModeOn: "Light mode is on",
     themeChanged: "Theme changed",
-    
+
     // Land Calculator
     landCalculatorTitle: "Land Calculator",
     landCalculatorDesc: "Calculate land measurement & price",
@@ -557,11 +559,11 @@ const translations: Record<Language, Record<string, string>> = {
     totalPrice: "Total Price",
     conversion: "Conversion",
     reset: "Reset",
-    
+
     // Offline
     offlineMode: "Offline Mode",
     offlineMessage: "No internet. Limited features available.",
-    
+
     // Chat
     askQuestion: "Ask a question...",
     voiceInput: "Voice Input",
@@ -582,11 +584,13 @@ const translations: Record<Language, Record<string, string>> = {
     errorGettingAnswer: "Error getting answer. Please try again.",
     sorryCantAnswer: "Sorry, unable to answer.",
     listen: "Listen",
+    enableAutoSpeak: "Enable AI Voice",
+    disableAutoSpeak: "Disable AI Voice",
     chatQuestion1: "Why are rice leaves turning yellow?",
     chatQuestion2: "When should I apply fertilizer?",
     chatQuestion3: "How to protect crops from rain?",
     chatQuestion4: "How to control pests?",
-    
+
     // Auth
     email: "Email",
     password: "Password",
@@ -616,14 +620,14 @@ const translations: Record<Language, Record<string, string>> = {
     wrongEmailPass: "Wrong email or password",
     emailAlreadyUsed: "This email is already registered",
     somethingWrong: "Something went wrong, please try again",
-    
+
     // Profile
     xpPoints: "XP Points",
     totalScans: "Total Scans",
     daysActive: "Days Active",
     diseasesDetected: "Diseases Detected",
     editProfile: "Edit Profile",
-    
+
     // Common Actions
     view: "View",
     viewAll: "View All",
@@ -635,7 +639,7 @@ const translations: Record<Language, Record<string, string>> = {
     delete: "Delete",
     edit: "Edit",
     add: "Add",
-    
+
     // Weather Page
     weatherTitle: "Weather",
     realTimeWeather: "Real-time Weather",
@@ -652,7 +656,7 @@ const translations: Record<Language, Record<string, string>> = {
     days3: "3 Days",
     days4: "4 Days",
     kmh: "km/h",
-    
+
     // Market Page
     marketTitle: "Market Price",
     livePrice: "Live Price Update",
@@ -678,7 +682,7 @@ const translations: Record<Language, Record<string, string>> = {
     marketAnalysis: "Market Analysis",
     marketAnalysisText: "Currently, rice and jute prices are trending upward. Potato prices may naturally decrease in winter. Onion prices are expected to remain stable.",
     lastUpdate: "Last Update",
-    
+
     // Profile Page
     myProfile: "My Profile",
     personalInfo: "Personal Information",
@@ -690,7 +694,7 @@ const translations: Record<Language, Record<string, string>> = {
     myCalendar: "My Calendar",
     newFarmer: "New Farmer",
     farmer: "Farmer",
-    
+
     // Support Page
     supportCenter: "Support Center",
     contactUs: "Contact Us",
@@ -713,7 +717,7 @@ const translations: Record<Language, Record<string, string>> = {
     supportHours: "Support Hours",
     location: "Location",
     madeBy: "Made by",
-    
+
     // Camera Page
     aiScanner: "AI Scanner",
     uploadOrTakePhoto: "Take or upload crop photo",
@@ -733,7 +737,7 @@ const translations: Record<Language, Record<string, string>> = {
     imageSizeError: "Image size cannot exceed 4MB",
     analysisError: "Analysis failed. Please try again.",
     serverError: "Server error. Please try again later.",
-    
+
     // Diagnosis Page
     diagnosisTitle: "Disease Diagnosis",
     aiAnalysisComplete: "AI Analysis Complete",
@@ -754,12 +758,12 @@ const translations: Record<Language, Record<string, string>> = {
     low: "Low",
     healthy: "Healthy",
     unknown: "Unknown",
-    
+
     // History Page
     scanHistoryTitle: "Scan History",
     cropHealthy: "Crop is healthy. No diseases found.",
     diseaseFound: "Disease detected",
-    
+
     // HomePage specific
     services: "Services",
     aiDiseaseDiagnosis: "AI Disease Diagnosis",
@@ -784,13 +788,13 @@ const translations: Record<Language, Record<string, string>> = {
     refresh: "রিফ্রেশ",
     search: "খোঁজ",
     all: "সগ্গোলা",
-    
+
     // App
     appName: "agriশক্তি",
     tagline: "মাডি, মানুষ, প্রযুক্তি – খেতির নুয়া শক্তি",
     taglineShort: "খেতির নুয়া শক্তি",
     beta: "বেটা",
-    
+
     // Services
     diseaseDetection: "রোগ চিনা",
     diseaseDesc: "ফসলর রোগ চিন",
@@ -840,12 +844,12 @@ const translations: Record<Language, Record<string, string>> = {
     landDesc: "জমির মাপ ও দাম",
     impactAnalytics: "প্রভাব বিশ্লেষণ",
     impactDesc: "সমস্যা সমাধান চার্ট",
-    
+
     // Bottom Nav
     scanner: "স্ক্যানার",
     aiChat: "AI চ্যাট",
     support: "সাপোর্ট",
-    
+
     // Header
     loggedIn: "লগইন অইছো",
     welcome: "স্বাগতম!",
@@ -860,27 +864,27 @@ const translations: Record<Language, Record<string, string>> = {
     registerTitle: "রেজিস্টার গর",
     findingLocation: "লোকেশন খুঁজতাছি...",
     adminDashboard: "অ্যাডমিন ড্যাশবোর্ড",
-    
+
     // Stats
     scans: "স্ক্যান",
     level: "লেভেল",
     rank: "র‍্যাংক",
-    
+
     // Tips
     todayTip: "আইজকার টিপস",
-    
+
     // Market
     rice: "ধান",
     potato: "আলু",
     onion: "পিঁয়াজ",
     weeklyAvg: "সাপ্তাহিক গড়",
     perKg: "টেহা/কেজি",
-    
+
     // Weather
     humidity: "আর্দ্রতা",
     wind: "বাতাস",
     feelsLike: "অনুভব",
-    
+
     // Settings
     customizeApp: "অ্যাপ কাস্টমাইজ গর",
     language: "ভাষা",
@@ -916,7 +920,7 @@ const translations: Record<Language, Record<string, string>> = {
     darkModeOn: "ডার্ক মোড চালু",
     lightModeOn: "লাইট মোড চালু",
     themeChanged: "থিম বদলাইছে",
-    
+
     // Land Calculator
     landCalculatorTitle: "জমি হিসাব ক্যালকুলেটর",
     landCalculatorDesc: "জমির মাপ ও দাম হিসাব গর",
@@ -934,11 +938,11 @@ const translations: Record<Language, Record<string, string>> = {
     totalPrice: "মোট দাম",
     conversion: "রূপান্তর",
     reset: "রিসেট",
-    
+
     // Offline
     offlineMode: "অফলাইন মোড",
     offlineMessage: "নেট নাই। সীমিত সুবিধা পাইবা।",
-    
+
     // Chat
     askQuestion: "জিগাও...",
     voiceInput: "ভয়েস ইনপুট",
@@ -959,11 +963,13 @@ const translations: Record<Language, Record<string, string>> = {
     errorGettingAnswer: "উত্তর পাইতে সমস্যা। আবার চেষ্টা গর।",
     sorryCantAnswer: "মাফ গর, উত্তর দিতে পারতাছি না।",
     listen: "শোন",
+    enableAutoSpeak: "AI গলার স্বর চালু গরো",
+    disableAutoSpeak: "AI গলার স্বর বন্ধ গরো",
     chatQuestion1: "ধানের পাতা হলুদ অইতাছে ক্যান?",
     chatQuestion2: "কহন সার দেওন ঠিক?",
     chatQuestion3: "বৃষ্টিতে ফসল বাঁচামু ক্যামনে?",
     chatQuestion4: "পোকামাকড় মারমু ক্যামনে?",
-    
+
     // Auth
     email: "ইমেইল",
     password: "পাসওয়ার্ড",
@@ -993,14 +999,14 @@ const translations: Record<Language, Record<string, string>> = {
     wrongEmailPass: "ইমেইল বা পাসওয়ার্ড ভুল",
     emailAlreadyUsed: "এই ইমেইল দিয়া আগেই একাউন্ট আছে",
     somethingWrong: "কিছু সমস্যা অইছে, আবার চেষ্টা গর",
-    
+
     // Profile
     xpPoints: "XP পয়েন্ট",
     totalScans: "মোট স্ক্যান",
     daysActive: "সক্রিয় দিন",
     diseasesDetected: "রোগ শনাক্ত",
     editProfile: "প্রোফাইল সম্পাদনা",
-    
+
     // Common Actions
     view: "দেখ",
     viewAll: "সগ্গোলা দেখ",
@@ -1012,7 +1018,7 @@ const translations: Record<Language, Record<string, string>> = {
     delete: "মুছ",
     edit: "সম্পাদনা",
     add: "যোগ গর",
-    
+
     // Weather Page
     weatherTitle: "আবহাওয়া",
     realTimeWeather: "রিয়েল-টাইম আবহাওয়া",
@@ -1029,7 +1035,7 @@ const translations: Record<Language, Record<string, string>> = {
     days3: "৩ দিন",
     days4: "৪ দিন",
     kmh: "কি.মি./ঘ.",
-    
+
     // Market Page
     marketTitle: "বাজার দাম",
     livePrice: "লাইভ দাম আপডেট",
@@ -1055,7 +1061,7 @@ const translations: Record<Language, Record<string, string>> = {
     marketAnalysis: "বাজার বিশ্লেষণ",
     marketAnalysisText: "এহন ধান আর পাটর দাম বাড়তাছে। আলুর দাম শীতে কমতে পারে। পিঁয়াজর দাম স্থিতিশীল থাকবো।",
     lastUpdate: "শেষ আপডেট",
-    
+
     // Profile Page
     myProfile: "আঁর প্রোফাইল",
     personalInfo: "ব্যক্তিগত তথ্য",
@@ -1067,7 +1073,7 @@ const translations: Record<Language, Record<string, string>> = {
     myCalendar: "আঁর ক্যালেন্ডার",
     newFarmer: "নতুন কৃষক",
     farmer: "কৃষক",
-    
+
     // Support Page
     supportCenter: "সাপোর্ট সেন্টার",
     contactUs: "আঁগর লগে যোগাযোগ গর",
@@ -1090,7 +1096,7 @@ const translations: Record<Language, Record<string, string>> = {
     supportHours: "সাপোর্ট সময়",
     location: "অবস্থান",
     madeBy: "দ্বারা তৈরি",
-    
+
     // Camera Page
     aiScanner: "AI স্ক্যানার",
     uploadOrTakePhoto: "ফসলর ছবি তোল বা আপলোড গর",
@@ -1110,7 +1116,7 @@ const translations: Record<Language, Record<string, string>> = {
     imageSizeError: "ছবির সাইজ ৪MB এর বেশি অইলে অইবো না",
     analysisError: "বিশ্লেষণ গরতে সমস্যা অইছে। আবার চেষ্টা গর।",
     serverError: "সার্ভারে সমস্যা অইছে। পরে আবার চেষ্টা গর।",
-    
+
     // Diagnosis Page
     diagnosisTitle: "রোগ নির্ণয়",
     aiAnalysisComplete: "AI বিশ্লেষণ অইয়া গেছে",
@@ -1131,12 +1137,12 @@ const translations: Record<Language, Record<string, string>> = {
     low: "হালকা",
     healthy: "সুস্থ",
     unknown: "অজানা",
-    
+
     // History Page
     scanHistoryTitle: "স্ক্যান ইতিহাস",
     cropHealthy: "ফসল সুস্থ আছে। কোনো রোগ পাওয়া যায় নাই।",
     diseaseFound: "রোগ শনাক্ত অইছে",
-    
+
     // HomePage specific
     services: "সেবা সমূহ",
     aiDiseaseDiagnosis: "AI রোগ নির্ণয়",
@@ -1161,13 +1167,13 @@ const translations: Record<Language, Record<string, string>> = {
     refresh: "রিফ্রেশ",
     search: "খোঁজ",
     all: "সব",
-    
+
     // App
     appName: "agriশক্তি",
     tagline: "মাটি, মানুষ, প্রযুক্তি – কৃষির নয়া শক্তি",
     taglineShort: "কৃষির নয়া শক্তি",
     beta: "বেটা",
-    
+
     // Services
     diseaseDetection: "রোগ শনাক্ত",
     diseaseDesc: "ফসলের রোগ চিন",
@@ -1217,12 +1223,12 @@ const translations: Record<Language, Record<string, string>> = {
     landDesc: "জমির মাপ ও দাম",
     impactAnalytics: "প্রভাব বিশ্লেষণ",
     impactDesc: "সমস্যা সমাধান চার্ট",
-    
+
     // Bottom Nav
     scanner: "স্ক্যানার",
     aiChat: "AI চ্যাট",
     support: "সাপোর্ট",
-    
+
     // Header
     loggedIn: "লগইন আছ",
     welcome: "স্বাগতম!",
@@ -1237,27 +1243,27 @@ const translations: Record<Language, Record<string, string>> = {
     registerTitle: "রেজিস্টার কর",
     findingLocation: "লোকেশন খুঁজতেসি...",
     adminDashboard: "অ্যাডমিন ড্যাশবোর্ড",
-    
+
     // Stats
     scans: "স্ক্যান",
     level: "লেভেল",
     rank: "র‍্যাংক",
-    
+
     // Tips
     todayTip: "আজকার টিপস",
-    
+
     // Market
     rice: "ধান",
     potato: "আলু",
     onion: "পিয়াজ",
     weeklyAvg: "সাপ্তাহিক গড়",
     perKg: "টাহা/কেজি",
-    
+
     // Weather
     humidity: "আর্দ্রতা",
     wind: "বাতাস",
     feelsLike: "অনুভব",
-    
+
     // Settings
     customizeApp: "অ্যাপ কাস্টমাইজ কর",
     language: "ভাষা",
@@ -1293,7 +1299,7 @@ const translations: Record<Language, Record<string, string>> = {
     darkModeOn: "ডার্ক মোড চালু",
     lightModeOn: "লাইট মোড চালু",
     themeChanged: "থিম বদলাইসে",
-    
+
     // Land Calculator
     landCalculatorTitle: "জমি হিসাব ক্যালকুলেটর",
     landCalculatorDesc: "জমির মাপ ও দাম হিসাব কর",
@@ -1311,11 +1317,11 @@ const translations: Record<Language, Record<string, string>> = {
     totalPrice: "মোট দাম",
     conversion: "রূপান্তর",
     reset: "রিসেট",
-    
+
     // Offline
     offlineMode: "অফলাইন মোড",
     offlineMessage: "নেট নাই। সীমিত সুবিধা পাইবা।",
-    
+
     // Chat
     askQuestion: "জিগা...",
     voiceInput: "ভয়েস ইনপুট",
@@ -1336,11 +1342,13 @@ const translations: Record<Language, Record<string, string>> = {
     errorGettingAnswer: "উত্তর পাইতে সমস্যা। আবার চেষ্টা কর।",
     sorryCantAnswer: "মাফ কর, উত্তর দিতে পারতেসি না।",
     listen: "শোন",
+    enableAutoSpeak: "AI কন্ঠ চালু করেন",
+    disableAutoSpeak: "AI কন্ঠ বন্ধ করেন",
     chatQuestion1: "ধানের পাতা হলুদ হইতেসে ক্যান?",
     chatQuestion2: "কহন সার দেওন ঠিক?",
     chatQuestion3: "বৃষ্টিতে ফসল বাঁচামু ক্যামনে?",
     chatQuestion4: "পোকামাকড় মারমু ক্যামনে?",
-    
+
     // Auth
     email: "ইমেইল",
     password: "পাসওয়ার্ড",
@@ -1370,14 +1378,14 @@ const translations: Record<Language, Record<string, string>> = {
     wrongEmailPass: "ইমেইল বা পাসওয়ার্ড ভুল",
     emailAlreadyUsed: "এই ইমেইল দিয়া আগেই একাউন্ট আছে",
     somethingWrong: "কিছু সমস্যা হইসে, আবার চেষ্টা কর",
-    
+
     // Profile
     xpPoints: "XP পয়েন্ট",
     totalScans: "মোট স্ক্যান",
     daysActive: "সক্রিয় দিন",
     diseasesDetected: "রোগ শনাক্ত",
     editProfile: "প্রোফাইল সম্পাদনা",
-    
+
     // Common Actions
     view: "দেখ",
     viewAll: "সব দেখ",
@@ -1389,7 +1397,7 @@ const translations: Record<Language, Record<string, string>> = {
     delete: "মুছ",
     edit: "সম্পাদনা",
     add: "যোগ কর",
-    
+
     // Weather Page
     weatherTitle: "আবহাওয়া",
     realTimeWeather: "রিয়েল-টাইম আবহাওয়া",
@@ -1406,7 +1414,7 @@ const translations: Record<Language, Record<string, string>> = {
     days3: "৩ দিন",
     days4: "৪ দিন",
     kmh: "কি.মি./ঘ.",
-    
+
     // Market Page
     marketTitle: "বাজার দাম",
     livePrice: "লাইভ দাম আপডেট",
@@ -1432,7 +1440,7 @@ const translations: Record<Language, Record<string, string>> = {
     marketAnalysis: "বাজার বিশ্লেষণ",
     marketAnalysisText: "এহন ধান আর পাটের দাম বাড়তেসে। আলুর দাম শীতে কমতে পারে। পিয়াজের দাম স্থিতিশীল থাকবে।",
     lastUpdate: "শেষ আপডেট",
-    
+
     // Profile Page
     myProfile: "আমার প্রোফাইল",
     personalInfo: "ব্যক্তিগত তথ্য",
@@ -1444,7 +1452,7 @@ const translations: Record<Language, Record<string, string>> = {
     myCalendar: "আমার ক্যালেন্ডার",
     newFarmer: "নতুন কৃষক",
     farmer: "কৃষক",
-    
+
     // Support Page
     supportCenter: "সাপোর্ট সেন্টার",
     contactUs: "আমাগো লগে যোগাযোগ কর",
@@ -1467,7 +1475,7 @@ const translations: Record<Language, Record<string, string>> = {
     supportHours: "সাপোর্ট সময়",
     location: "অবস্থান",
     madeBy: "দ্বারা তৈরি",
-    
+
     // Camera Page
     aiScanner: "AI স্ক্যানার",
     uploadOrTakePhoto: "ফসলের ছবি তোল বা আপলোড কর",
@@ -1487,7 +1495,7 @@ const translations: Record<Language, Record<string, string>> = {
     imageSizeError: "ছবির সাইজ ৪MB এর বেশি হইলে হইবে না",
     analysisError: "বিশ্লেষণ করতে সমস্যা হইসে। আবার চেষ্টা কর।",
     serverError: "সার্ভারে সমস্যা হইসে। পরে আবার চেষ্টা কর।",
-    
+
     // Diagnosis Page
     diagnosisTitle: "রোগ নির্ণয়",
     aiAnalysisComplete: "AI বিশ্লেষণ হইয়া গেসে",
@@ -1508,12 +1516,12 @@ const translations: Record<Language, Record<string, string>> = {
     low: "হালকা",
     healthy: "সুস্থ",
     unknown: "অজানা",
-    
+
     // History Page
     scanHistoryTitle: "স্ক্যান ইতিহাস",
     cropHealthy: "ফসল সুস্থ আছে। কোনো রোগ পাওয়া যায় নাই।",
     diseaseFound: "রোগ শনাক্ত হইসে",
-    
+
     // HomePage specific
     services: "সেবা সমূহ",
     aiDiseaseDiagnosis: "AI রোগ নির্ণয়",
@@ -1565,12 +1573,12 @@ export function useLanguage() {
 // Safe version that returns fallback instead of throwing
 export function useLanguageSafe() {
   const context = useContext(LanguageContext);
-  
+
   if (context === undefined) {
     // Return fallback functions when context is not available
     return {
       language: "bn" as Language,
-      setLanguage: () => {},
+      setLanguage: () => { },
       t: (key: string): string => {
         // Basic fallback translations for critical UI elements
         const fallbacks: Record<string, string> = {
@@ -1582,6 +1590,6 @@ export function useLanguageSafe() {
       }
     };
   }
-  
+
   return context;
 }

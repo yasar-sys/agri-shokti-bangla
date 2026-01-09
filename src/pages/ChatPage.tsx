@@ -20,7 +20,7 @@ interface Message {
 
 export default function ChatPage() {
   const { t, language } = useLanguage();
-  
+
   const suggestedQuestions = [
     t('chatQuestion1'),
     t('chatQuestion2'),
@@ -39,6 +39,7 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+  const [autoSpeak, setAutoSpeak] = useState(true); // Default to true for full voice experience
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -48,7 +49,7 @@ export default function ChatPage() {
 
   // Update initial message when language changes
   useEffect(() => {
-    setMessages(prev => prev.map(msg => 
+    setMessages(prev => prev.map(msg =>
       msg.id === "1" ? { ...msg, content: t('chatGreeting'), timestamp: t('justNow') } : msg
     ));
   }, [language, t]);
@@ -76,10 +77,19 @@ export default function ChatPage() {
   } = useBengaliVoiceInput({
     onResult: (finalTranscript) => {
       setInputText(finalTranscript);
-      toast({
-        title: `✓ ${t('voiceHeard')}`,
-        description: finalTranscript.slice(0, 50) + (finalTranscript.length > 50 ? '...' : ''),
-      });
+
+      // Auto-send when voice input is finished for a truly "hands-free" experience
+      if (finalTranscript.trim()) {
+        toast({
+          title: `✓ ${t('voiceHeard')}`,
+          description: finalTranscript.slice(0, 50) + (finalTranscript.length > 50 ? '...' : ''),
+        });
+
+        // Small delay so the user can see what was heard before it's sent
+        setTimeout(() => {
+          handleSend(finalTranscript);
+        }, 1000);
+      }
     },
     onError: (error) => {
       toast({
@@ -105,8 +115,9 @@ export default function ChatPage() {
     scrollToBottom();
   }, [messages]);
 
-  const handleSend = async () => {
-    if (!inputText.trim() || isLoading) return;
+  const handleSend = async (overrideText?: string) => {
+    const textToSend = overrideText || inputText;
+    if (!textToSend.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: Date.now().toString(),
@@ -116,7 +127,7 @@ export default function ChatPage() {
     };
 
     setMessages((prev) => [...prev, userMessage]);
-    const currentInput = inputText;
+    const currentInput = textToSend;
     setInputText("");
     setIsLoading(true);
 
@@ -127,7 +138,7 @@ export default function ChatPage() {
           role: m.sender === "ai" ? "assistant" : "user",
           content: m.content
         }));
-      
+
       messageHistory.push({ role: "user", content: currentInput });
 
       const { data, error } = await supabase.functions.invoke('chat', {
@@ -142,8 +153,13 @@ export default function ChatPage() {
         sender: "ai",
         timestamp: t('justNow'),
       };
-      
+
       setMessages((prev) => [...prev, aiMessage]);
+
+      // Handle auto-speak
+      if (autoSpeak && ttsSupported) {
+        handleSpeak(aiMessage.id, aiMessage.content);
+      }
 
       // Save messages to database for logged-in users
       await saveMessage(currentInput, 'user');
@@ -156,7 +172,7 @@ export default function ChatPage() {
         title: t('error'),
         description: t('errorGettingAnswer'),
       });
-      
+
       const errorMessage: Message = {
         id: (Date.now() + 1).toString(),
         content: t('sorryTempProblem'),
@@ -210,7 +226,7 @@ export default function ChatPage() {
           >
             <ArrowLeft className="w-5 h-5 text-foreground" />
           </Link>
-          
+
           <div className="flex-1 flex items-center gap-3">
             <div className="relative">
               <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-secondary to-secondary/70 flex items-center justify-center shadow-lg shadow-secondary/20">
@@ -226,7 +242,21 @@ export default function ChatPage() {
               <p className="text-xs text-muted-foreground">{t('agriExpert')}</p>
             </div>
           </div>
-          
+
+          {/* Auto-speak Toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setAutoSpeak(!autoSpeak)}
+            className={cn(
+              "w-11 h-11 rounded-2xl bg-card/80 border border-border/50 transition-all",
+              autoSpeak ? "text-primary border-primary/30 bg-primary/5" : "text-muted-foreground"
+            )}
+            title={autoSpeak ? t('disableAutoSpeak') : t('enableAutoSpeak')}
+          >
+            {autoSpeak ? <Volume2 className="w-5 h-5" /> : <VolumeX className="w-5 h-5" />}
+          </Button>
+
           {/* Clear History Button */}
           {messages.length > 1 && (
             <Button
