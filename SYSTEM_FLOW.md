@@ -17,10 +17,10 @@ graph LR
     end
 
     %% AI Core Layer
-    subgraph "Phase 2: AI Intelligence Core"
+    subgraph "Phase 2: AI Logic Core"
         G1{{"🛡️ Gateway & Router"}}
-        G2["🤖 Gemini 2.5 Flash<br/>(Multimodal Reasoning)"]
-        G3["📚 Multi-Source RAG Engine"]
+        G2["🧠 AI Reasoning Engine"]
+        G3["📚 Multi-Source RAG"]
     end
 
     %% Final Output Layer
@@ -41,38 +41,52 @@ graph LR
 
 ---
 
-## 2. AI Component Architecture (Internal Deep-Dive)
-We integrate state-of-the-art AI-native tools and agentic workflows to handle the complexity of precision agriculture.
-
-*   **Model Selection**: `google/gemini-2.5-flash` for high-speed multi-modal reasoning.
-*   **RAG (Retrieval-Augmented Generation)**: Uses `text-embedding-004` to index 10k+ pages of BARI/DAE technical documentation into **Supabase pgvector**.
-*   **MCP Style Integration**: Standardized Edge Functions act as tools for the model, allowing it to "sense" (Satellite), "analyze" (Market), and "see" (Vision).
+## 2. AI Logic Core Deep-Dive (Component Depth)
+The AI Core is the brain of Agri Shokti. It orchestrates multiple intelligence layers to provide 10X better insights than a general chatbot.
 
 ```mermaid
 graph TD
-    %% AI Orchestration
-    subgraph "AI Agentic Workflow"
-        LLM["🤖 Gemini 2.5 Flash Agent"]
-        Router{"🛠️ Tool Router"}
+    %% LLM & Reasoning
+    subgraph "🧠 AI Reasoning & Orchestration"
+        Gemini["🤖 Gemini 2.5 Flash<br/>(Master Reasoner)"]
+        Router["🛠️ MCP-Style Specialist Router"]
     end
 
-    %% Tools & Knowledge
-    subgraph "Context & Memory"
-        VectorDB[("📦 pgvector<br/>(BARI/DAE Knowledge)")]
-        VisionAPI["👁️ Vision Engine<br/>(OCR/Disease)"]
-        MarketAPI["📈 Market Price Stream"]
+    %% RAG Stack
+    subgraph "📚 Knowledge & RAG Stack"
+        VectorDB[("📦 Supabase PG Vector<br/>(Knowledge Base)")]
+        Embed["🔠 text-embedding-004"]
+        Data["📖 BARI/DAE/NASA Data"]
+    end
+
+    %% Specialized Agents
+    subgraph "🕵️ Specialized MCP Agents"
+        VisionBot["👁️ Computer Vision Agent<br/>(Disease/OCR)"]
+        MarketBot["📈 Market Analyst Agent<br/>(Price Delta)"]
+        GeoBot["🛰️ Geospatial Agent<br/>(NASA/NDVI)"]
+    end
+
+    %% Automation Layer
+    subgraph "⚡ Action & Automation"
+        Edge["🏗️ Supabase Edge Functions<br/>(n8n-style Workflow)"]
     end
 
     %% Connections
-    LLM <--> Router
-    Router -->|Query| VectorDB
-    Router -->|Analyze Image| VisionAPI
-    Router -->|Fetch Prices| MarketAPI
+    Gemini <--> Router
+    Router --> VisionBot & MarketBot & GeoBot
     
-    VectorDB -->|Retrieved Context| LLM
-    VisionAPI -->|Visual Findings| LLM
-    MarketAPI -->|Live Deltas| LLM
+    Data --> Embed --> VectorDB
+    VectorDB <--> Gemini
+    
+    VisionBot & MarketBot & GeoBot --> Edge
+    Edge --> Gemini
 ```
+
+### AI Core Components List:
+*   **Models used**: `google/gemini-2.5-flash` acting as the central reasoning engine for its high-speed multimodal capabilities.
+*   **RAG Stack**: Utilizes **text-embedding-004** for high-fidelity vectorization of 10,000+ pages of BARI/DAE technical documents stored in **Supabase PG Vector**.
+*   **MCP / Agentic Workflows**: Uses a **Model Context Protocol** style approach where the LLM calls specialized "tools" (Vision, Market, Geospatial) as sub-agents.
+*   **Automation Layer**: **Supabase Edge Functions** act as the workflow automation layer (similar to n8n logic), connecting AI thoughts to database actions and UI updates.
 
 ---
 
@@ -80,25 +94,25 @@ graph TD
 Judges can verify our **AI Reasoning** through these clear decision paths and safety guardrails.
 
 ### Decision Path Example (Pest Risk)
-1.  **Ingestion**: Live humidity (>80%) and temp (28°C) data fetched via Weather API.
-2.  **Processing**: Logic Engine identifies a high risk for *Rice Blast* fungus.
-3.  **Cross-Verification**: RAG checks historical pest heatmaps in the same district.
-4.  **Guardrail Layer**: If confidence is <70%, the system forces an "Expert Review Required" flag.
+1.  **Ingestion & Preprocessing**: Data from SoilGrids/NASA is cleaned and normalized.
+2.  **Specialized Sensing**: The **Geospatial Agent** identifies stress zones via NDVI.
+3.  **Cross-Verification**: The Master Reasoner queries the **RAG Knowledge Base** for specific pest thresholds for the current region.
+4.  **Guardrail Layer**: A system pass checks for **Hallucinations** against the source BARI data. If confidence is <70%, the system flags an "Expert Review Required."
 
 ```mermaid
 graph TD
     %% Decision Pipeline
-    DP1["📥 Data Ingestion<br/>(Sensors/User)"] --> DP2["📑 Pre-processing<br/>(Cleaning)"]
+    DP1["📥 Raw Data Ingestion"] --> DP2["📑 Pre-processing & Cleaning"]
     DP2 --> DP3{{"🛡️ Hallucination Check<br/>& Safety Guardrail"}}
-    DP3 -->|Safe| DP4["🧠 AI Synthesis"]
+    DP3 -->|Safe| DP4["🧠 AI Synthesis & Reasoning"]
     DP3 -->|Unsafe| DP5["🚫 Filter/Reject"]
     
-    DP4 --> DP6["🇧🇩 Bengali Formatting"]
+    DP4 --> DP6["🇧🇩 Context Engineering"]
     DP6 --> DP7["📤 Output Delivery"]
 
     %% Ethics Note
     style DP3 fill:#f39c12,stroke:#333
-    note["<b>Ethics & Privacy Layer:</b><br/>PII Anonymization & Factual<br/>Attribution (BARI/DAE)"]
+    note["<b>Decision Logic Layer:</b><br/>Validates against BARI Sources<br/>Ensures Privacy Compliance"]
     DP3 -.-> note
 ```
 
