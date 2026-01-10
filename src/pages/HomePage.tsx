@@ -674,14 +674,16 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Community Banner */}
+      {/* Agriculture Quote Banner */}
       <section className="px-5 mb-5">
-        <div className="glass-card rounded-2xl p-4 text-center border border-border/30">
-          <div className="flex items-center justify-center gap-2 text-sm">
-            <UsersRound className="w-4 h-4 text-secondary" />
-            <p className="text-muted-foreground">
-              {t('farmersUsingApp')} <span className="text-secondary font-bold">{t('farmersCount')}</span> {t('farmersUsingSuffix')}
+        <div className="glass-card rounded-2xl p-4 text-center border border-border/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-secondary/5 via-transparent to-primary/5" />
+          <div className="relative flex items-center justify-center gap-2">
+            <span className="text-xl">🌾</span>
+            <p className="text-sm text-muted-foreground italic leading-relaxed">
+              {t('agricultureQuote')}
             </p>
+            <span className="text-xl">🌾</span>
           </div>
         </div>
       </section>

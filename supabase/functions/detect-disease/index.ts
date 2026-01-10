@@ -5,6 +5,43 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+// Retry configuration for transient errors
+const MAX_RETRIES = 2;
+const RETRY_DELAY_MS = 1000;
+
+async function sleep(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function callAIWithRetry(requestBody: any, apiKey: string, retries = 0): Promise<Response> {
+  try {
+    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(requestBody),
+    });
+
+    // Retry on 5xx errors or network issues
+    if (response.status >= 500 && retries < MAX_RETRIES) {
+      console.log(`AI gateway returned ${response.status}, retrying (${retries + 1}/${MAX_RETRIES})...`);
+      await sleep(RETRY_DELAY_MS * (retries + 1));
+      return callAIWithRetry(requestBody, apiKey, retries + 1);
+    }
+
+    return response;
+  } catch (error) {
+    if (retries < MAX_RETRIES) {
+      console.log(`Network error, retrying (${retries + 1}/${MAX_RETRIES})...`, error);
+      await sleep(RETRY_DELAY_MS * (retries + 1));
+      return callAIWithRetry(requestBody, apiKey, retries + 1);
+    }
+    throw error;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -16,27 +53,35 @@ serve(async (req) => {
     
     if (!LOVABLE_API_KEY) {
       console.error('LOVABLE_API_KEY is not configured');
-      throw new Error('LOVABLE_API_KEY is not configured');
+      return new Response(
+        JSON.stringify({ error: 'সার্ভার কনফিগারেশন ত্রুটি। অনুগ্রহ করে পরে আবার চেষ্টা করুন।' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     if (!imageBase64) {
-      throw new Error('Image is required');
+      return new Response(
+        JSON.stringify({ error: 'ছবি আপলোড করুন' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Validate image format
+    if (!imageBase64.startsWith('data:image/')) {
+      return new Response(
+        JSON.stringify({ error: 'অবৈধ ছবির ফরম্যাট। JPG, PNG বা WebP ছবি ব্যবহার করুন।' }),
+        { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     console.log('Analyzing crop disease from image...');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-2.5-flash',
-        messages: [
-          { 
-            role: 'system', 
-            content: `আপনি একজন বাংলাদেশী কৃষি রোগ বিশেষজ্ঞ AI। আপনার কাজ হলো ফসলের পাতা বা গাছের ছবি বিশ্লেষণ করে রোগ নির্ণয় করা।
+    const requestBody = {
+      model: 'google/gemini-2.5-flash',
+      messages: [
+        { 
+          role: 'system', 
+          content: `আপনি একজন বাংলাদেশী কৃষি রোগ বিশেষজ্ঞ AI। আপনার কাজ হলো ফসলের পাতা বা গাছের ছবি বিশ্লেষণ করে রোগ নির্ণয় করা।
 
 আপনাকে অবশ্যই নিম্নলিখিত JSON ফরম্যাটে উত্তর দিতে হবে:
 
@@ -88,25 +133,26 @@ serve(async (req) => {
 - গম: পাতা ঝলসা, রাস্ট
 
 শুধুমাত্র JSON ফরম্যাটে উত্তর দিন, অন্য কিছু লিখবেন না।` 
-          },
-          { 
-            role: 'user', 
-            content: [
-              {
-                type: 'text',
-                text: 'এই ফসলের ছবিটি বিশ্লেষণ করে রোগ নির্ণয় করুন। যদি সুস্থ থাকে সেটাও জানান।'
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: imageBase64
-                }
+        },
+        { 
+          role: 'user', 
+          content: [
+            {
+              type: 'text',
+              text: 'এই ফসলের ছবিটি বিশ্লেষণ করে রোগ নির্ণয় করুন। যদি সুস্থ থাকে সেটাও জানান।'
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: imageBase64
               }
-            ]
-          },
-        ],
-      }),
-    });
+            }
+          ]
+        },
+      ],
+    };
+
+    const response = await callAIWithRetry(requestBody, LOVABLE_API_KEY);
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -114,15 +160,22 @@ serve(async (req) => {
       
       if (response.status === 429) {
         return new Response(
-          JSON.stringify({ error: 'অনুগ্রহ করে কিছুক্ষণ পর আবার চেষ্টা করুন।' }),
+          JSON.stringify({ error: 'সার্ভার ব্যস্ত। ১০ সেকেন্ড পর আবার চেষ্টা করুন।' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
       if (response.status === 402) {
         return new Response(
-          JSON.stringify({ error: 'AI সার্ভিস সাময়িকভাবে অনুপলব্ধ।' }),
+          JSON.stringify({ error: 'AI সার্ভিস সাময়িকভাবে অনুপলব্ধ। পরে আবার চেষ্টা করুন।' }),
           { status: 402, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      if (response.status >= 500) {
+        return new Response(
+          JSON.stringify({ error: 'সার্ভারে সাময়িক সমস্যা হয়েছে। কয়েক সেকেন্ড পর আবার চেষ্টা করুন।' }),
+          { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
       
@@ -132,7 +185,7 @@ serve(async (req) => {
     const data = await response.json();
     const aiResponse = data.choices?.[0]?.message?.content || '';
     
-    console.log('AI response received:', aiResponse);
+    console.log('AI response received, length:', aiResponse.length);
 
     // Parse JSON from response
     let analysisResult;
@@ -145,15 +198,17 @@ serve(async (req) => {
       }
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
+      console.error('Raw response:', aiResponse.substring(0, 500));
+      
       analysisResult = {
-        diseaseName: "বিশ্লেষণ করা যায়নি",
+        diseaseName: "বিশ্লেষণে সমস্যা",
         confidence: 0,
         cropType: "অজানা",
         severity: "unknown",
-        symptoms: ["ছবি পরিষ্কার নয়"],
+        symptoms: ["ছবি বিশ্লেষণ করা যায়নি"],
         causes: [],
-        treatment: "অনুগ্রহ করে আবার চেষ্টা করুন",
-        preventiveMeasures: [],
+        treatment: "পরিষ্কার ছবি দিয়ে আবার চেষ্টা করুন",
+        preventiveMeasures: ["পাতা বা আক্রান্ত অংশ কাছ থেকে ছবি তুলুন"],
         fertilizer: "বিশ্লেষণ করা যায়নি",
         irrigation: "বিশ্লেষণ করা যায়নি",
         organicSolution: "",
@@ -161,7 +216,7 @@ serve(async (req) => {
         expectedRecoveryDays: 0,
         yieldImpact: "অজানা",
         isHealthy: null,
-        additionalNotes: "পরিষ্কার ছবি দিয়ে আবার চেষ্টা করুন"
+        additionalNotes: "ভালো আলোতে পরিষ্কার ছবি তুলে আবার চেষ্টা করুন। আক্রান্ত পাতা বা অংশ কাছ থেকে ফোকাস করুন।"
       };
     }
 
@@ -172,8 +227,16 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Detect disease function error:', error);
+    
+    // Provide user-friendly error message
+    const errorMessage = error instanceof Error 
+      ? (error.message.includes('fetch') || error.message.includes('network')
+          ? 'নেটওয়ার্ক সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।'
+          : 'সার্ভারে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।')
+      : 'অজানা ত্রুটি হয়েছে।';
+    
     return new Response(
-      JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
+      JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
