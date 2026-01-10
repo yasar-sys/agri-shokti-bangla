@@ -281,12 +281,17 @@ serve(async (req) => {
       }
 
       case 'ndvi-history': {
-        // Get NDVI time-series data for polygon
-        const days = parseInt(url.searchParams.get('days') || '30');
+        // Read 'days' from request body (default to 30 if missing)
+        const days = body.days ? parseInt(body.days) : 30;
+
+        if (!polygonId) {
+          throw new Error('Polygon ID is required');
+        }
+
         const end = Math.floor(Date.now() / 1000);
         const start = end - (days * 24 * 60 * 60);
 
-        const cacheKey = `ndvi-history-v2-${polygonId}-${days}`; // v2 cache key
+        const cacheKey = `ndvi-history-v3-${polygonId}-${days}`; // v3 cache key
         const cached = getCachedData(cacheKey);
         if (cached) {
           return new Response(JSON.stringify(cached), {
@@ -294,17 +299,17 @@ serve(async (req) => {
           });
         }
 
-        console.log(`Fetching NDVI history for polygon ${polygonId} from ${start} to ${end}`);
+        const statsUrl = `${AGRO_API.BASE_URL}/ndvi/history?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`;
+        console.log(`Fetching NDVI stats: ${statsUrl.replace(AGRO_API_KEY, 'HIDDEN')}`);
 
         // Use the direct statistics endpoint - much faster and more accurate
-        const response = await fetch(
-          `${AGRO_API.BASE_URL}/ndvi/history?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`
-        );
+        const response = await fetch(statsUrl);
 
         if (!response.ok) {
           const errorText = await response.text();
           console.error(`NDVI history fetch failed: ${response.status}`, errorText);
-          throw new Error(`NDVI history fetch failed: ${response.status}`);
+          // Forward the specific error from AgroMonitoring
+          throw new Error(`AgroMonitoring API Error (${response.status}): ${errorText}`);
         }
 
         const historyData: any[] = await response.json();

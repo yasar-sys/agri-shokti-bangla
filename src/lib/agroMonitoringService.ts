@@ -275,51 +275,43 @@ export async function getPolygonNDVI(polygonId: string): Promise<AgroNDVIData | 
     if (cached !== null) return cached;
 
     try {
-        // Get NDVI history and return the most recent
-        const url = `${AGRO_BASE_URL}/image/search?start=${Math.floor(Date.now() / 1000) - 30 * 24 * 60 * 60}&end=${Math.floor(Date.now() / 1000)}&polyid=${polygonId}&appid=${AGRO_API_KEY}`;
-        const images = await fetchWithRetry<AgroSatelliteImage[]>(url);
+        // Use the robust history pipeline to get the latest valid NDVI reading
+        // We request 30 days to ensure we find at least one valid cloud-free image
+        const ndviHistory = await getPolygonNDVIHistory(polygonId, 30);
 
-        if (!images || images.length === 0) {
+        if (!ndviHistory.history || ndviHistory.history.length === 0) {
             setCache(cacheKey, null);
             return null;
         }
 
-        // Get the most recent image with NDVI data
-        const recentImage = images
-            .filter(img => img.stats?.ndvi !== undefined)
-            .sort((a, b) => b.dt - a.dt)[0];
+        // The history is already sorted chronologically (oldest to newest) by the backend
+        // So we take the last item
+        const recentData = ndviHistory.history[ndviHistory.history.length - 1];
 
-        if (!recentImage) {
-            setCache(cacheKey, null);
-            return null;
-        }
-
-        // Convert to NDVI data format
+        // Convert to AgroNDVIData format to maintain compatibility with Map component
         const ndviData: AgroNDVIData = {
-            dt: recentImage.dt,
-            source: recentImage.type,
+            dt: recentData.timestamp,
+            source: recentData.type,
             zoom: 0,
-            dc: recentImage.dc,
-            cl: recentImage.cl,
+            dc: 0,
+            cl: recentData.cloudCoverage,
             data: {
-                mean: recentImage.stats.ndvi || 0,
+                mean: recentData.ndvi,
                 std: 0,
                 p25: 0,
                 num: 0,
                 p75: 0,
-                min: 0,
-                max: 0,
-                median: recentImage.stats.ndvi || 0,
-            },
-            image: recentImage.image?.ndvi,
+                min: recentData.min || 0,
+                max: recentData.max || 0,
+                median: recentData.median || 0
+            }
         };
 
         setCache(cacheKey, ndviData);
         return ndviData;
-    } catch (error) {
-        // NDVI might not be available for all polygons - return null instead of throwing
-        console.warn(`[AgroMonitoring] NDVI not available for polygon ${polygonId}:`, error);
-        setCache(cacheKey, null);
+
+    } catch (err) {
+        console.error('getPolygonNDVI (via History) failed:', err);
         return null;
     }
 }
