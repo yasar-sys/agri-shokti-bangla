@@ -58,7 +58,7 @@
 | BMD | আবহাওয়া পূর্বাভাস |
 | PlantVillage Dataset | রোগ শনাক্তকরণ AI মডেল |
 | FAO | আন্তর্জাতিক কৃষি তথ্য |
-| Sentinel / Landsat | স্যাটেলাইট ইমেজারি ও NDVI |
+| AgroMonitoring / Sentinel | স্যাটেলাইট ইমেজারি ও NDVI |
 
 ---
 

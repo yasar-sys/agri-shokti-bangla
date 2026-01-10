@@ -11,7 +11,7 @@ Our architecture implements a "Generational Leap" in agricultural advisory, movi
 graph TD
     %% Stage 1: Contextual Sensing
     subgraph "Stage 1: Contextual Sensing (The Eyes)"
-        S1[("📡 NASA / Sentinel-2 Hub")] --> S2["🗺️ Field Health Map<br/>(Live NDVI Analysis)"]
+        S1[("📡 AgroMonitoring API / Sentinel-2")] --> S2["🗺️ Field Health Map<br/>(Live NDVI Analysis)"]
         S3[("🌡️ OpenWeatherMap")] --> S2
     end
 
@@ -63,7 +63,7 @@ Agri Shokti employs a specialized **Model Context Protocol (MCP)** to coordinate
 ## 3. Technology Stack Layering (Judge Overview)
 Our stack bridges high-level satellite data with ground-level reality.
 
-*   **Geospatial Layer**: Google Earth Engine, Sentinel Hub API, NASA SoilGrids.
+*   **Geospatial Layer**: **AgroMonitoring API**, Google Earth Engine, NASA SoilGrids.
 *   **AI/ML Core**: **Gemini 2.5 Flash** (Orchestration), text-embedding-004.
 *   **Backend & DB**: **Supabase** (PostgreSQL, pgvector, Edge Functions).
 *   **Action Layer**: **n8n.io** (Workflow automation), Voice-first UI in **Bangla**.

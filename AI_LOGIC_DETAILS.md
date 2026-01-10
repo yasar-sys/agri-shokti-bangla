@@ -13,7 +13,7 @@ This document provides a technical deep-dive into the AI architecture and "Innov
 
 ## 2. The 4-Stage Reasoning Chain
 Our "Agri-Logic" pipeline performs adaptive reasoning across four distinct phases:
-1.  **Contextual Sensing**: The Geospatial Agent ingests Sentinel-2 spectral data to create a **Field Health Map**.
+1.  **Contextual Sensing**: The Geospatial Agent ingests data from the **AgroMonitoring API** (integrating Sentinel-2 & Landsat) to create a **Field Health Map** (NDVI/EVI).
 2.  **Adaptive Reasoning**: The central LLM (Gemini 2.5 Flash) processes the health map alongside ground-level data (Soil pH/Moisture) to diagnose stress factors.
 3.  **Expert Validation (RAG)**: The diagnosis is cross-verified against **BARC (Bangladesh Agricultural Research Council)** guidelines stored in **Supabase pgvector**.
 4.  **Hyper-Localized Delivery**: Actionable advice is delivered through a **voice-first interface in Bangla**, ensuring accessibility for low-literacy users.
@@ -42,7 +42,7 @@ We measure success through three "North Star" metrics:
 ---
 
 ## 5. Technical Stack
-*   **Geospatial Processing**: Sentinel Hub API, Google Earth Engine.
+*   **Geospatial Processing**: AgroMonitoring API (Sentinel-2/Landsat), Google Earth Engine.
 *   **AI Core**: Gemini 2.5 Flash, text-embedding-004.
 *   **Automation**: n8n-style workflow triggers via Supabase Edge.
 *   **Database**: Supabase PostgreSQL with pgvector extension.

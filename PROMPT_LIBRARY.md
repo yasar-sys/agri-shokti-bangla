@@ -9,8 +9,8 @@ This document serves as the mandatory "Show Your Work" repository for **Agri Sho
 *Used to define the AgriTech challenge and refine our 10X intervention.*
 
 ### **Prompt: Defining the Rural Sensing Gap**
-*   **The Intent (The "Why")**: To identify the specific technical friction points for Bangladeshi smallholders that a generic chatbot could not solve.
-*   **The Prompt Text**: *"Act as a specialist in Bangladesh agriculture. Identify the top 3 friction points for smallholder farmers in Sylhet regarding access to BARI (Bangladesh Agricultural Research Institute) guidelines. How can Gemini 2.5 Flash's multimodal capabilities bridge this gap?"*
+*   **The Intent (The "Why")**: To identify the specific technical friction points for Bangladeshi smallholders that a generic chatbot could not solve, specifically focussing on actionable insights from satellite data.
+*   **The Prompt Text**: *"Act as a specialist in Bangladesh agriculture. Identify the top 3 friction points for smallholder farmers in Sylhet regarding access to BARI (Bangladesh Agricultural Research Institute) guidelines. How can Gemini 2.5 Flash's multimodal capabilities combined with AgroMonitoring's satellite indices (NDVI) bridge this gap?"*
 *   **The Outcome & Influence**: This prompted identified the "Technical sensing gap"—the fact that farmers have data (photos) but no "brain" to interpret them against official PDFs. This influenced our entire **4-Stage Agri-Logic Pipeline**.
 
 ---
@@ -32,6 +32,11 @@ This document serves as the mandatory "Show Your Work" repository for **Agri Sho
 *   **The Intent (The "Why")**: To ensure the AI returns data that a mobile app can render (cards/charts) rather than just unstructured text.
 *   **The Prompt Text**: *"Write a system prompt for the Agri-Vision Agent. It must analyze a leaf photo and return ONLY a JSON object. Schema: {disease_name: string, confidence: number, symptoms: string[], treatment_bn: string}. Ensure all advice is grounded in DAE (Department of Agricultural Extension) standards."*
 *   **The Outcome & Influence**: This generated the core system prompt for our `detect-disease` Edge Function. It influenced our **Action Layer** by enabling real-time UI card rendering and ensuring 100% technical accuracy for treatment recommendations.
+
+### **Prompt: Parsing AgroMonitoring NDVI for Fronend Visualization**
+*   **The Intent (The "Why")**: To correctly interpret the complex JSON response from the AgroMonitoring API and format it for the Recharts library on the frontend.
+*   **The Prompt Text**: *"I have an endpoint `agromonitoring-ndvi` that returns historical NDVI data. Write a TypeScript interface for the API response and a helper function to transform this data into an array of `{ date: string, mean: number, min: number, max: number }` objects for Recharts. Handle cases where `data` might be missing or limited."*
+*   **The Outcome & Influence**: This ensured our `NDVITimeSeriesChart` component could reliably render satellite history, handling edge cases where satellite coverage was cloudy or incomplete.
 
 ---
 

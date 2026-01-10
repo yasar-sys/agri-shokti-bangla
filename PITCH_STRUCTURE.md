@@ -60,6 +60,7 @@ Slide 7 — AI Logic (detailed)
   - Retrieval-Augmented Generation (RAG) recommended: use embeddings + vector retrieval to ground answers in docs.
   - Candidate LLMs:
     - Cloud: OpenAI GPT-4o/4.1 or GPT-4 Turbo — high-quality LLM via API.
+    - **Gemini 2.5 Flash** (Current Implementation) — Multimodal and fast for real-time analysis.
     - Claude 2/3 for safety-conscious flows (optional).
     - Local: Llama2 / Mistral via hosted inference for cost-control or offline.
   - Embeddings:
@@ -70,7 +71,11 @@ Slide 7 — AI Logic (detailed)
   - `supabase/` folder indicates DB usage and is the natural home for storing embeddings and logs.
   - `PROJECT_DOCUMENTATION.md` likely describes architecture decisions — cite it.
     - [PROJECT_DOCUMENTATION.md](https://github.com/yasar-sys/agri-shokti-bangla/blob/main/PROJECT_DOCUMENTATION.md)
-- Speaker note: Explain trade-offs: cost vs latency vs control; recommend RAG for accuracy & provenance.
+- **The "10x" Innovation (7th Minute Feature)**:
+  - **Satellite-to-Ground-Truth Loop**: Explain how we use **AgroMonitoring API** to get raw NDVI data.
+  - **Gen-AI Synthesis**: We don't just show a graph; we pass that data to Gemini to *explain* it in Bangla (e.g., "Your crop health dropped 10% last week, inspect for blight").
+  - **Demo Moment**: Show the "Field Health" map, click a polygon, and play the AI voice explaining the satellite trend. 
+- Speaker note: Explain trade-offs: cost vs latency vs control; recommend RAG for accuracy & provenance. Highlight the **unique combination** of Satellite Data + Generative Explanation.
 
 Slide 8 — Prompt design & provenance
 - Show three prompt templates (Ideation, Architecture, Coding) — provide exact templates you used (example templates below).

@@ -134,6 +134,7 @@ Role: Team Lead, Prompt Engineering & AI Integration Specialist
 | NASA POWER | GMAO GEOS-FP | Weather Forecasting & Climate Data |
 | Earth Observation | Landsat-8/9, Sentinel-2, MODIS | Vegetation Indices & Crop Health |
 | NASA GIBS | Multiple Satellites | Satellite Imagery & Visualization |
+| AgroMonitoring | Sentinel-2, Landsat (+NDVI) | Real-time Crop Health Indices |
 
 ### DevOps & Infrastructure
 
@@ -239,6 +240,8 @@ User Action → React Component → Custom Hook → Supabase Client → Database
 - **Water Balance**: Automated irrigation recommendations and water budgeting
 - **Drought Alerts**: Early warning system for water stress conditions
 - **Satellite Imagery**: Multi-spectral analysis for crop health assessment
+- **AgroMonitoring**: Real-time polygon monitoring and historical NDVI data access
+
 
 ### Additional Features
 
