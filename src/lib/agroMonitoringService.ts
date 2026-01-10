@@ -474,7 +474,7 @@ export function validatePolygon(polygon: AgroPolygon): boolean {
  */
 export async function getPolygonNDVIHistory(
     polygonId: string,
-    days: 7 | 14 | 30 = 30
+    days: number = 30
 ): Promise<AgroNDVIHistory> {
     // 0. Validate Input
     if (!polygonId || typeof polygonId !== 'string') {
