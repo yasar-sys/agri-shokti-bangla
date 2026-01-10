@@ -111,3 +111,43 @@ export interface CachedData<T> {
   data: T;
   timestamp: number;
 }
+
+// NDVI Time-Series Types
+export type NDVITrend = 'improving' | 'stable' | 'declining';
+
+export interface NDVIHistoryPoint {
+  date: string;
+  timestamp: number;
+  ndvi: number;
+  cloudCoverage: number;
+  type: string;
+}
+
+export interface NDVIWarning {
+  date: string;
+  previousNDVI: number;
+  currentNDVI: number;
+  dropPercent: number;
+  severity: 'warning' | 'critical';
+  message: string;
+  messageBn: string;
+}
+
+export interface NDVIStatistics {
+  current: number;
+  average: number;
+  min: number;
+  max: number;
+}
+
+export interface AgroNDVIHistory {
+  polygonId: string;
+  days: number;
+  history: NDVIHistoryPoint[];
+  statistics: NDVIStatistics;
+  trend: NDVITrend;
+  trendBn: string;
+  warnings: NDVIWarning[];
+  dataPoints: number;
+}
+

@@ -113,11 +113,11 @@ serve(async (req) => {
 
   try {
     const AGRO_API_KEY = Deno.env.get('AGROMONITORING_API_KEY');
-    
+
     if (!AGRO_API_KEY) {
       console.error('AGROMONITORING_API_KEY not configured');
       return new Response(
-        JSON.stringify({ 
+        JSON.stringify({
           error: 'API key not configured',
           message: 'AgroMonitoring API key is missing',
           polygons: Object.entries(POLYGON_IDS).map(([key, id]) => ({ key, id }))
@@ -167,7 +167,7 @@ serve(async (req) => {
         }
 
         const polygonInfo: PolygonInfo = await response.json();
-        
+
         const result = {
           id: polygonInfo.id,
           name: polygonInfo.name,
@@ -214,6 +214,7 @@ serve(async (req) => {
             JSON.stringify({
               error: 'no_images',
               message: 'No satellite images available for this period',
+              messageBn: 'এই সময়ের জন্য কোনো স্যাটেলাইট ছবি পাওয়া যায়নি',
               polygonId,
               period: { start: new Date(start * 1000).toISOString(), end: new Date(end * 1000).toISOString() }
             }),
@@ -279,6 +280,156 @@ serve(async (req) => {
         });
       }
 
+      case 'ndvi-history': {
+        // Get NDVI time-series data for polygon
+        const days = parseInt(url.searchParams.get('days') || '30');
+        const cacheKey = `ndvi-history-${polygonId}-${days}`;
+        const cached = getCachedData(cacheKey);
+        if (cached) {
+          return new Response(JSON.stringify(cached), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
+        }
+
+        // Get satellite images for the specified period
+        const end = Math.floor(Date.now() / 1000);
+        const start = end - (days * 24 * 60 * 60);
+
+        const response = await fetch(
+          `${AGRO_API.BASE_URL}/image/search?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`NDVI history fetch failed: ${response.status}`);
+        }
+
+        const images: SatelliteImage[] = await response.json();
+
+        if (!images || images.length === 0) {
+          return new Response(
+            JSON.stringify({
+              error: 'no_data',
+              message: 'No NDVI data available for this period',
+              messageBn: 'এই সময়ের জন্য কোনো NDVI ডেটা পাওয়া যায়নি',
+              polygonId,
+              days
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Filter images with good cloud coverage and fetch NDVI stats
+        const historyData = await Promise.all(
+          images
+            .filter(img => img.cl < 70) // Allow up to 70% cloud coverage
+            .sort((a, b) => a.dt - b.dt) // Sort chronologically
+            .map(async (img) => {
+              let ndviMean = 0;
+              if (img.stats?.ndvi) {
+                try {
+                  const statsResponse = await fetch(img.stats.ndvi);
+                  if (statsResponse.ok) {
+                    const stats: NDVIStats = await statsResponse.json();
+                    ndviMean = stats.mean;
+                  }
+                } catch (e) {
+                  console.warn('Failed to fetch NDVI stats for image:', e);
+                }
+              }
+
+              return {
+                date: new Date(img.dt * 1000).toISOString().split('T')[0],
+                timestamp: img.dt,
+                ndvi: ndviMean,
+                cloudCoverage: img.cl,
+                type: img.type
+              };
+            })
+        );
+
+        // Filter out entries with no NDVI data
+        const validHistory = historyData.filter(h => h.ndvi > 0);
+
+        if (validHistory.length === 0) {
+          return new Response(
+            JSON.stringify({
+              error: 'no_valid_data',
+              message: 'No valid NDVI data available',
+              messageBn: 'কোনো বৈধ NDVI ডেটা পাওয়া যায়নি',
+              polygonId,
+              days
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+
+        // Calculate statistics
+        const ndviValues = validHistory.map(h => h.ndvi);
+        const currentNDVI = ndviValues[ndviValues.length - 1];
+        const avgNDVI = ndviValues.reduce((a, b) => a + b, 0) / ndviValues.length;
+        const minNDVI = Math.min(...ndviValues);
+        const maxNDVI = Math.max(...ndviValues);
+
+        // Calculate trend (compare recent vs older data)
+        const midpoint = Math.floor(validHistory.length / 2);
+        const recentAvg = ndviValues.slice(midpoint).reduce((a, b) => a + b, 0) / (ndviValues.length - midpoint);
+        const olderAvg = ndviValues.slice(0, midpoint).reduce((a, b) => a + b, 0) / midpoint;
+
+        let trend: 'improving' | 'stable' | 'declining';
+        let trendBn: string;
+        if (recentAvg > olderAvg + 0.05) {
+          trend = 'improving';
+          trendBn = 'উন্নতি হচ্ছে';
+        } else if (recentAvg < olderAvg - 0.05) {
+          trend = 'declining';
+          trendBn = 'অবনতি হচ্ছে';
+        } else {
+          trend = 'stable';
+          trendBn = 'স্থিতিশীল';
+        }
+
+        // Detect sudden NDVI drops (>15% drop between consecutive readings)
+        const warnings = [];
+        for (let i = 1; i < validHistory.length; i++) {
+          const prev = validHistory[i - 1].ndvi;
+          const curr = validHistory[i].ndvi;
+          const dropPercent = ((prev - curr) / prev) * 100;
+
+          if (dropPercent > 15) {
+            warnings.push({
+              date: validHistory[i].date,
+              previousNDVI: prev,
+              currentNDVI: curr,
+              dropPercent: Math.round(dropPercent),
+              severity: dropPercent > 30 ? 'critical' : 'warning',
+              message: `NDVI dropped by ${Math.round(dropPercent)}%`,
+              messageBn: `NDVI ${Math.round(dropPercent)}% কমেছে`
+            });
+          }
+        }
+
+        const result = {
+          polygonId,
+          days,
+          history: validHistory,
+          statistics: {
+            current: currentNDVI,
+            average: avgNDVI,
+            min: minNDVI,
+            max: maxNDVI
+          },
+          trend,
+          trendBn,
+          warnings,
+          dataPoints: validHistory.length
+        };
+
+        setCachedData(cacheKey, result);
+        return new Response(JSON.stringify(result), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        });
+      }
+
       case 'tile': {
         // Proxy NDVI tile request to avoid CORS
         const z = url.searchParams.get('z');
@@ -292,7 +443,7 @@ serve(async (req) => {
           if (!tileResponse.ok) {
             return new Response('Tile not found', { status: 404, headers: corsHeaders });
           }
-          
+
           const tileData = await tileResponse.arrayBuffer();
           return new Response(tileData, {
             headers: {
@@ -311,9 +462,9 @@ serve(async (req) => {
 
       default:
         return new Response(
-          JSON.stringify({ 
+          JSON.stringify({
             error: 'Unknown action',
-            availableActions: ['polygons', 'polygon-info', 'ndvi', 'tile']
+            availableActions: ['polygons', 'polygon-info', 'ndvi', 'ndvi-history', 'tile']
           }),
           { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
@@ -322,7 +473,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('[AgroMonitoring Error]:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: error instanceof Error ? error.message : 'Unknown error',
         message: 'Failed to fetch data from AgroMonitoring API'
       }),

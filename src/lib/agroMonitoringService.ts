@@ -17,6 +17,10 @@ import type {
     AgroSoilData,
     AgroSatelliteImage,
     CachedData,
+    AgroNDVIHistory,
+    NDVIHistoryPoint,
+    NDVITrend,
+    NDVIWarning,
 } from '@/types/agroMonitoringTypes';
 
 // ===================================
@@ -400,3 +404,137 @@ export function calculateBounds(polygons: AgroPolygon[]): [[number, number], [nu
 export function clearCache(): void {
     cache.clear();
 }
+
+// ===================================
+// NDVI HISTORY & ANALYSIS
+// ===================================
+
+/**
+ * Fetch NDVI history for a polygon
+ * @param polygonId - Polygon ID
+ * @param days - Number of days to fetch (7, 14, or 30)
+ */
+export async function getPolygonNDVIHistory(
+    polygonId: string,
+    days: 7 | 14 | 30 = 30
+): Promise<AgroNDVIHistory> {
+    const cacheKey = `ndvi_history_${polygonId}_${days}`;
+    const cached = getCached<AgroNDVIHistory>(cacheKey);
+    if (cached) return cached;
+
+    try {
+        // Call the edge function with ndvi-history action
+        const response = await fetch(
+            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agromonitoring-ndvi?action=ndvi-history&polygon=${polygonId}&days=${days}`,
+            {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            }
+        );
+
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw new AgroMonitoringError(
+                `NDVI history fetch failed: ${response.status}`,
+                errorData.messageBn || 'NDVI ইতিহাস লোড করতে ব্যর্থ',
+                response.status
+            );
+        }
+
+        const data: AgroNDVIHistory = await response.json();
+        setCache(cacheKey, data);
+        return data;
+    } catch (error) {
+        handleError(error, `getPolygonNDVIHistory(${polygonId}, ${days})`);
+    }
+}
+
+/**
+ * Calculate NDVI trend from history data
+ * @param history - Array of NDVI history points
+ * @returns Trend direction
+ */
+export function calculateNDVITrend(history: NDVIHistoryPoint[]): {
+    trend: NDVITrend;
+    trendBn: string;
+} {
+    if (history.length < 2) {
+        return { trend: 'stable', trendBn: 'স্থিতিশীল' };
+    }
+
+    const midpoint = Math.floor(history.length / 2);
+    const recentValues = history.slice(midpoint).map(h => h.ndvi);
+    const olderValues = history.slice(0, midpoint).map(h => h.ndvi);
+
+    const recentAvg = recentValues.reduce((a, b) => a + b, 0) / recentValues.length;
+    const olderAvg = olderValues.reduce((a, b) => a + b, 0) / olderValues.length;
+
+    if (recentAvg > olderAvg + 0.05) {
+        return { trend: 'improving', trendBn: 'উন্নতি হচ্ছে' };
+    } else if (recentAvg < olderAvg - 0.05) {
+        return { trend: 'declining', trendBn: 'অবনতি হচ্ছে' };
+    }
+
+    return { trend: 'stable', trendBn: 'স্থিতিশীল' };
+}
+
+/**
+ * Detect sudden NDVI drops in history
+ * @param history - Array of NDVI history points
+ * @param threshold - Drop percentage threshold (default 15%)
+ * @returns Array of warnings
+ */
+export function detectNDVIDrops(
+    history: NDVIHistoryPoint[],
+    threshold: number = 15
+): NDVIWarning[] {
+    const warnings: NDVIWarning[] = [];
+
+    for (let i = 1; i < history.length; i++) {
+        const prev = history[i - 1].ndvi;
+        const curr = history[i].ndvi;
+        const dropPercent = ((prev - curr) / prev) * 100;
+
+        if (dropPercent > threshold) {
+            warnings.push({
+                date: history[i].date,
+                previousNDVI: prev,
+                currentNDVI: curr,
+                dropPercent: Math.round(dropPercent),
+                severity: dropPercent > 30 ? 'critical' : 'warning',
+                message: `NDVI dropped by ${Math.round(dropPercent)}%`,
+                messageBn: `NDVI ${Math.round(dropPercent)}% কমেছে`,
+            });
+        }
+    }
+
+    return warnings;
+}
+
+/**
+ * Get NDVI color based on value
+ * @param ndvi - NDVI value (0-1)
+ * @returns Color hex code
+ */
+export function getNDVIColor(ndvi: number): string {
+    if (ndvi > 0.7) return '#22c55e'; // Dark green - excellent
+    if (ndvi > 0.6) return '#10b981'; // Green - good
+    if (ndvi > 0.4) return '#eab308'; // Yellow - moderate
+    if (ndvi > 0.2) return '#f97316'; // Orange - stressed
+    return '#ef4444'; // Red - critical
+}
+
+/**
+ * Get NDVI health status label
+ * @param ndvi - NDVI value (0-1)
+ * @returns Status labels in English and Bengali
+ */
+export function getNDVIStatus(ndvi: number): { status: string; statusBn: string } {
+    if (ndvi > 0.7) return { status: 'Excellent', statusBn: 'চমৎকার' };
+    if (ndvi > 0.6) return { status: 'Good', statusBn: 'ভাল' };
+    if (ndvi > 0.4) return { status: 'Moderate', statusBn: 'মাঝারি' };
+    if (ndvi > 0.2) return { status: 'Stressed', statusBn: 'চাপযুক্ত' };
+    return { status: 'Critical', statusBn: 'সংকটজনক' };
+}
+
