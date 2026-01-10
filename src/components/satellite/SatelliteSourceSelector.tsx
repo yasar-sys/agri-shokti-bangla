@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { TILE_LAYERS, getGIBSDate } from '@/lib/nasaDataSources';
 
-export type SatelliteSource = 'modis' | 'landsat' | 'sentinel';
+export type SatelliteSource = 'modis' | 'landsat' | 'sentinel' | 'agromonitoring';
 
 interface SatelliteInfo {
   id: SatelliteSource;
@@ -69,6 +69,20 @@ const SATELLITE_SOURCES: SatelliteInfo[] = [
     coverage: 'Land only',
     coverageBn: 'শুধু ভূমি',
     color: '#22c55e'
+  },
+  {
+    id: 'agromonitoring',
+    name: 'AgroMonitoring',
+    nameBn: 'এগ্রো মনিটরিং',
+    resolution: 'Variable',
+    description: 'AgroMonitoring API - Real-time field data with weather, soil, and NDVI',
+    descriptionBn: 'এগ্রো মনিটরিং API - আবহাওয়া, মাটি এবং NDVI সহ রিয়েল-টাইম ফিল্ড ডেটা',
+    updateFrequency: 'Real-time',
+    updateFrequencyBn: 'রিয়েল-টাইম',
+    dataDelay: 0,
+    coverage: 'User polygons',
+    coverageBn: 'ব্যবহারকারী পলিগন',
+    color: '#8b5cf6'
   }
 ];
 
@@ -87,7 +101,8 @@ export function SatelliteSourceSelector({
   const [layerDates, setLayerDates] = useState<Record<SatelliteSource, string>>({
     modis: '',
     landsat: '',
-    sentinel: ''
+    sentinel: '',
+    agromonitoring: '',
   });
 
   // Get current data dates for each satellite
@@ -99,7 +114,8 @@ export function SatelliteSourceSelector({
     setLayerDates({
       modis: modisLayer.date || getGIBSDate(1),
       landsat: new Date().toISOString().split('T')[0], // Landsat uses current imagery composite
-      sentinel: sentinelLayer.date || getGIBSDate(5)
+      sentinel: sentinelLayer.date || getGIBSDate(5),
+      agromonitoring: new Date().toISOString().split('T')[0], // Real-time data
     });
   }, []);
 
@@ -108,10 +124,10 @@ export function SatelliteSourceSelector({
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('bn-BD', { 
-        year: 'numeric', 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString('bn-BD', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
       });
     } catch {
       return dateStr;
@@ -121,8 +137,8 @@ export function SatelliteSourceSelector({
   return (
     <Popover open={isOpen} onOpenChange={setIsOpen}>
       <PopoverTrigger asChild>
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className={cn("h-10 gap-2 min-w-[160px]", className)}
         >
           <Satellite className="w-4 h-4" style={{ color: selectedSatellite.color }} />
@@ -133,9 +149,9 @@ export function SatelliteSourceSelector({
         </Button>
       </PopoverTrigger>
 
-      <PopoverContent 
-        align="end" 
-        className="w-80 p-0" 
+      <PopoverContent
+        align="end"
+        className="w-80 p-0"
         sideOffset={8}
       >
         <div className="p-3 border-b bg-muted/30">
@@ -162,7 +178,7 @@ export function SatelliteSourceSelector({
             >
               <div className="flex items-start gap-3">
                 {/* Icon */}
-                <div 
+                <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
                   style={{ backgroundColor: `${satellite.color}20` }}
                 >
@@ -223,7 +239,8 @@ export function MobileSatelliteSourceSelector({
   const [layerDates, setLayerDates] = useState<Record<SatelliteSource, string>>({
     modis: '',
     landsat: '',
-    sentinel: ''
+    sentinel: '',
+    agromonitoring: '',
   });
 
   useEffect(() => {
@@ -233,16 +250,17 @@ export function MobileSatelliteSourceSelector({
     setLayerDates({
       modis: modisLayer.date || getGIBSDate(1),
       landsat: new Date().toISOString().split('T')[0],
-      sentinel: sentinelLayer.date || getGIBSDate(5)
+      sentinel: sentinelLayer.date || getGIBSDate(5),
+      agromonitoring: new Date().toISOString().split('T')[0],
     });
   }, []);
 
   const formatDate = (dateStr: string) => {
     try {
       const date = new Date(dateStr);
-      return date.toLocaleDateString('bn-BD', { 
-        month: 'short', 
-        day: 'numeric' 
+      return date.toLocaleDateString('bn-BD', {
+        month: 'short',
+        day: 'numeric'
       });
     } catch {
       return dateStr;
@@ -264,8 +282,8 @@ export function MobileSatelliteSourceSelector({
                 : "border-border hover:border-primary/50"
             )}
           >
-            <Satellite 
-              className="w-6 h-6 mb-1" 
+            <Satellite
+              className="w-6 h-6 mb-1"
               style={{ color: selectedSource === satellite.id ? satellite.color : undefined }}
             />
             <span className="text-xs font-medium text-center">{satellite.nameBn}</span>

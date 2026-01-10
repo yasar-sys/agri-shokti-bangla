@@ -9,6 +9,7 @@ import { useNDVIData } from "@/hooks/useNDVIData";
 import { useDroneRoutes } from "@/hooks/useDroneRoutes";
 import { supabase } from "@/integrations/supabase/client";
 import { NASASatelliteMap } from "@/components/NASASatelliteMap";
+import { AgroMonitoringMap } from "@/components/AgroMonitoringMap";
 import { useToast } from "@/hooks/use-toast";
 import { TimelapseControls } from "@/components/satellite/TimelapseControls";
 import { SatelliteComparison } from "@/components/satellite/SatelliteComparison";
@@ -256,15 +257,22 @@ export default function SatellitePage() {
 
         {/* Main Map Area */}
         <main className="flex-1 relative">
-          <NASASatelliteMap
-            latitude={location?.latitude ?? 23.8103}
-            longitude={location?.longitude ?? 90.4125}
-            zones={fieldZones}
-            droneRoutes={routes}
-            selectedLayer={activeLayer}
-            onLayerChange={setActiveLayer}
-            comparisonMode={comparisonMode}
-          />
+          {selectedSatellite === 'agromonitoring' ? (
+            <AgroMonitoringMap
+              showNDVIOverlay={activeLayer === 'ndvi'}
+              showWeatherOverlay={activeLayer === 'lst' || activeLayer === 'precipitation'}
+            />
+          ) : (
+            <NASASatelliteMap
+              latitude={location?.latitude ?? 23.8103}
+              longitude={location?.longitude ?? 90.4125}
+              zones={fieldZones}
+              droneRoutes={routes}
+              selectedLayer={activeLayer}
+              onLayerChange={setActiveLayer}
+              comparisonMode={comparisonMode}
+            />
+          )}
 
           {/* AI Insight Panel - Positioned bottom-right on desktop to avoid overlapping comparison */}
           <div className="absolute bottom-4 right-4 z-[1001] hidden lg:block w-80">
