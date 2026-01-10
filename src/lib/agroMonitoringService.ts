@@ -276,8 +276,9 @@ export async function getPolygonNDVI(polygonId: string): Promise<AgroNDVIData | 
 
     try {
         // Use the robust history pipeline to get the latest valid NDVI reading
-        // We request 30 days to ensure we find at least one valid cloud-free image
-        const ndviHistory = await getPolygonNDVIHistory(polygonId, 30);
+        // We request 180 days (6 months) to ensure we find at least one valid cloud-free image
+        // as per user requirement for "Always Usable" NDVI
+        const ndviHistory = await getPolygonNDVIHistory(polygonId, 180);
 
         if (!ndviHistory.history || ndviHistory.history.length === 0) {
             setCache(cacheKey, null);
