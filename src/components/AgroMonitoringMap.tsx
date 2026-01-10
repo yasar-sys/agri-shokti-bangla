@@ -344,7 +344,7 @@ export function AgroMonitoringMap({
     // RENDER
     // ===================================
     return (
-        <div className={cn('relative rounded-xl overflow-hidden border border-border bg-background h-full min-h-[400px]', className)}>
+        <div className={cn('relative rounded-xl overflow-hidden border border-border bg-background w-full', className)} style={{ height: '600px' }}>
             {/* Map Container */}
             <div
                 ref={mapContainer}
@@ -352,6 +352,7 @@ export function AgroMonitoringMap({
                     'absolute inset-0 z-0',
                     (loading || error) && 'invisible'
                 )}
+                style={{ height: '100%', width: '100%' }}
             />
 
             {/* Loading State */}

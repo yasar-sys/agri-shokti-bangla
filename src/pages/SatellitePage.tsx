@@ -275,13 +275,16 @@ export default function SatellitePage() {
           )}
 
           {/* AI Insight Panel - Positioned bottom-right on desktop to avoid overlapping comparison */}
-          <div className="absolute bottom-4 right-4 z-[1001] hidden lg:block w-80">
-            <SatelliteAIInsight
-              ndviValue={healthData?.history?.[healthData.history.length - 1]?.ndvi ?? 0.7}
-              moistureValue={healthData?.history?.[healthData.history.length - 1]?.moisture_index ?? 0.5}
-              trend={(healthData?.trend as any) || "stable"}
-            />
-          </div>
+          {/* Hide when AgroMonitoring is selected */}
+          {selectedSatellite !== 'agromonitoring' && (
+            <div className="absolute bottom-4 right-4 z-[1001] hidden lg:block w-80">
+              <SatelliteAIInsight
+                ndviValue={healthData?.history?.[healthData.history.length - 1]?.ndvi ?? 0.7}
+                moistureValue={healthData?.history?.[healthData.history.length - 1]?.moisture_index ?? 0.5}
+                trend={(healthData?.trend as any) || "stable"}
+              />
+            </div>
+          )}
 
           {/* Mobile Controls */}
           <MobileSatelliteControls
@@ -335,10 +338,12 @@ export default function SatellitePage() {
           )}
         </main>
 
-        {/* NASA Climate Insights Section */}
-        <section className="container mx-auto px-4 pb-12">
-          <NASAClimateDetails data={climateData} loading={climateLoading} />
-        </section>
+        {/* NASA Climate Insights Section - Only show for NASA satellites */}
+        {selectedSatellite !== 'agromonitoring' && (
+          <section className="container mx-auto px-4 pb-12">
+            <NASAClimateDetails data={climateData} loading={climateLoading} />
+          </section>
+        )}
       </div>
     </ComponentErrorBoundary>
   );
