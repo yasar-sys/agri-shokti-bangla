@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Camera, Upload, X, Loader2, Sparkles, ArrowLeft, Zap, Leaf, Shield } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate, Link } from "react-router-dom";
@@ -72,6 +72,26 @@ export default function CameraPage() {
 
       setProgress(100);
       setStatusText(t('analysisComplete'));
+
+      // Save scan to database if user is logged in
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user && data.result) {
+        try {
+          await supabase.from('scan_history').insert({
+            user_id: user.id,
+            disease_name: data.result.diseaseName || null,
+            health_score: data.result.confidence || null,
+            symptoms: data.result.symptoms || [],
+            treatment: data.result.treatment || null,
+            fertilizer_advice: data.result.fertilizer || null,
+            image_url: capturedImage.substring(0, 500) // Store truncated for reference
+          });
+          console.log('Scan saved to history');
+        } catch (saveError) {
+          console.error('Failed to save scan history:', saveError);
+          // Don't block navigation on save failure
+        }
+      }
 
       sessionStorage.setItem('diseaseResult', JSON.stringify(data.result));
       sessionStorage.setItem('scannedImage', capturedImage);

@@ -1,37 +1,91 @@
 import { TimelineCard } from "@/components/ui/TimelineCard";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Loader2, History, AlertCircle } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+
+interface ScanHistoryItem {
+  id: string;
+  created_at: string;
+  disease_name: string | null;
+  health_score: number | null;
+  symptoms: string[] | null;
+  treatment: string | null;
+}
 
 export default function HistoryPage() {
   const { t, language } = useLanguage();
-  
-  const historyData = [
-    {
-      date: language === 'bn' ? "১০ জানুয়ারি, ২০২৫" : "10 January, 2025",
-      cropName: language === 'bn' ? "ধান (বোরো)" : "Rice (Boro)",
-      result: "healthy" as const,
-      summary: language === 'bn' ? "ফসল সুস্থ অবস্থায় আছে। কোন রোগ পাওয়া যায়নি।" : "Crop is healthy. No diseases found.",
-    },
-    {
-      date: language === 'bn' ? "৮ জানুয়ারি, ২০২৫" : "8 January, 2025",
-      cropName: language === 'bn' ? "গম" : "Wheat",
-      result: "disease" as const,
-      summary: language === 'bn' ? "পাতা ঝলসা রোগ শনাক্ত হয়েছে। ছত্রাকনাশক প্রয়োগ করুন।" : "Leaf blight detected. Apply fungicide.",
-    },
-    {
-      date: language === 'bn' ? "৫ জানুয়ারি, ২০২৫" : "5 January, 2025",
-      cropName: language === 'bn' ? "আলু" : "Potato",
-      result: "healthy" as const,
-      summary: language === 'bn' ? "ফসল ভালো অবস্থায় আছে। সেচ দেওয়ার পরামর্শ দেওয়া হয়েছে।" : "Crop is in good condition. Irrigation recommended.",
-    },
-    {
-      date: language === 'bn' ? "২ জানুয়ারি, ২০২৫" : "2 January, 2025",
-      cropName: language === 'bn' ? "পেঁয়াজ" : "Onion",
-      result: "disease" as const,
-      summary: language === 'bn' ? "পার্পেল ব্লচ রোগ পাওয়া গেছে। চিকিৎসা প্রদান করা হয়েছে।" : "Purple blotch disease found. Treatment provided.",
-    },
-  ];
+  const [loading, setLoading] = useState(true);
+  const [historyData, setHistoryData] = useState<ScanHistoryItem[]>([]);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  useEffect(() => {
+    const fetchHistory = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          setIsLoggedIn(false);
+          setLoading(false);
+          return;
+        }
+
+        setIsLoggedIn(true);
+
+        const { data, error } = await supabase
+          .from('scan_history')
+          .select('id, created_at, disease_name, health_score, symptoms, treatment')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(20);
+
+        if (error) {
+          console.error('Error fetching scan history:', error);
+        } else {
+          setHistoryData(data || []);
+        }
+      } catch (err) {
+        console.error('Error:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchHistory();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    if (language === 'bn') {
+      return date.toLocaleDateString('bn-BD', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+    }
+    return date.toLocaleDateString('en-US', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+  };
+
+  const getResultType = (healthScore: number | null, diseaseName: string | null): 'healthy' | 'disease' => {
+    if (healthScore && healthScore >= 80) return 'healthy';
+    if (diseaseName?.includes('সুস্থ') || diseaseName?.toLowerCase().includes('healthy')) return 'healthy';
+    return 'disease';
+  };
+
+  const getSummary = (item: ScanHistoryItem): string => {
+    if (item.treatment) {
+      return item.treatment.length > 80 ? item.treatment.substring(0, 80) + '...' : item.treatment;
+    }
+    if (item.symptoms && item.symptoms.length > 0) {
+      return item.symptoms.slice(0, 2).join(', ');
+    }
+    return language === 'bn' ? 'বিস্তারিত তথ্য নেই' : 'No details available';
+  };
 
   return (
     <div 
@@ -56,23 +110,66 @@ export default function HistoryPage() {
             <h1 className="text-2xl font-bold text-foreground">{t('scanHistoryTitle')}</h1>
             <div className="flex items-center gap-2 text-sm text-muted-foreground mt-1">
               <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-              <span>GET /api/history</span>
+              <span>{isLoggedIn ? t('yourScans') : t('loginRequired')}</span>
             </div>
           </div>
         </div>
       </header>
 
-      {/* Timeline */}
+      {/* Content */}
       <section className="px-4">
-        {historyData.map((item, index) => (
-          <TimelineCard
-            key={index}
-            date={item.date}
-            cropName={item.cropName}
-            result={item.result}
-            summary={item.summary}
-          />
-        ))}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <Loader2 className="w-8 h-8 text-secondary animate-spin mb-4" />
+            <p className="text-muted-foreground">{t('loading')}</p>
+          </div>
+        ) : !isLoggedIn ? (
+          <div className="glass-card rounded-2xl p-8 text-center border border-border/50">
+            <AlertCircle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              {language === 'bn' ? 'লগইন প্রয়োজন' : 'Login Required'}
+            </h3>
+            <p className="text-muted-foreground text-sm mb-4">
+              {language === 'bn' 
+                ? 'আপনার স্ক্যান ইতিহাস দেখতে লগইন করুন' 
+                : 'Please login to view your scan history'}
+            </p>
+            <Link 
+              to="/auth"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity"
+            >
+              {t('login')}
+            </Link>
+          </div>
+        ) : historyData.length === 0 ? (
+          <div className="glass-card rounded-2xl p-8 text-center border border-border/50">
+            <History className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">
+              {language === 'bn' ? 'কোন স্ক্যান নেই' : 'No Scans Yet'}
+            </h3>
+            <p className="text-muted-foreground text-sm mb-4">
+              {language === 'bn' 
+                ? 'ফসলের ছবি স্ক্যান করুন, এখানে ইতিহাস দেখা যাবে' 
+                : 'Scan crop images to see history here'}
+            </p>
+            <Link 
+              to="/camera"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-secondary text-secondary-foreground rounded-xl font-semibold hover:opacity-90 transition-opacity"
+            >
+              {t('scanNow')}
+            </Link>
+          </div>
+        ) : (
+          historyData.map((item) => (
+            <TimelineCard
+              key={item.id}
+              date={formatDate(item.created_at)}
+              cropName={item.disease_name || (language === 'bn' ? 'অজানা' : 'Unknown')}
+              result={getResultType(item.health_score, item.disease_name)}
+              summary={getSummary(item)}
+            />
+          ))
+        )}
       </section>
     </div>
   );

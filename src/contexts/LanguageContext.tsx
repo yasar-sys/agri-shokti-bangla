@@ -379,15 +379,16 @@ const translations: Record<Language, Record<string, string>> = {
     scanHistoryTitle: "স্ক্যান ইতিহাস",
     cropHealthy: "ফসল সুস্থ অবস্থায় আছে। কোন রোগ পাওয়া যায়নি।",
     diseaseFound: "রোগ শনাক্ত হয়েছে",
+    yourScans: "আপনার স্ক্যান সমূহ",
+    loginRequired: "লগইন প্রয়োজন",
+    scanNow: "এখনই স্ক্যান করুন",
 
     // HomePage specific
     services: "সেবা সমূহ",
     aiDiseaseDiagnosis: "AI রোগ নির্ণয়",
     takeCropPhotoAI: "ফসলের ছবি তুলুন, AI বিশ্লেষণ করবে",
     todayTipText: "বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দিন, বিকেলে কীটনাশক স্প্রে করবেন না। ধানের চারা রোপণের সেরা সময়।",
-    farmersUsingApp: "আপনার গ্রামে",
-    farmersCount: "১২৫ জন",
-    farmersUsingSuffix: "কৃষক agriশক্তি ব্যবহার করছেন!",
+    agricultureQuote: "\"কৃষি হলো সভ্যতার ভিত্তি, আর কৃষক হলেন জাতির মেরুদণ্ড।\" — বঙ্গবন্ধু শেখ মুজিবুর রহমান",
   },
   en: {
     // Common
@@ -759,15 +760,16 @@ const translations: Record<Language, Record<string, string>> = {
     scanHistoryTitle: "Scan History",
     cropHealthy: "Crop is healthy. No diseases found.",
     diseaseFound: "Disease detected",
+    yourScans: "Your Scans",
+    loginRequired: "Login Required",
+    scanNow: "Scan Now",
 
     // HomePage specific
     services: "Services",
     aiDiseaseDiagnosis: "AI Disease Diagnosis",
     takeCropPhotoAI: "Take crop photo, AI will analyze",
     todayTipText: "60% chance of rain. Irrigate in the morning, don't spray pesticides in the afternoon. Best time for rice seedling transplantation.",
-    farmersUsingApp: "In your village",
-    farmersCount: "125",
-    farmersUsingSuffix: "farmers are using agriShokti!",
+    agricultureQuote: "\"Agriculture is the foundation of civilization, and farmers are the backbone of the nation.\" — Bangabandhu Sheikh Mujibur Rahman",
   },
   ctg: {
     // Chittagongian dialect
@@ -1136,15 +1138,16 @@ const translations: Record<Language, Record<string, string>> = {
     scanHistoryTitle: "স্ক্যান ইতিহাস",
     cropHealthy: "ফসল সুস্থ আছে। কোনো রোগ পাওয়া যায় নাই।",
     diseaseFound: "রোগ শনাক্ত অইছে",
+    yourScans: "তর স্ক্যান সব",
+    loginRequired: "লগইন লাগবো",
+    scanNow: "এখন স্ক্যান গর",
 
     // HomePage specific
     services: "সেবা সমূহ",
     aiDiseaseDiagnosis: "AI রোগ নির্ণয়",
     takeCropPhotoAI: "ফসলর ছবি তোল, AI বিশ্লেষণ গরবো",
     todayTipText: "বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দে, বিকেলে কীটনাশক স্প্রে গরো না। ধানের চারা রোপণের সেরা সময়।",
-    farmersUsingApp: "তোর গ্রামে",
-    farmersCount: "১২৫ জন",
-    farmersUsingSuffix: "কৃষক agriশক্তি ব্যবহার গরতাছে!",
+    agricultureQuote: "\"কৃষি অইলো সভ্যতার ভিত্তি, আর কৃষক অইলো জাতির মেরুদণ্ড।\" — বঙ্গবন্ধু শেখ মুজিবুর রহমান",
   },
   noakhali: {
     // Noakhali dialect
@@ -1513,15 +1516,16 @@ const translations: Record<Language, Record<string, string>> = {
     scanHistoryTitle: "স্ক্যান ইতিহাস",
     cropHealthy: "ফসল সুস্থ আছে। কোনো রোগ পাওয়া যায় নাই।",
     diseaseFound: "রোগ শনাক্ত হইসে",
+    yourScans: "তোর স্ক্যান সব",
+    loginRequired: "লগইন লাগবে",
+    scanNow: "এখন স্ক্যান কর",
 
     // HomePage specific
     services: "সেবা সমূহ",
     aiDiseaseDiagnosis: "AI রোগ নির্ণয়",
     takeCropPhotoAI: "ফসলের ছবি তোল, AI বিশ্লেষণ করবে",
     todayTipText: "বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দে, বিকেলে কীটনাশক স্প্রে করো না। ধানের চারা রোপণের সেরা সময়।",
-    farmersUsingApp: "তোর গ্রামে",
-    farmersCount: "১২৫ জন",
-    farmersUsingSuffix: "কৃষক agriশক্তি ব্যবহার করতেসে!",
+    agricultureQuote: "\"কৃষি হইলো সভ্যতার ভিত্তি, আর কৃষক হইলো জাতির মেরুদণ্ড।\" — বঙ্গবন্ধু শেখ মুজিবুর রহমান",
   },
 };
 
