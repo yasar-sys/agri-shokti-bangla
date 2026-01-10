@@ -283,7 +283,10 @@ serve(async (req) => {
       case 'ndvi-history': {
         // Get NDVI time-series data for polygon
         const days = parseInt(url.searchParams.get('days') || '30');
-        const cacheKey = `ndvi-history-${polygonId}-${days}`;
+        const end = Math.floor(Date.now() / 1000);
+        const start = end - (days * 24 * 60 * 60);
+
+        const cacheKey = `ndvi-history-v2-${polygonId}-${days}`; // v2 cache key
         const cached = getCachedData(cacheKey);
         if (cached) {
           return new Response(JSON.stringify(cached), {
@@ -291,21 +294,22 @@ serve(async (req) => {
           });
         }
 
-        // Get satellite images for the specified period
-        const end = Math.floor(Date.now() / 1000);
-        const start = end - (days * 24 * 60 * 60);
+        console.log(`Fetching NDVI history for polygon ${polygonId} from ${start} to ${end}`);
 
+        // Use the direct statistics endpoint - much faster and more accurate
         const response = await fetch(
-          `${AGRO_API.BASE_URL}/image/search?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`
+          `${AGRO_API.BASE_URL}/ndvi/history?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`
         );
 
         if (!response.ok) {
+          const errorText = await response.text();
+          console.error(`NDVI history fetch failed: ${response.status}`, errorText);
           throw new Error(`NDVI history fetch failed: ${response.status}`);
         }
 
-        const images: SatelliteImage[] = await response.json();
+        const historyData: any[] = await response.json();
 
-        if (!images || images.length === 0) {
+        if (!historyData || historyData.length === 0) {
           return new Response(
             JSON.stringify({
               error: 'no_data',
@@ -318,90 +322,59 @@ serve(async (req) => {
           );
         }
 
-        // Filter images with good cloud coverage and fetch NDVI stats
-        const historyData = await Promise.all(
-          images
-            .filter(img => img.cl < 70) // Allow up to 70% cloud coverage
-            .sort((a, b) => a.dt - b.dt) // Sort chronologically
-            .map(async (img) => {
-              let ndviMean = 0;
-              if (img.stats?.ndvi) {
-                try {
-                  const statsResponse = await fetch(img.stats.ndvi);
-                  if (statsResponse.ok) {
-                    const stats: NDVIStats = await statsResponse.json();
-                    ndviMean = stats.mean;
-                  }
-                } catch (e) {
-                  console.warn('Failed to fetch NDVI stats for image:', e);
-                }
-              }
+        // Process history data
+        const processedHistory = historyData
+          .sort((a, b) => a.dt - b.dt)
+          .map(item => ({
+            date: new Date(item.dt * 1000).toISOString().split('T')[0],
+            timestamp: item.dt,
+            ndvi: item.data.mean, // Use mean NDVI
+            min: item.data.min,
+            max: item.data.max,
+            median: item.data.median,
+            cloudCoverage: item.cl || 0, // Sometimes omitted in stats
+            type: 'Sentinel-2' // Default assumption for stats
+          }));
 
-              return {
-                date: new Date(img.dt * 1000).toISOString().split('T')[0],
-                timestamp: img.dt,
-                ndvi: ndviMean,
-                cloudCoverage: img.cl,
-                type: img.type
-              };
-            })
-        );
-
-        // Filter out entries with no NDVI data
-        const validHistory = historyData.filter(h => h.ndvi > 0);
-
-        if (validHistory.length === 0) {
-          return new Response(
-            JSON.stringify({
-              error: 'no_valid_data',
-              message: 'No valid NDVI data available',
-              messageBn: 'কোনো বৈধ NDVI ডেটা পাওয়া যায়নি',
-              polygonId,
-              days
-            }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-          );
-        }
-
-        // Calculate statistics
-        const ndviValues = validHistory.map(h => h.ndvi);
+        // Calculate aggregate statistics
+        const ndviValues = processedHistory.map(h => h.ndvi);
         const currentNDVI = ndviValues[ndviValues.length - 1];
         const avgNDVI = ndviValues.reduce((a, b) => a + b, 0) / ndviValues.length;
         const minNDVI = Math.min(...ndviValues);
         const maxNDVI = Math.max(...ndviValues);
 
-        // Calculate trend (compare recent vs older data)
-        const midpoint = Math.floor(validHistory.length / 2);
-        const recentAvg = ndviValues.slice(midpoint).reduce((a, b) => a + b, 0) / (ndviValues.length - midpoint);
-        const olderAvg = ndviValues.slice(0, midpoint).reduce((a, b) => a + b, 0) / midpoint;
+        // Trend Analysis
+        let trend: 'improving' | 'stable' | 'declining' = 'stable';
+        let trendBn = 'স্থিতিশীল';
 
-        let trend: 'improving' | 'stable' | 'declining';
-        let trendBn: string;
-        if (recentAvg > olderAvg + 0.05) {
-          trend = 'improving';
-          trendBn = 'উন্নতি হচ্ছে';
-        } else if (recentAvg < olderAvg - 0.05) {
-          trend = 'declining';
-          trendBn = 'অবনতি হচ্ছে';
-        } else {
-          trend = 'stable';
-          trendBn = 'স্থিতিশীল';
+        if (processedHistory.length >= 2) {
+          const midpoint = Math.floor(processedHistory.length / 2);
+          const recentAvg = ndviValues.slice(midpoint).reduce((a, b) => a + b, 0) / (ndviValues.length - midpoint);
+          const olderAvg = ndviValues.slice(0, midpoint).reduce((a, b) => a + b, 0) / midpoint;
+
+          if (recentAvg > olderAvg + 0.05) {
+            trend = 'improving';
+            trendBn = 'উন্নতি হচ্ছে';
+          } else if (recentAvg < olderAvg - 0.05) {
+            trend = 'declining';
+            trendBn = 'অবনতি হচ্ছে';
+          }
         }
 
-        // Detect sudden NDVI drops (>15% drop between consecutive readings)
+        // Drop Detection
         const warnings = [];
-        for (let i = 1; i < validHistory.length; i++) {
-          const prev = validHistory[i - 1].ndvi;
-          const curr = validHistory[i].ndvi;
+        for (let i = 1; i < processedHistory.length; i++) {
+          const prev = processedHistory[i - 1].ndvi;
+          const curr = processedHistory[i].ndvi;
           const dropPercent = ((prev - curr) / prev) * 100;
 
-          if (dropPercent > 15) {
+          if (dropPercent > 10) { // Lowered threshold slightly
             warnings.push({
-              date: validHistory[i].date,
+              date: processedHistory[i].date,
               previousNDVI: prev,
               currentNDVI: curr,
               dropPercent: Math.round(dropPercent),
-              severity: dropPercent > 30 ? 'critical' : 'warning',
+              severity: dropPercent > 25 ? 'critical' : 'warning',
               message: `NDVI dropped by ${Math.round(dropPercent)}%`,
               messageBn: `NDVI ${Math.round(dropPercent)}% কমেছে`
             });
@@ -411,7 +384,7 @@ serve(async (req) => {
         const result = {
           polygonId,
           days,
-          history: validHistory,
+          history: processedHistory,
           statistics: {
             current: currentNDVI,
             average: avgNDVI,
@@ -421,7 +394,7 @@ serve(async (req) => {
           trend,
           trendBn,
           warnings,
-          dataPoints: validHistory.length
+          dataPoints: processedHistory.length
         };
 
         setCachedData(cacheKey, result);

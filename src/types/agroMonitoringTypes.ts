@@ -119,6 +119,9 @@ export interface NDVIHistoryPoint {
   date: string;
   timestamp: number;
   ndvi: number;
+  min?: number;
+  max?: number;
+  median?: number;
   cloudCoverage: number;
   type: string;
 }
