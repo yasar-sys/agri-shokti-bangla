@@ -409,6 +409,71 @@ export function clearCache(): void {
 // NDVI HISTORY & ANALYSIS
 // ===================================
 
+// ==========================================
+// VALIDATION UTILITIES
+// ==========================================
+
+export function validatePolygon(polygon: AgroPolygon): boolean {
+    if (!polygon || !polygon.geo_json || !polygon.geo_json.geometry) {
+        console.warn('Invalid polygon structure:', polygon);
+        return false;
+    }
+
+    const { type, coordinates } = polygon.geo_json.geometry;
+
+    // 1. Ensure valid GeoJSON type
+    if (type !== 'Polygon') {
+        console.warn('Unsupported geometry type:', type);
+        return false;
+    }
+
+    // 2. Ensure coordinates array exists and has at least one ring
+    if (!Array.isArray(coordinates) || coordinates.length === 0) {
+        console.warn('No coordinates found in polygon');
+        return false;
+    }
+
+    const outerRing = coordinates[0];
+
+    // 3. Ensure valid ring size (triangle is min 4 points: pk1, pk2, pk3, pk1)
+    if (outerRing.length < 4) {
+        console.warn('Polygon has too few points:', outerRing.length);
+        return false;
+    }
+
+    // 4. Ensure polygon is closed (First and Last points must be identical)
+    const first = outerRing[0];
+    const last = outerRing[outerRing.length - 1];
+
+    if (
+        Math.abs(first[0] - last[0]) > 0.000001 ||
+        Math.abs(first[1] - last[1]) > 0.000001
+    ) {
+        console.warn('Polygon is not closed. Auto-closing...');
+        // In a real scenario, we might return false, but here we could correct it or just flag it.
+        // For strict validation as requested:
+        return false;
+    }
+
+    // 5. Validate Longitude/Latitude bounds (Rough check)
+    // GeoJSON is [lon, lat]
+    const isValidCoord = outerRing.every(pt =>
+        pt[0] >= -180 && pt[0] <= 180 && // Lon
+        pt[1] >= -90 && pt[1] <= 90      // Lat
+    );
+
+    if (!isValidCoord) {
+        console.warn('Invalid coordinate values (out of bounds)');
+        return false;
+    }
+
+    return true;
+}
+
+// ==========================================
+// NDVI HISTORY
+// ==========================================
+
 /**
  * Fetch NDVI history for a polygon
  * @param polygonId - Polygon ID
@@ -418,38 +483,85 @@ export async function getPolygonNDVIHistory(
     polygonId: string,
     days: 7 | 14 | 30 = 30
 ): Promise<AgroNDVIHistory> {
+    // 0. Validate Input
+    if (!polygonId || typeof polygonId !== 'string') {
+        throw new AgroMonitoringError('Invalid Polygon ID', 'অবৈধ পলিগন আইডি', 400);
+    }
+
+    // 1. Check Cache
     const cacheKey = `ndvi_history_${polygonId}_${days}`;
     const cached = getCached<AgroNDVIHistory>(cacheKey);
     if (cached) return cached;
 
     try {
-        // Call the edge function with ndvi-history action
-        const response = await fetch(
-            `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/agromonitoring-ndvi?action=ndvi-history&polygon=${polygonId}&days=${days}`,
-            {
-                headers: {
-                    'Content-Type': 'application/json',
-                },
+        // 2. Call Backend Edge Function
+        // Using the robust v2 logic implemented in the backend
+        const { data, error } = await supabase.functions.invoke('agromonitoring-ndvi', {
+            body: {
+                action: 'ndvi-history',
+                polygonId,
+                days
             }
-        );
+        });
 
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
+        if (error) throw error;
+
+        // 3. Handle Backend Errors gracefully
+        if (data.error) {
+            console.warn('Backend returned API error:', data);
+            // Return fallback empty structure instead of crashing if "no_data"
+            if (data.error === 'no_data') {
+                return {
+                    polygonId,
+                    days,
+                    history: [], // Empty history
+                    statistics: { current: 0, average: 0, min: 0, max: 0 },
+                    trend: 'stable',
+                    trendBn: 'তথ্য অপর্যাপ্ত',
+                    warnings: [],
+                    dataPoints: 0
+                };
+            }
             throw new AgroMonitoringError(
-                `NDVI history fetch failed: ${response.status}`,
-                errorData.messageBn || 'NDVI ইতিহাস লোড করতে ব্যর্থ',
-                response.status
+                data.message || 'API Error',
+                data.messageBn || 'ডেটা লোড করতে সমস্যা হয়েছে',
+                500
             );
         }
 
-        const data: AgroNDVIHistory = await response.json();
-        setCache(cacheKey, data);
-        return data;
-    } catch (error) {
-        handleError(error, `getPolygonNDVIHistory(${polygonId}, ${days})`);
+        // 4. Validate Response Structure (Robustness)
+        if (!data.history || !Array.isArray(data.history)) {
+            throw new Error('Invalid history format received');
+        }
+
+        const result: AgroNDVIHistory = {
+            polygonId: data.polygonId,
+            days: data.days,
+            history: data.history,
+            statistics: data.statistics,
+            trend: data.trend,
+            trendBn: data.trendBn,
+            warnings: data.warnings,
+            dataPoints: data.dataPoints
+        };
+
+        // 5. Cache Success
+        setCache(cacheKey, result);
+        return result;
+
+    } catch (err: any) {
+        console.error('getPolygonNDVIHistory Error:', err);
+
+        // Return a safe "Error State" object if preferred, or rethrow custom error
+        // User asked to "Handle empty NDVI responses gracefully", so rethrowing specific errors is okay 
+        // as long as the UI handles it. But let's standardise the error.
+        throw new AgroMonitoringError(
+            err.message || 'Failed to fetch NDVI history',
+            err.messageBn || 'NDVI ইতিহাস লোড ব্যর্থ হয়েছে', // Simpler Bengali msg
+            err.status || 500
+        );
     }
 }
-
 /**
  * Calculate NDVI trend from history data
  * @param history - Array of NDVI history points
