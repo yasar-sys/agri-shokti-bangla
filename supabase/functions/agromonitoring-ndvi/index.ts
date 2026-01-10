@@ -128,7 +128,19 @@ serve(async (req) => {
 
     const url = new URL(req.url);
     const action = url.searchParams.get('action') || 'ndvi';
-    const polygonKey = url.searchParams.get('polygon') || 'iowa-demo';
+
+    // Parse body for POST requests
+    let body: any = {};
+    if (req.method === 'POST') {
+      try {
+        body = await req.json();
+      } catch (e) {
+        // Ignore empty body or json parse error
+      }
+    }
+
+    // Priority: Body > URL Params > Default
+    const polygonKey = body.polygonId || url.searchParams.get('polygon') || 'iowa-demo';
     const polygonId = POLYGON_IDS[polygonKey as keyof typeof POLYGON_IDS] || polygonKey;
 
     console.log(`[AgroMonitoring] Action: ${action}, Polygon: ${polygonKey} (${polygonId})`);
@@ -218,7 +230,7 @@ serve(async (req) => {
               polygonId,
               period: { start: new Date(start * 1000).toISOString(), end: new Date(end * 1000).toISOString() }
             }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           );
         }
 
@@ -281,17 +293,23 @@ serve(async (req) => {
       }
 
       case 'ndvi-history': {
-        // Read 'days' from request body (default to 30 if missing)
+        // Read params from body (Supported: days OR strict start/end)
         const days = body.days ? parseInt(body.days) : 30;
 
         if (!polygonId) {
           throw new Error('Polygon ID is required');
         }
 
-        const end = Math.floor(Date.now() / 1000);
-        const start = end - (days * 24 * 60 * 60);
+        // User explicit request: support start/end timestamps from body
+        let end = body.end ? parseInt(body.end) : Math.floor(Date.now() / 1000);
+        let start = body.start ? parseInt(body.start) : end - (days * 24 * 60 * 60);
 
-        const cacheKey = `ndvi-history-v3-${polygonId}-${days}`; // v3 cache key
+        // Basic sanity check: ensure start < end
+        if (start >= end) {
+          start = end - (30 * 24 * 60 * 60);
+        }
+
+        const cacheKey = `ndvi-history-v3-${polygonId}-${days}-${start}-${end}`; // v3 cache key with range
         const cached = getCachedData(cacheKey);
         if (cached) {
           return new Response(JSON.stringify(cached), {
@@ -323,7 +341,7 @@ serve(async (req) => {
               polygonId,
               days
             }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           );
         }
 
