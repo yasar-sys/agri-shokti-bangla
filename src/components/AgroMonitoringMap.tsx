@@ -82,9 +82,9 @@ export function AgroMonitoringMap({
                 attributionControl: true,
             });
 
-            // Add OpenStreetMap tiles
-            tileLayerRef.current = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© OpenStreetMap contributors',
+            // Add Esri World Imagery Tiles (Satellite View)
+            tileLayerRef.current = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community',
                 maxZoom: 19,
             });
 
@@ -432,16 +432,22 @@ export function AgroMonitoringMap({
 
                     {/* Bottom Left - Legend */}
                     {showNDVIOverlay && (
-                        <div className="absolute bottom-3 left-3 z-[1000] bg-background/95 backdrop-blur-md rounded-lg px-3 py-2.5 shadow-lg border border-border w-48">
+                        <div className="absolute bottom-3 left-3 z-[1000] bg-background/95 backdrop-blur-md rounded-lg px-3 py-2.5 shadow-lg border border-border w-52">
                             <div className="text-xs font-semibold mb-2 flex items-center justify-between">
                                 NDVI স্বাস্থ্য সূচক
-                                <span className="text-[10px] text-muted-foreground bg-muted px-1 rounded">MODIS</span>
+                                <span className="text-[10px] text-muted-foreground bg-muted px-1 rounded">MODIS/Sent.</span>
                             </div>
+
+                            {/* Formula Display */}
+                            <div className="mb-3 p-1.5 bg-muted/50 rounded text-[10px] font-mono text-center border border-border/50 text-muted-foreground">
+                                NDVI = (NIR - Red) / (NIR + Red)
+                            </div>
+
                             <div className="space-y-1.5">
                                 <div className="flex items-center justify-between text-[11px]">
                                     <div className="flex items-center gap-1.5">
                                         <div className="w-3 h-3 rounded-full bg-[#22c55e]" />
-                                        <span>চমৎকার</span>
+                                        <span>চমৎকার (ঘন গাছপালা)</span>
                                     </div>
                                     <span className="opacity-70">&gt; 0.7</span>
                                 </div>
