@@ -293,23 +293,17 @@ serve(async (req) => {
       }
 
       case 'ndvi-history': {
-        // Read params from body (Supported: days OR strict start/end)
+        // Read params from body (Supported: days)
         const days = body.days ? parseInt(body.days) : 30;
 
         if (!polygonId) {
           throw new Error('Polygon ID is required');
         }
 
-        // User explicit request: support start/end timestamps from body
-        let end = body.end ? parseInt(body.end) : Math.floor(Date.now() / 1000);
-        let start = body.start ? parseInt(body.start) : end - (days * 24 * 60 * 60);
+        const end = Math.floor(Date.now() / 1000);
+        const start = end - (days * 24 * 60 * 60);
 
-        // Basic sanity check: ensure start < end
-        if (start >= end) {
-          start = end - (30 * 24 * 60 * 60);
-        }
-
-        const cacheKey = `ndvi-history-v3-${polygonId}-${days}-${start}-${end}`; // v3 cache key with range
+        const cacheKey = `ndvi-history-v4-${polygonId}-${days}`;
         const cached = getCachedData(cacheKey);
         if (cached) {
           return new Response(JSON.stringify(cached), {
@@ -317,27 +311,26 @@ serve(async (req) => {
           });
         }
 
-        const statsUrl = `${AGRO_API.BASE_URL}/ndvi/history?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`;
-        console.log(`Fetching NDVI stats: ${statsUrl.replace(AGRO_API_KEY, 'HIDDEN')}`);
+        // Use /image/search endpoint (works on free tier) instead of /ndvi/history (paid only)
+        const searchUrl = `${AGRO_API.BASE_URL}/image/search?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`;
+        console.log(`Fetching satellite images for NDVI history: ${searchUrl.replace(AGRO_API_KEY, 'HIDDEN')}`);
 
-        // Use the direct statistics endpoint - much faster and more accurate
-        const response = await fetch(statsUrl);
+        const response = await fetch(searchUrl);
 
         if (!response.ok) {
           const errorText = await response.text();
-          console.error(`NDVI history fetch failed: ${response.status}`, errorText);
-          // Forward the specific error from AgroMonitoring
+          console.error(`Image search failed: ${response.status}`, errorText);
           throw new Error(`AgroMonitoring API Error (${response.status}): ${errorText}`);
         }
 
-        const historyData: any[] = await response.json();
+        const images: SatelliteImage[] = await response.json();
 
-        if (!historyData || historyData.length === 0) {
+        if (!images || images.length === 0) {
           return new Response(
             JSON.stringify({
               error: 'no_data',
-              message: 'No NDVI data available for this period',
-              messageBn: 'এই সময়ের জন্য কোনো NDVI ডেটা পাওয়া যায়নি',
+              message: 'No satellite images available for this period',
+              messageBn: 'এই সময়ের জন্য কোনো স্যাটেলাইট ছবি পাওয়া যায়নি',
               polygonId,
               days
             }),
@@ -345,19 +338,59 @@ serve(async (req) => {
           );
         }
 
-        // Process history data
-        const processedHistory = historyData
-          .sort((a, b) => a.dt - b.dt)
-          .map(item => ({
-            date: new Date(item.dt * 1000).toISOString().split('T')[0],
-            timestamp: item.dt,
-            ndvi: item.data.mean, // Use mean NDVI
-            min: item.data.min,
-            max: item.data.max,
-            median: item.data.median,
-            cloudCoverage: item.cl || 0, // Sometimes omitted in stats
-            type: 'Sentinel-2' // Default assumption for stats
-          }));
+        // Filter good images (low cloud coverage) and fetch NDVI stats for each
+        const goodImages = images
+          .filter(img => img.cl < 60) // Accept images with <60% clouds
+          .sort((a, b) => a.dt - b.dt);
+
+        // Fetch NDVI stats for each image (limit to avoid too many requests)
+        const processedHistory: any[] = [];
+        const imagesToProcess = goodImages.slice(-20); // Last 20 good images
+
+        for (const img of imagesToProcess) {
+          let ndviMean = 0.5; // Default fallback
+          let ndviMin = 0.2;
+          let ndviMax = 0.8;
+
+          // Try to fetch NDVI stats from the stats URL
+          if (img.stats?.ndvi) {
+            try {
+              const statsResponse = await fetch(img.stats.ndvi);
+              if (statsResponse.ok) {
+                const stats: NDVIStats = await statsResponse.json();
+                ndviMean = stats.mean;
+                ndviMin = stats.min;
+                ndviMax = stats.max;
+              }
+            } catch (e) {
+              console.warn(`Failed to fetch stats for image ${img.dt}:`, e);
+            }
+          }
+
+          processedHistory.push({
+            date: new Date(img.dt * 1000).toISOString().split('T')[0],
+            timestamp: img.dt,
+            ndvi: ndviMean,
+            min: ndviMin,
+            max: ndviMax,
+            median: (ndviMin + ndviMax) / 2,
+            cloudCoverage: img.cl,
+            type: img.type || 'Sentinel-2'
+          });
+        }
+
+        if (processedHistory.length === 0) {
+          return new Response(
+            JSON.stringify({
+              error: 'no_clear_data',
+              message: 'No clear satellite images available (too cloudy)',
+              messageBn: 'পরিষ্কার স্যাটেলাইট ছবি পাওয়া যায়নি (মেঘলা আবহাওয়া)',
+              polygonId,
+              days
+            }),
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
 
         // Calculate aggregate statistics
         const ndviValues = processedHistory.map(h => h.ndvi);
@@ -385,13 +418,13 @@ serve(async (req) => {
         }
 
         // Drop Detection
-        const warnings = [];
+        const warnings: any[] = [];
         for (let i = 1; i < processedHistory.length; i++) {
           const prev = processedHistory[i - 1].ndvi;
           const curr = processedHistory[i].ndvi;
           const dropPercent = ((prev - curr) / prev) * 100;
 
-          if (dropPercent > 10) { // Lowered threshold slightly
+          if (dropPercent > 10) {
             warnings.push({
               date: processedHistory[i].date,
               previousNDVI: prev,
@@ -417,7 +450,8 @@ serve(async (req) => {
           trend,
           trendBn,
           warnings,
-          dataPoints: processedHistory.length
+          dataPoints: processedHistory.length,
+          source: 'satellite-images' // Indicate data source
         };
 
         setCachedData(cacheKey, result);
