@@ -261,19 +261,30 @@ User Action → React Component → Custom Hook → Supabase Client → Database
 - **Satellite Imagery**: Multi-spectral analysis for crop health assessment
 - **AgroMonitoring**: Real-time polygon monitoring and historical NDVI data access
 
-
 ### Additional Features
 
-| Feature | Description |
-|---------|-------------|
-| NPK Calculator | Fertilizer requirement calculator |
-| Land Calculator | Land measurement converter |
-| Pest Map | Regional pest outbreak mapping |
-| Satellite View | Crop monitoring via satellite |
-| Government Services | Scheme information & contacts |
-| Knowledge Base | Agricultural articles & guides |
-| Profile & Gamification | XP points, achievements, rankings |
-| Settings | Theme, language, notifications |
+| Feature | Description | Status |
+|---------|-------------|--------|
+| **Fertilizer Scanner** | Detects fake fertilizer packaging via image analysis. | ✅ Live |
+| **NPK Calculator** | Calculates exact urea/potash needs based on land size. | ✅ Live |
+| **Land Calculator** | GPS and Map-based land area measurement. | ✅ Live |
+| **Pest Map** | Heatmap of regional pest outbreaks reported by users. | ✅ Live |
+| **Satellite View** | Raw satellite imagery view of the user's location. | ✅ Live |
+| **Government Services** | Index of agricultural schemes and officer contacts. | ✅ Live |
+| **Knowledge Base** | Searchable library of agricultural articles. | ✅ Live |
+| **Profile & Gamification** | XP system, leaderboards, and user achievements. | ✅ Live |
+| **Machine Optimizer** | Guide for agricultural machinery maintenance. | ✅ Live |
+| **Impact Analytics** | Dashboard for tracking yield improvements. | ✅ Live |
+| **Barter System** | Feature for exchanging agricultural tools/goods. | 🚧 Beta |
+| **Storage Locator** | Find nearby cold storage facilities. | ✅ Live |
+
+### 🎮 Demo Mode Features
+*Designed for Judges and Offline Demonstration (accessed via `/demo`)*
+
+1.  **Instant Disease Simulation**: Pre-loaded images of common Bangladeshi crop diseases to test the AI without needing a field trip.
+2.  **Voice Interaction Demo**: One-click play buttons to demonstrate the Bangla Text-to-Speech engine.
+3.  **Mock Satellite Feed**: Simulates a live crossover of Sentinel-2 data to demonstrate the "Satellite-to-Ground" alert loop.
+4.  **Offline Capability Check**: Visual indicators to show which features remain active when the device disconnects from the internet.
 
 ---
 
