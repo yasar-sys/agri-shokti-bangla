@@ -1,5 +1,7 @@
 # Prompt Documentation & Influence Analysis
-**Project ID**: MXB2026-Dhaka-AgriShokti-PrecisionAgri
+**Project ID**: MXB2026-Mymensingh-TEAM_NEWBIES-AgriShokti AI মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি
+
+
 
 This document serves as the mandatory "Show Your Work" repository for **Agri Shokti**. It details the specific instructions (Prompts) given to our AI engines and analyzes how these instructions influenced the final technical implementation.
 
