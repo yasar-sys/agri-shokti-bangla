@@ -127,7 +127,6 @@ serve(async (req) => {
     }
 
     const url = new URL(req.url);
-    const action = url.searchParams.get('action') || 'ndvi';
 
     // Parse body for POST requests
     let body: any = {};
@@ -140,6 +139,7 @@ serve(async (req) => {
     }
 
     // Priority: Body > URL Params > Default
+    const action = body.action || url.searchParams.get('action') || 'ndvi';
     const polygonKey = body.polygonId || url.searchParams.get('polygon') || 'iowa-demo';
     const polygonId = POLYGON_IDS[polygonKey as keyof typeof POLYGON_IDS] || polygonKey;
 
@@ -230,7 +230,7 @@ serve(async (req) => {
               polygonId,
               period: { start: new Date(start * 1000).toISOString(), end: new Date(end * 1000).toISOString() }
             }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 
@@ -341,7 +341,7 @@ serve(async (req) => {
               polygonId,
               days
             }),
-            { headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
           );
         }
 

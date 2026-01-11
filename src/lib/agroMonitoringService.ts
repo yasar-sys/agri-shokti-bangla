@@ -10,6 +10,7 @@
  * - Rate limit handling
  */
 
+import { supabase } from '@/integrations/supabase/client';
 import type {
     AgroPolygon,
     AgroWeather,

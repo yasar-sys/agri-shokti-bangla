@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, TrendingUp, TrendingDown, Minus, RefreshCw, Satellite } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Minus, RefreshCw, Satellite, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
@@ -28,6 +28,7 @@ interface NDVIHistoryChartProps {
   fieldZoneId?: string;
   days?: number;
   showAllZones?: boolean;
+  polygonId?: string; // AgroMonitoring polygon ID for real NDVI data
 }
 
 const ZONE_COLORS = [
@@ -44,8 +45,9 @@ function toBengali(num: number): string {
   return num.toString().split('').map(d => d === '.' ? '.' : bn[parseInt(d)] || d).join('');
 }
 
-export function NDVIHistoryChart({ userId, fieldZoneId, days = 60, showAllZones = false }: NDVIHistoryChartProps) {
+export function NDVIHistoryChart({ userId, fieldZoneId, days = 60, showAllZones = false, polygonId }: NDVIHistoryChartProps) {
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<NDVIHistoryData[]>([]);
   const [zonesHistory, setZonesHistory] = useState<ZoneHistory[]>([]);
   const [trend, setTrend] = useState<string>('stable');
@@ -54,10 +56,73 @@ export function NDVIHistoryChart({ userId, fieldZoneId, days = 60, showAllZones 
   const [summary, setSummary] = useState<any>(null);
 
   const fetchHistory = async () => {
-    if (!userId) return;
-    
     setLoading(true);
+    setError(null);
+    
     try {
+      // Use AgroMonitoring API if polygonId is provided (real data)
+      if (polygonId) {
+        const response = await supabase.functions.invoke('agromonitoring-ndvi', {
+          body: { 
+            action: 'ndvi-history', 
+            polygonId, 
+            days 
+          }
+        });
+
+        if (response.error) throw response.error;
+
+        const data = response.data;
+        
+        if (data.error && data.error !== 'no_data') {
+          throw new Error(data.messageBn || data.message || 'NDVI ডেটা লোড ব্যর্থ');
+        }
+
+        // Transform AgroMonitoring data to chart format
+        const historyData: NDVIHistoryData[] = (data.history || []).map((item: any) => ({
+          date: item.date,
+          ndvi: item.ndvi,
+          health_score: Math.round(Math.max(0, item.ndvi) * 100), // Convert NDVI to percentage
+          status: item.ndvi > 0.6 ? 'good' : item.ndvi > 0.3 ? 'moderate' : 'poor',
+          status_bn: item.ndvi > 0.6 ? 'ভালো' : item.ndvi > 0.3 ? 'মাঝারি' : 'দুর্বল',
+        }));
+
+        setHistory(historyData);
+        setTrend(data.trend || 'stable');
+        setTrendBn(data.trendBn || 'স্থিতিশীল');
+        
+        // Set summary from AgroMonitoring statistics
+        if (data.statistics) {
+          setSummary({
+            latest_ndvi: data.statistics.current,
+            average_ndvi: data.statistics.average,
+            max_ndvi: data.statistics.max,
+            min_ndvi: data.statistics.min
+          });
+        }
+
+        // Generate recommendations based on current NDVI
+        if (data.statistics?.current) {
+          const currentNDVI = data.statistics.current;
+          const recs: string[] = [];
+          if (currentNDVI < 0.3) {
+            recs.push('🚨 ফসলের স্বাস্থ্য সংকটজনক - জরুরি সেচ প্রয়োজন');
+            recs.push('🔬 রোগ বা পোকার আক্রমণ পরীক্ষা করুন');
+          } else if (currentNDVI < 0.5) {
+            recs.push('💧 নিয়মিত সেচ বজায় রাখুন');
+            recs.push('🌱 সার প্রয়োগের সময় হতে পারে');
+          } else {
+            recs.push('✅ ফসলের স্বাস্থ্য ভালো');
+          }
+          setRecommendations(recs);
+        }
+        
+        return;
+      }
+
+      // Fallback to NASA-NDVI for simulated data if no polygonId
+      if (!userId) return;
+      
       const response = await supabase.functions.invoke('nasa-ndvi', {
         body: showAllZones 
           ? { action: 'get_all_zones_history', userId, days }
@@ -78,8 +143,9 @@ export function NDVIHistoryChart({ userId, fieldZoneId, days = 60, showAllZones 
           setSummary(data.summary || null);
         }
       }
-    } catch (error) {
-      console.error('Error fetching NDVI history:', error);
+    } catch (err: any) {
+      console.error('Error fetching NDVI history:', err);
+      setError(err.message || 'NDVI ইতিহাস লোড ব্যর্থ হয়েছে');
     } finally {
       setLoading(false);
     }
@@ -87,7 +153,7 @@ export function NDVIHistoryChart({ userId, fieldZoneId, days = 60, showAllZones 
 
   useEffect(() => {
     fetchHistory();
-  }, [userId, fieldZoneId, days, showAllZones]);
+  }, [userId, fieldZoneId, days, showAllZones, polygonId]);
 
   // Format date for Bengali display
   const formatDate = (dateStr: string) => {
@@ -123,6 +189,21 @@ export function NDVIHistoryChart({ userId, fieldZoneId, days = 60, showAllZones 
       <Card className="bg-card/80 backdrop-blur-sm border-border">
         <CardContent className="flex items-center justify-center py-12">
           <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card className="bg-card/80 backdrop-blur-sm border-border">
+        <CardContent className="flex flex-col items-center justify-center py-12 gap-3">
+          <AlertTriangle className="w-8 h-8 text-destructive" />
+          <p className="text-sm text-muted-foreground text-center">{error}</p>
+          <Button variant="outline" size="sm" onClick={fetchHistory}>
+            <RefreshCw className="w-4 h-4 mr-2" />
+            পুনরায় চেষ্টা
+          </Button>
         </CardContent>
       </Card>
     );
