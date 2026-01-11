@@ -82,13 +82,16 @@
 - **RLS**: সুপাবেসে রো লেভেল সিকিউরিটি (কৃষকরা শুধু নিজেদের জমির তথ্য দেখবেন)।
 - **ডেটা সেফটি**: ডেটা এনক্রিপশন এবং নিরাপদ স্টোরেজ।
 
-## স্লাইড ১১ — টিম পরিচিতি (TEAM_NEWBIES)
-- **সামিন ইয়াসার**: টিম লিড, প্রম্পট ইঞ্জিনিয়ার ও ফুল স্ট্যাক দেভ।
-- **রাহিয়াতুল জান্নাত**: ফ্রন্টএন্ড ডেভেলপার।
-- **মাইশা ওসমান উমামা**: সিস্টেম এনালিস্ট।
-- **নিশাত সুলতানা কেয়া**: কৃষি বিশেষজ্ঞ (গাজীপুর কৃষি বিশ্ববিদ্যালয়)।
-- **শক্তি**: প্রকৌশল এবং কৃষি বিজ্ঞানের অনন্য সংমিশ্রণ।
+### 👥 Team Newbies
+| Name | Institution | Role |
+|---|---|---|
+| **Samin Yasar** | Mymensingh Engineering College | Team Lead & Prompt Engineer |
+| **Rahiatul Jannat** | Mymensingh Engineering College | System Analyst |
+| **Maisha Osman Umama** | Mymensingh Engineering College | System Analyst |
+| **Neshat Sultana Keya** | Gazipur Agricultural University | Agricultural Expert |
+| **Mahmud Niloy** | Mymensingh Engineering College | System Analyst |
 
+---
 ## স্লাইড ১২ — রোডম্যাপ ও ইমপ্যাক্ট (Roadmap)
 - **বর্তমান**: ধান ও আলু রোগের ক্ষেত্রে ৯৫% নির্ভুলতা।
 - **আগামী ৬ মাস**: IoT সয়েল সেন্সর ইন্টিগ্রেশন।
