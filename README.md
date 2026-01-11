@@ -3,7 +3,7 @@
 **AI-Powered Precision Agriculture Assistant for Bangladesh**  
 *Bridging the gap between NASA Satellite Data and the Rural Farmer.*
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-blue)](https://agri-shokti-bangla.vercel.app/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-blue)](https://agri-shokti-ai.vercel.app/)
 [![React](https://img.shields.io/badge/React-18.2-blue?logo=react)](https://reactjs.org/)
 [![Supabase](https://img.shields.io/badge/Supabase-PgVector-green?logo=supabase)](https://supabase.com/)
 [![Gemini 2.5](https://img.shields.io/badge/AI-Gemini%202.5%20Flash-orange?logo=google)](https://deepmind.google/technologies/gemini/)
