@@ -18,7 +18,7 @@ graph TD
     %% Stage 1: Sensing
     subgraph S1[Stage 1: Contextual Sensing]
         A[AgroMonitoring API] -->|NDVI Data| B[Field Health Map]
-        W[NASA POWER Weather(DEMO)] --> B
+        W[NASA POWER Weather-DEMO] --> B
         U[User Photo] -->|Upload| C[Input Handler]
     end
 
@@ -26,7 +26,7 @@ graph TD
     subgraph S2[Stage 2: Adaptive Reasoning]
         B -->|Context| D[Gemini 2.5 Flash]
         C -->|Visual Input| D
-        E[Soil Data Crop CASMA(DEMO)] --> D
+        E[Soil Data Crop CASMA-DEMO] --> D
     end
 
     %% Stage 3: Validation
@@ -39,7 +39,7 @@ graph TD
 
     %% Stage 4: Action
     subgraph S4[Stage 4: Hyper Localized Delivery]
-        H -->|JSON| I[Bangla Voice Engine(DEMO)]
+        H -->|JSON| I[Bangla Voice Engine-DEMO]
         H -->|Alert| J[Notification Trigger]
         H -->|UI Update| K[Mobile UI Cards]
     end
