@@ -1,102 +1,110 @@
-# 🌾 AgriShokti AI
+# 🌾 AgriShokti (কৃষিশক্তি)
 
-**মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি**  
+**AI-Powered Precision Agriculture Assistant for Bangladesh**  
+*Bridging the gap between NASA Satellite Data and the Rural Farmer.*
 
-[![Live Demo](https://img.shields.io/badge/Live-Demo-blue)](https://agri-shokti-ai.vercel.app)  
-[![React](https://img.shields.io/badge/React-18.2-blue?logo=react)](https://reactjs.org/)  
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.3-blue?logo=tailwind-css)](https://tailwindcss.com/)  
-[![Supabase](https://img.shields.io/badge/Supabase-Edge%20DB-green?logo=supabase)](https://supabase.com/)  
-[![Google Gemini](https://img.shields.io/badge/AI-Google%20Gemini-orange)](https://developers.google.com/)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-blue)](https://agri-shokti-bangla.vercel.app/)
+[![React](https://img.shields.io/badge/React-18.2-blue?logo=react)](https://reactjs.org/)
+[![Supabase](https://img.shields.io/badge/Supabase-PgVector-green?logo=supabase)](https://supabase.com/)
+[![Gemini 2.5](https://img.shields.io/badge/AI-Gemini%202.5%20Flash-orange?logo=google)](https://deepmind.google/technologies/gemini/)
+[![NASA OpenET](https://img.shields.io/badge/Data-NASA%20OpenET-red)](https://openetdata.org/)
 
 ---
 
-## 🏆 পরিচিতি
+## 🏆 Project Overview (পরিচিতি)
 
-**AgriShokti AI** (এগ্রিশক্তি এআই) হলো বাংলাদেশের কৃষকদের জন্য একটি **AI-চালিত স্মার্ট কৃষি সহায়তা অ্যাপ্লিকেশন।** এটি কৃষকদের আধুনিক প্রযুক্তির সাথে যুক্ত করে ফসলের উৎপাদন বৃদ্ধি, খরচ কমানো এবং সঠিক সিদ্ধান্ত নিতে সহায়তা করে।
+**AgriShokti** (means "Agricultural Power") is a specialized localized PWA designed to empower Bangladeshi smallholders. Unlike generic chatbots, AgriShokti uses a **4-Stage Reasoning Pipeline** to combine real-time Satellite Imagery (Sentinel-2) with ground-level diagnostics (Computer Vision), verified against national agricultural standards (BARI/FAO).
 
-**Team Newbies:**
-| নাম | প্রতিষ্ঠান | ভূমিকা |
+> **The "10X" Innovation:** We have built a **Satellite-to-Ground-Truth Loop**. The system detects crop stress from space (low NDVI) and proactively asks the farmer to "verify" the specific spot via a photo, creating a self-learning precision map.
+
+### 👥 Team Newbies
+| Name | Institution | Role |
 |---|---|---|
-| Samin Yasar | Mymensingh Engineering College | টিম লিড |
-| Mahmud Niloy | Mymensingh Engineering College | টিম মেম্বার |
-| Rahiatul Jannat | Mymensingh Engineering College | টিম মেম্বার |
-| Maisha Osman Umama | Mymensingh Engineering College | টিম মেম্বার |
-| Neshat Sultana Keya | Gazipur Agricultural University | টিম মেম্বার |
+| **Samin Yasar** | Mymensingh Engineering College | Team Lead & Prompt Engineer |
+| **Rahiatul Jannat** | Mymensingh Engineering College | Frontend Developer |
+| **Maisha Osman Umama** | Mymensingh Engineering College | System Analyst |
+| **Neshat Sultana Keya** | Gazipur Agricultural University | Agricultural Expert |
 
 ---
 
-## 💡 মূল ফিচারসমূহ
+## 🧠 AI Logic & Architecture
 
-- 📸 **AI রোগ শনাক্তকরণ:** ফসলের ছবি তুলে দ্রুত রোগ নির্ণয় ও সমাধান।
-- 🔍 **সার স্ক্যানার (Anti-Fake Fertilizer):** আসল ও নকল সার যাচাইকরণ।
-- 🗺️ **পোকার হিটম্যাপ:** পোকার আক্রমণের এলাকা ভিত্তিক পূর্বাভাস।
-- 💬 **AI চ্যাট সহায়ক:** বাংলা ভয়েস ও টেক্সট এর মাধ্যমে কৃষি বিষয়ক যেকোনো প্রশ্নের উত্তর।
-- 🌤️ **রিয়েল-টাইম আবহাওয়া:** এলাকার সঠিক আবহাওয়ার পূর্বাভাস।
-- 📈 **বাজার দর আপডেট:** বিভিন্ন ফসলের বর্তমান বাজার দর যাচাই।
-- 🛰️ **স্যাটেলাইট ভিশন (NDVI):** স্যাটেলাইট ইমেজের মাধ্যমে ফসলের স্বাস্থ্য পর্যবেক্ষণ।
-- 📅 **ফার্মিং ক্যালেন্ডার:** ফসল রোপণ থেকে কর্তন পর্যন্ত সম্পূর্ণ গাইডলাইন।
-- 🧮 **NPK ক্যালকুলেটর:** জমির জন্য সঠিক পরিমাণে সারের হিসাব।
-- ⚠️ **জলবায়ু সতর্কতা:** ঘূর্ণিঝড়, বন্যা বা খরা বিষয়ক আগাম সতর্কতা।
-- 🏛️ **সরকারি সেবা:** কৃষি বিষয়ক সরকারি সুযোগ-সুবিধা ও নোটিশ।
-- 📏 **জমি পরিমাপক:** জিপিএস বা ম্যাপের মাধ্যমে জমির সঠিক পরিমাপ (Land Calculator)।
-- 🚜 **মেশিন অপ্টিমাইজার:** কৃষি যন্ত্রপাতির সঠিক ব্যবহার ও মেইনটেন্স গাইড।
-- 📊 **ইমপ্যাক্ট এনালিটিক্স:** চাষাবাদের লাভ-ক্ষতি ও উন্নতির রিপোর্ট।
-- 🎮 **গেমিনেশন:** কৃষি কাজকে আনন্দদায়ক করতে রিওয়ার্ড ও পয়েন্ট সিস্টেম।
-- 📚 **কমিউনিটি ও নলেজ হাব:** অন্য কৃষকদের সাথে অভিজ্ঞতা বিনিময় ও কৃষি জ্ঞান ভান্ডার।
+Our system mimics an **n8n-style automation workflow**, orchestrated by **Supabase Edge Functions**:
+
+1.  **Contextual Sensing (The Eyes)**:
+    *   Ingests **AgroMonitoring** (NDVI) and **NASA POWER** (Weather) data.
+    *   Creates a live "Field Health Map".
+2.  **Adaptive Reasoning (The Brain)**:
+    *   **Gemini 2.5 Flash** analyzes crop photos for diseases (`/functions/detect-disease`).
+    *   Cross-references symptoms with local seasonality.
+3.  **Expert Validation (The Library - RAG)**:
+    *   **Retrieval Augmented Generation** checks advice against vectorized **BARI (Bangladesh Agricultural Research Council)** PDF guidelines.
+    *   *Guardrail*: If AI advice contradicts BARI safety limits, it is flagged.
+4.  **Localized Delivery (The Voice)**:
+    *   Converts complex advice into **Bangla Voice Audio** for low-literacy accessibility.
 
 ---
 
-## 🗄️ ডেটা সোর্স
+## 💡 Key Features (মূল ফিচারসমূহ)
 
-| সোর্স | ব্যবহার |
+### 🛰️ NASA Farm Navigators
+*   **Satellite Vision (NDVI)**: Real-time crop health monitoring using Sentinel-2/Landsat data.
+*   **Water Balance**: Irrigation advice based on **NASA OpenET**.
+*   **Soil Moisture**: Drought alerts via **NASA Crop-CASMA**.
+
+### 🌾 Smart Farming Tools
+*   **📸 AI Disease Doctor**: Instant diagnosis from leaf photos with offline support.
+*   **💬 AgriBot**: Voice-first assistant that speaks the local dialect.
+*   **🔍 Fertilizer Scanner**: Detects fake fertilizer packaging.
+*   **🗺️ Pest Heatmap**: Community-driven outbreak warnings.
+*   **📅 Dynamic Calendar**: Tasks adjusted automatically by weather forecasts.
+
+---
+
+## 🗄️ Data Sources (তথ্যের উৎস)
+
+| Source | Usage |
 |---|---|
-| Open-Meteo | আবহাওয়া ডেটা |
-| OpenStreetMap | জিওলোকেশন ও ঠিকানা |
-| SoilGrids | মাটির গুণাগুণ |
-| BRRI & BARI | ফসল গবেষণা |
-| DAE | কৃষি সম্প্রসারণ তথ্য |
-| BMD | আবহাওয়া পূর্বাভাস |
-| PlantVillage Dataset | রোগ শনাক্তকরণ AI মডেল |
-| FAO | আন্তর্জাতিক কৃষি তথ্য |
-| AgroMonitoring / Sentinel | স্যাটেলাইট ইমেজারি ও NDVI |
+| **NASA OpenET** | Evapotranspiration & Water Management |
+| **NASA Crop-CASMA** | Soil Moisture & Drought Monitoring |
+| **AgroMonitoring** | Sentinel-2 NDVI & Historical Satellite Data |
+| **NASA POWER** | GMAO Weather Forecasting |
+| **BARI & BRRI** | Official Treatment Protocols (Vector Store) |
+| **SoilGrids** | Soil pH & Texture Data |
 
 ---
 
-## 🛠️ প্রযুক্তি স্ট্যাক
+## 🛠️ Technology Stack
 
-- **Frontend :** React, TypeScript, Tailwind CSS, Shadcn/ui
-- **Backend :** Supabase (Database, Auth, Edge Functions)
-- **AI :** Google Gemini (Vision + Chat)
-- **Maps :** Leaflet, Mapbox GL
-- **Font :** Noto Sans Bengali
+*   **Frontend**: React, TypeScript, Tailwind CSS, Shadcn/UI, Recharts.
+*   **Backend**: Supabase (Auth, Database, Realtime).
+*   **AI/ML**: Google Gemini 2.5 Flash (Vision & Chat), text-embedding-004.
+*   **Logic**: Supabase Edge Functions (Deno).
+*   **Maps**: Mapbox GL JS + Leaflet.
 
 ---
 
-## 📄 লাইসেন্স ও কপিরাইট সতর্কতা
+## 📄 License & Copyright
 
-MIT License © 2025 Team_Newbies
+**MIT License** © 2025 Team_Newbies
 
-**⚠️ কপিরাইট সতর্কতা:**  
-1. অ্যানথর বা কোম্পানির অনুমতি ছাড়া কপিরাইটেড কাজ ব্যবহার করলে **আইনানুগ ব্যবস্থা নেওয়া হবে।**  
-2. জরিমানা, ক্ষতিপূরণ বা **কারাগারের শাস্তি** হতে পারে।  
-3. ডিজিটাল বা প্রিন্ট সব মাধ্যমে **অবৈধ ব্যবহার গুরুতর অপরাধ।**  
+> **Competition Note**: This repository identifies specific prompts and architecture decisions in `PROMPT_LIBRARY.md` and `AI_LOGIC_DETAILS.md` for judging transparency.
 
-> আমাদের কোড, ডিজাইন ও কনটেন্ট ব্যবহার করার আগে **README ও লাইসেন্স শর্তাবলী মেনে চলুন।**
+---
 
-
-## 🚀 Quick Start (Local Development)
+## 🚀 Quick Start
 
 ```bash
-# Clone repository
-git clone https://github.com/your_user_name/agri-shokti-ai.git
-cd agri-shokti-ai
+# Clone the repository
+git clone https://github.com/yasar-sys/agri-shokti-bangla.git
 
 # Install dependencies
 npm install
 
-# Run development server
-npm run dev
+# Set up Environment Variables (.env)
+# VITE_SUPABASE_URL=...
+# VITE_SUPABASE_ANON_KEY=...
 
-# Visit in browser
-http://localhost:5173
+# Run locally
+npm run dev
 ```
