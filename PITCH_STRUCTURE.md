@@ -1,104 +1,104 @@
-# Agri-Shokti Bangla — Final Pitch Structure
+# এগ্রি-শক্তি বাংলা (Agri-Shokti Bangla) — পিচ স্ট্রাকচার (Pitch Structure)
 
-Audience: Judges evaluating technical depth (AI logic, prompts, system architecture).  
-Goal: A succinct, slide-by-slide pitch deck that highlights the product, technical design, and verifiable implementation in your repo.
-Language: **Bangla / English** (The pitch should be delivered in Bangla/English mix as appropriate, but the structure is universal).
+**অডিয়েন্স:** বিচারক মণ্ডলী (যারা AI লজিক, প্রম্পট এবং সিস্টেম আর্কিটেকচার মূল্যায়ন করবেন)।  
+**লক্ষ্য:** একটি সংক্ষিপ্ত, স্লাইড-বাই-স্লাইড পিচ ডেক যা প্রোডাক্ট, টেকনিক্যাল ডিজাইন এবং গিটহাব রিপোজিটরির বাস্তবায়ন তুলে ধরবে।  
+**ভাষা:** **বাংলা** (পিচটি মূলত বাংলায় হবে, তবে টেকনিক্যাল টার্মগুলো ইংরেজিতে রাখা যেতে পারে)।
 
-Estimated deck: 12–16 slides (10–12 minutes). Aim for clarity: 1 slide / minute.
+**আনুমানিক ডেক:** ১২-১৬ স্লাইড (১০-১২ মিনিট)। প্রতি স্লাইডে ১ মিনিট সময় বরাদ্দ রাখা ভালো।
 
 ---
 
-## Slide 1 — Title
-- **Title**: "Agri-Shokti" (কৃষিশক্তি)
-- **Subtitle**: "AI-Powered Agricultural Intelligence for Bangladesh"
-- **Team**: TEAM_NEWBIES
-- **Repo link**: https://github.com/yasar-sys/agri-shokti-bangla
-- **Speaker note**: "We are building the 'Brain' for the Bangladeshi farmer."
+## স্লাইড ১ — টাইটেল (Title)
+- **শিরোনাম**: "এগ্রি-শক্তি" (Agri-Shokti)
+- **সাব-টাইটেল**: "বাংলাদেশের কৃষির জন্য এআই-চালিত স্মার্ট সমাধান"
+- **টিম**: TEAM_NEWBIES
+- **রিপো লিংক**: https://github.com/yasar-sys/agri-shokti-bangla
+- **স্পিকার নোট**: "আমরা বাংলাদেশের কৃষকদের জন্য একটি 'ডিজিটাল মস্তিষ্ক' তৈরি করছি।"
 
-## Slide 2 — Problem (Agri-Gap)
-- **Core Issues**:
-  1.  **Information Gap**: Farmers rely on hearsay, not science.
-  2.  **Language Barrier**: "Satellite data" is useless if not explained in simple Bangla.
-  3.  **Late Diagnosis**: Diseases are often identified when it's too late.
-- **Statistic**: "Smallholders lose 20-30% yield due to preventable diseases."
-- **Speaker note**: Emphasize that farmers *have* data (visual symptoms) but lack the *tool* to interpret it.
+## স্লাইড ২ — সমস্যা (Problem Statement)
+- **মূল সমস্যাগুলো**:
+  ১. **তথ্যের অভাব**: কৃষকরা সঠিক বিজ্ঞানের বদলে শোনা কথার ওপর নির্ভর করেন।
+  ২. **ভাষার বাধা**: "স্যাটেলাইট ডেটা" বা জটিল ইংরেজি রিপোর্ট কৃষকদের কোনো কাজে আসে না।
+  ৩. **দেরিতে রোগ নির্ণয়**: যখন রোগ ধরা পড়ে, তখন ফসলের ক্ষতি হয়ে যায়।
+- **পরিসংখ্যান**: "সঠিক সময়ে রোগ নির্ণয় না হওয়ায় কৃষকরা ২০-৩০% ফসল হারান।"
+- **স্পিকার নোট**: কৃষকদের কাছে *ডেটা* (চোখের দেখা লক্ষণ) আছে, কিন্তু সেটা বোঝার মতো *টুল* নেই।
 
-## Slide 3 — Solution: Agri-Shokti
-- **Product**: A PWA (Progressive Web App) that works offline and speaks Bangla.
-- **Key Features**:
-  - **AI Disease Doctor**: Instant diagnosis from photos.
-  - **NASA Farm Navigators**: Integration of OpenET & Crop-CASMA for water/soil analysis.
-  - **Voice-First**: Talk to the app in local dialect.
-- **Visual**: Show the "HomePage" with the Dashboard and "Scan" button.
+## স্লাইড ৩ — সমাধান: এগ্রি-শক্তি (Solution)
+- **প্রোডাক্ট**: একটি PWA (Progressive Web App) যা অফলাইনেও কাজ করে এবং বাংলায় কথা বলে।
+- **মূল ফিচার**:
+  - **AI রোগ ডাক্তার**: ছবি তুলে মুহূর্তেই রোগ নির্ণয়।
+  - **NASA ফার্ম নেভিগেটরস**: OpenET এবং Crop-CASMA এর সাহায্যে পানি ও মাটির আর্দ্রতা বিশ্লেষণ।
+  - **ভয়েস-ফার্স্ট**: অ্যাপের সাথে আঞ্চলিক ভাষায় কথা বলার সুবিধা।
+- **ভিজুয়াল**: অ্যাপের "হোমপেজ" এবং "স্ক্যান" বাটনটি দেখান।
 
-## Slide 4 — Demo (The "Wow" Moment)
-- **Flow**:
-  1.  Open App -> Click "Scan Crop".
-  2.  Upload a leaf photo -> See "Gemini 2.5 Flash" analyzing.
-  3.  **Result**: Disease Name (in Bangla), Treatment, and *Audio Explanation*.
-- **Live Element**: Play the Bangla Text-to-Speech response.
-- **Reference**: `src/pages/DianaosisPage.tsx` / `/functions/detect-disease`
+## স্লাইড ৪ — ডেমো (Demo - The "Wow" Moment)
+- **ফ্লো**:
+  ১. অ্যাপ খুলুন -> "ফসলের রোগ নির্ণয়" এ ক্লিক করুন।
+  ২. একটি আক্রান্ত পাতার ছবি আপলোড করুন -> দেখুন "Gemini 2.5 Flash" বিশ্লেষণ করছে।
+  ৩. **ফলাফল**: রোগের নাম (বাংলায়), চিকিৎসার ধাপ, এবং *অডিও পরামর্শ*।
+- **লাইভ এলিমেন্ট**: অ্যাপের বাংলা টেক্সট-টু-স্পিচ (TTS) শুনিয়ে দিন।
+- **রেফারেন্স**: `src/pages/DianaosisPage.tsx` / `/functions/detect-disease`
 
-## Slide 5 — Tech Stack
-- **Frontend**: Vite + React + TypeScript + Tailwind CSS (Shadcn/UI).
-- **Backend**: Supabase (PostgreSQL + Auth + Edge Functions).
-- **AI Core**: Google Gemini 2.5 Flash (Multimodal) + text-embedding-004.
-- **Geospatial**: AgroMonitoring API + NASA POWER + OpenET.
-- **DevOps**: Lovable Cloud / Vercel.
+## স্লাইড ৫ — টেক স্ট্যাক (Tech Stack)
+- **ফ্রন্টএন্ড**: Vite + React + TypeScript + Tailwind CSS (Shadcn/UI)।
+- **ব্যাকএন্ড**: Supabase (PostgreSQL + Auth + Edge Functions)।
+- **AI কোর**: Google Gemini 2.5 Flash (Multimodal) + text-embedding-004।
+- **জিওস্পেশিয়াল**: AgroMonitoring API + NASA POWER + OpenET।
+- **ডেভঅপস**: Lovable Cloud / Vercel।
 
-## Slide 6 — System Architecture (The "Brain")
-- **Diagram**:
-  - User (React PWA) <--> Supabase Edge Functions.
+## স্লাইড ৬ — সিস্টেম আর্কিটেকচার (The "Brain")
+- **ডায়াগ্রাম**:
+  - ব্যবহারকারী (React PWA) <--> Supabase Edge Functions.
   - Edge Functions <--> Gemini AI.
   - Edge Functions <--> AgroMonitoring/NASA APIs.
   - Edge Functions <--> Supabase Database (pgvector).
-- **Key Concept**: "MCP-Style Specialist Agents" (Vision Agent, Geo Agent, RAG Agent).
+- **মূল ধারণা**: "MCP-Style Specialist Agents" (Vision Agent, Geo Agent, RAG Agent)।
 
-## Slide 7 — AI Logic & RAG (The "Library")
-- **Hallucination Control**:
-  - We don't just ask ChatGPT. We use **RAG (Retrieval-Augmented Generation)**.
-  - **Source**: BARI (Bangladesh Agricultural Research Institute) Guidelines (PDFs -> Embeddings).
-  - **Logic**: User Query -> Search Vector DB -> Retrieve BARI Context -> Gemini Answers.
-- **Evidence**: `AI_LOGIC_DETAILS.md` and `/functions/rag-answer`.
+## স্লাইড ৭ — AI লজিক এবং RAG (The "Library")
+- **হ্যালুসিনেশন নিয়ন্ত্রণ**:
+  - আমরা শুধু ChatGPT ব্যবহার করি না। আমরা **RAG (Retrieval-Augmented Generation)** ব্যবহার করি।
+  - **উৎস**: BARI (বাংলাদেশ কৃষি গবেষণা ইনস্টিটিউট) এর গাইডলাইন (PDF -> Embeddings)।
+  - **লজিক**: ব্যবহারকারীর প্রশ্ন -> ভেক্টর ডাটাবেস সার্চ -> BARI এর তথ্য গ্রহণ -> Gemini এর উত্তর প্রদান।
+- **প্রমাণ**: `AI_LOGIC_DETAILS.md` এবং `/functions/rag-answer`।
 
-## Slide 8 — 10X Innovation: Satellite-to-Ground Loop
-- **Feature**: "NASA Farm Navigators"
-- **The Concept**:
-  - Satellite (Sentinel-2) sees a "Yellow Patch" (NDVI drop).
-  - App alerts Farmer: "Check the North-East corner."
-  - Farmer takes photo.
-  - AI confirms: "It's Nitrogen deficiency."
-  - Result: **Precision Intervention**.
-- **Data Sources**: NASA OpenET (Water), Crop-CASMA (Soil Moisture).
+## স্লাইড ৮ — 10X ইনোভেশন: স্যাটেলাইট-টু-গ্রাউন্ড লুপ
+- **ফিচার**: "NASA Farm Navigators"
+- **ধারণা**:
+  - স্যাটেলাইট (Sentinel-2) ফসলের ক্ষেতে "হলুদ অংশ" (NDVI কমে যাওয়া) শনাক্ত করে।
+  - অ্যাপ কৃষককে সতর্ক করে: "ক্ষেতের উত্তর-পূর্ব কোণটি চেক করুন।"
+  - কৃষক সেখানে গিয়ে ছবি তোলে।
+  - AI নিশ্চিত করে: "এটি নাইট্রোজেনের অভাব।"
+  - **ফলাফল**: নির্ভুল এবং দ্রুত পদক্ষেপ (Precision Intervention)।
+- **ডেটা সোর্স**: NASA OpenET (পানি), Crop-CASMA (মাটির আর্দ্রতা)।
 
-## Slide 9 — Prompt Engineering (Show Your Work)
-- **Categories**: Ideation, Architecture, Coding, Evaluation.
-- **Example Prompt**:
-  - *"Act as a local agronomist. Review this disease diagnosis against BARI 2023 guidelines. If the Urea dosage is >5% off, flag it."*
-- **Reference**: `PROMPT_LIBRARY.md`.
+## স্লাইড ৯ — প্রম্পট ইঞ্জিনিয়ারিং (Show Your Work)
+- **ক্যাটাগরি**: আইডিয়াশন, আর্কিটেকচার, কোডিং, ইভালুয়েশন।
+- **উদাহরণ প্রম্পট**:
+  - *"একজন স্থানীয় কৃষিবিদ হিসেবে কাজ করো। এই রোগের রিপোর্টটি BARI ২০২৩ এর গাইডলাইনের সাথে মিলিয়ে দেখো। যদি ইউরিয়া সারের পরিমাণ ৫% এর বেশি কম-বেশি হয়, তবে এটি ফ্ল্যাগ করো।"*
+- **রেফারেন্স**: `PROMPT_LIBRARY.md`।
 
-## Slide 10 — Security & Privacy
-- **RBAC**: Role-Based Access Control (Admin, Farmer, Expert).
-- **RLS**: Row Level Security on Supabase (Farmers only see their own land data).
-- **Data Safety**: Encrypted data at rest and in transit.
+## স্লাইড ১০ — নিরাপত্তা ও প্রাইভেসি (Security)
+- **RBAC**: রোল-বেসড অ্যাক্সেস কন্ট্রোল (অ্যাডমিন, কৃষক, বিশেষজ্ঞ)।
+- **RLS**: সুপাবেসে রো লেভেল সিকিউরিটি (কৃষকরা শুধু নিজেদের জমির তথ্য দেখবেন)।
+- **ডেটা সেফটি**: ডেটা এনক্রিপশন এবং নিরাপদ স্টোরেজ।
 
-## Slide 11 — Team: TEAM_NEWBIES
-- **Samin Yasar**: Team Lead, Prompt Engineer & Full Stack Dev.
-- **Rahiatul Jannat**: Developer.
-- **Maisha Osman Umama**: Developer.
-- **Neshat Sultana Keya**: Agricultural Expert (Gazipur Agricultural University).
-- **Strengths**: Engineering + Agricultural Science mix.
+## স্লাইড ১১ — টিম পরিচিতি (TEAM_NEWBIES)
+- **সামিন ইয়াসার**: টিম লিড, প্রম্পট ইঞ্জিনিয়ার ও ফুল স্ট্যাক দেভ।
+- **রাহিয়াতুল জান্নাত**: ফ্রন্টএন্ড ডেভেলপার।
+- **মাইশা ওসমান উমামা**: সিস্টেম এনালিস্ট।
+- **নিশাত সুলতানা কেয়া**: কৃষি বিশেষজ্ঞ (গাজীপুর কৃষি বিশ্ববিদ্যালয়)।
+- **শক্তি**: প্রকৌশল এবং কৃষি বিজ্ঞানের অনন্য সংমিশ্রণ।
 
-## Slide 12 — Roadmap & Impact
-- **Now**: 95% Accuracy on Rice & Potato diseases.
-- **Next 6 Months**: IoT Soil Sensor integration.
-- **Goal**: Cover all 64 districts in Bangladesh.
-- **Ask**: Mentorship & Compute Credits to scale.
+## স্লাইড ১২ — রোডম্যাপ ও ইমপ্যাক্ট (Roadmap)
+- **বর্তমান**: ধান ও আলু রোগের ক্ষেত্রে ৯৫% নির্ভুলতা।
+- **আগামী ৬ মাস**: IoT সয়েল সেন্সর ইন্টিগ্রেশন।
+- **লক্ষ্য**: বাংলাদেশের ৬৪টি জেলায় সেবা পৌঁছে দেওয়া।
+- **চাহিদা**: মেন্টরশিপ এবং স্কেলিং করার জন্য কম্পিউট ক্রেডিট।
 
-## Slide 13 — Appendix: Code & Links
+## স্লাইড ১৩ — অ্যাপেন্ডিক্স: কোড ও লিংকস
 - **GitHub**: https://github.com/yasar-sys/agri-shokti-bangla
-- **Documentation**: `PROJECT_DOCUMENTATION.md`
-- **Key Folders**: `src/`, `supabase/functions/`
+- **ডকুমেন্টেশন**: `PROJECT_DOCUMENTATION.md`
+- **গুরুত্বপূর্ণ ফোল্ডার**: `src/`, `supabase/functions/`
 
 ---
-**Note for Presenter**: Focus on the *integration* of Global Data (NASA) with Local Context (BARI + Bangla Voice). That is your winning edge.
+**উপস্থাপকের জন্য নোট**: গ্লোবাল ডেটা (NASA) এর সাথে লোকাল কনটেক্সট (BARI + বাংলা ভয়েস) এর **ইন্টিগ্রেশন বা সমন্বয়** এর ওপর জোর দিন। এটিই আপনাদের জেতার মূল চাবিকাঠি।
