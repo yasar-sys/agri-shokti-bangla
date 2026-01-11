@@ -9,16 +9,16 @@ Our architecture implements a "Generational Leap" in agricultural advisory, movi
 
 ```mermaid
 graph TD
-    %% Class styles
-    classDef sensing fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
-    classDef reasoning fill:#fff3e0,stroke:#e65100,stroke-width:2px;
-    classDef validation fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
-    classDef action fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+    %% Class styles with BLACK text
+    classDef sensing fill:#e1f5fe,stroke:#01579b,stroke-width:2px,color:#000;
+    classDef reasoning fill:#fff3e0,stroke:#e65100,stroke-width:2px,color:#000;
+    classDef validation fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px,color:#000;
+    classDef action fill:#f3e5f5,stroke:#4a148c,stroke-width:2px,color:#000;
 
     %% Stage 1: Sensing
     subgraph S1[Stage 1: Contextual Sensing]
         A[AgroMonitoring API] -->|NDVI Data| B[Field Health Map]
-        W[NASA POWER Weather] --> B
+        W[NASA POWER Weather(DEMO)] --> B
         U[User Photo] -->|Upload| C[Input Handler]
     end
 
@@ -26,7 +26,7 @@ graph TD
     subgraph S2[Stage 2: Adaptive Reasoning]
         B -->|Context| D[Gemini 2.5 Flash]
         C -->|Visual Input| D
-        E[Soil Data Crop CASMA] --> D
+        E[Soil Data Crop CASMA(DEMO)] --> D
     end
 
     %% Stage 3: Validation
@@ -39,7 +39,7 @@ graph TD
 
     %% Stage 4: Action
     subgraph S4[Stage 4: Hyper Localized Delivery]
-        H -->|JSON| I[Bangla Voice Engine]
+        H -->|JSON| I[Bangla Voice Engine(DEMO)]
         H -->|Alert| J[Notification Trigger]
         H -->|UI Update| K[Mobile UI Cards]
     end
