@@ -17,9 +17,9 @@ Our "Agri-Logic" pipeline performs adaptive reasoning across four distinct phase
 ### Stage 1: Contextual Sensing (The Eyes)
 The system ingests real-time data from multiple sources:
 *   **AgroMonitoring API**: Integrates Sentinel-2 & Landsat data for Field Health Maps (NDVI/EVI).
-*   **NASA POWER**: GMAO GEOS-FP data for weather forecasting.
-*   **OpenET**: Evapotranspiration data for water management.
-*   **Crop-CASMA**: Soil moisture analysis.
+*   **NASA POWER**: GMAO GEOS-FP data for weather forecasting.(Demo available right now)
+*   **OpenET**: Evapotranspiration data for water management.(Demo available right now)
+*   **Crop-CASMA**: Soil moisture analysis.(Demo available right now)
 
 ### Stage 2: Adaptive Reasoning (The Brain)
 The central LLM (**Gemini 2.5 Flash**) processes the health map alongside ground-level data. It operates via specific Edge Functions:
@@ -51,17 +51,18 @@ To prevent hallucinations, all advice is cross-verified against the **BARC (Bang
 *   **Synthesis**: Generates an answer cited with official sources.
 *   **Guardrails**: If the LLM's raw suggestion deviates >5% from the BARI guide, the BARI guide takes precedence.
 
-### Stage 4: Hyper-Localized Delivery (The Voice)
+### Stage 4: Hyper-Localized Delivery (The Voice future addition)
 Actionable advice is delivered through a **voice-first interface in Bangla**, ensuring accessibility for low-literacy users.
-*   **Text-to-Speech**: Converts the JSON response into natural sounding Bangla audio.
+*   **Text-to-Speech**: Converts the JSON response into natural sounding Bangla audio.(Demo available right now)
 *   **Visual Cards**: Renders "Treatment Cards" on the mobile UI.
 
 ---
 
 ## 3. The "Innovation Edge" (10X Mindset)
 To deliver a generational leap in technology, we implement the following disruptive features:
-*   **NASA Farm Navigators**: Direct integration of OpenET, Crop-CASMA, and Earth Observation data.
-*   **Climate Twin (Harvest Simulation)**: A model that simulates future harvests under different climate scenarios.
+*   **NASA Farm Navigators**: Direct integration of OpenET, Crop-CASMA, and Earth Observation data.(Demo available right now)
+*   **Climate Twin (Harvest Simulation)**: A model that simulates future harvests under different climate scenarios.(Demo available right now)
+  
 *   **Satellite-to-Farmer Feedback Loop**: The system identifies health drops from space (NDVI decrease) and pro-actively asks the farmer to "verify" via a photo. This ground-truth data trains the model.
 *   **Hybrid-Edge Logic**: Critical agricultural logic works on low-bandwidth connections by caching previous field cycles.
 
