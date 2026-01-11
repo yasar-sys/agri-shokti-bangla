@@ -49,23 +49,8 @@ export default function CameraPage() {
     try {
       setStatusText(t('aiAnalyzing'));
 
-      // Get satellite context if available (Innovation Edge: Ground Truthing Loop)
-      const satelliteContextStr = sessionStorage.getItem('currentSatelliteContext');
-      let satelliteData = null;
-      if (satelliteContextStr) {
-        try {
-          satelliteData = JSON.parse(satelliteContextStr);
-          console.log('Attaching satellite context to analysis:', satelliteData);
-        } catch (e) {
-          console.error('Failed to parse satellite context');
-        }
-      }
-
       const { data, error } = await supabase.functions.invoke('detect-disease', {
-        body: {
-          imageBase64: capturedImage,
-          satelliteData: satelliteData
-        }
+        body: { imageBase64: capturedImage }
       });
 
       clearInterval(progressInterval);

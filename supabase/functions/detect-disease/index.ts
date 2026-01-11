@@ -48,7 +48,7 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64, satelliteData } = await req.json();
+    const { imageBase64 } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
 
     if (!LOVABLE_API_KEY) {
@@ -139,10 +139,7 @@ serve(async (req) => {
           content: [
             {
               type: 'text',
-              text: `এই ফসলের ছবিটি বিশ্লেষণ করে রোগ নির্ণয় করুন। ${requestBody.satelliteData
-                  ? `\n\n[SATELLITE DATA CONTEXT]:\n- NDVI: ${requestBody.satelliteData.ndvi} (${requestBody.satelliteData.status})\n- Weather: ${requestBody.satelliteData.temp}°C, Humidity ${requestBody.satelliteData.humidity}%\n- Alert: ${requestBody.satelliteData.alert || 'None'}\n\nUse this data to refine your diagnosis (e.g., Low NDVI + Yellowing = Nitrogen Deficiency).`
-                  : ''
-                }\n\nযদি সুস্থ থাকে সেটাও জানান।`
+              text: 'এই ফসলের ছবিটি বিশ্লেষণ করে রোগ নির্ণয় করুন। যদি সুস্থ থাকে সেটাও জানান।'
             },
             {
               type: 'image_url',
