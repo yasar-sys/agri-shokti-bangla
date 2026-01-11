@@ -48,9 +48,9 @@ serve(async (req) => {
   }
 
   try {
-    const { imageBase64 } = await req.json();
+    const { imageBase64, satelliteData } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    
+
     if (!LOVABLE_API_KEY) {
       console.error('LOVABLE_API_KEY is not configured');
       return new Response(
@@ -79,8 +79,8 @@ serve(async (req) => {
     const requestBody = {
       model: 'google/gemini-2.5-flash',
       messages: [
-        { 
-          role: 'system', 
+        {
+          role: 'system',
           content: `আপনি একজন বাংলাদেশী কৃষি রোগ বিশেষজ্ঞ AI। আপনার কাজ হলো ফসলের পাতা বা গাছের ছবি বিশ্লেষণ করে রোগ নির্ণয় করা।
 
 আপনাকে অবশ্যই নিম্নলিখিত JSON ফরম্যাটে উত্তর দিতে হবে:
@@ -132,14 +132,17 @@ serve(async (req) => {
 - পেঁয়াজ: পার্পেল ব্লচ, স্টেমফাইলিয়াম ব্লাইট
 - গম: পাতা ঝলসা, রাস্ট
 
-শুধুমাত্র JSON ফরম্যাটে উত্তর দিন, অন্য কিছু লিখবেন না।` 
+শুধুমাত্র JSON ফরম্যাটে উত্তর দিন, অন্য কিছু লিখবেন না।`
         },
-        { 
-          role: 'user', 
+        {
+          role: 'user',
           content: [
             {
               type: 'text',
-              text: 'এই ফসলের ছবিটি বিশ্লেষণ করে রোগ নির্ণয় করুন। যদি সুস্থ থাকে সেটাও জানান।'
+              text: `এই ফসলের ছবিটি বিশ্লেষণ করে রোগ নির্ণয় করুন। ${requestBody.satelliteData
+                  ? `\n\n[SATELLITE DATA CONTEXT]:\n- NDVI: ${requestBody.satelliteData.ndvi} (${requestBody.satelliteData.status})\n- Weather: ${requestBody.satelliteData.temp}°C, Humidity ${requestBody.satelliteData.humidity}%\n- Alert: ${requestBody.satelliteData.alert || 'None'}\n\nUse this data to refine your diagnosis (e.g., Low NDVI + Yellowing = Nitrogen Deficiency).`
+                  : ''
+                }\n\nযদি সুস্থ থাকে সেটাও জানান।`
             },
             {
               type: 'image_url',
@@ -157,14 +160,14 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('AI gateway error:', response.status, errorText);
-      
+
       if (response.status === 429) {
         return new Response(
           JSON.stringify({ error: 'সার্ভার ব্যস্ত। ১০ সেকেন্ড পর আবার চেষ্টা করুন।' }),
           { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       if (response.status === 402) {
         return new Response(
           JSON.stringify({ error: 'AI সার্ভিস সাময়িকভাবে অনুপলব্ধ। পরে আবার চেষ্টা করুন।' }),
@@ -178,13 +181,13 @@ serve(async (req) => {
           { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         );
       }
-      
+
       throw new Error(`AI gateway error: ${response.status}`);
     }
 
     const data = await response.json();
     const aiResponse = data.choices?.[0]?.message?.content || '';
-    
+
     console.log('AI response received, length:', aiResponse.length);
 
     // Parse JSON from response
@@ -199,7 +202,7 @@ serve(async (req) => {
     } catch (parseError) {
       console.error('Failed to parse AI response:', parseError);
       console.error('Raw response:', aiResponse.substring(0, 500));
-      
+
       analysisResult = {
         diseaseName: "বিশ্লেষণে সমস্যা",
         confidence: 0,
@@ -227,14 +230,14 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Detect disease function error:', error);
-    
+
     // Provide user-friendly error message
-    const errorMessage = error instanceof Error 
+    const errorMessage = error instanceof Error
       ? (error.message.includes('fetch') || error.message.includes('network')
-          ? 'নেটওয়ার্ক সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।'
-          : 'সার্ভারে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।')
+        ? 'নেটওয়ার্ক সমস্যা হয়েছে। ইন্টারনেট সংযোগ পরীক্ষা করে আবার চেষ্টা করুন।'
+        : 'সার্ভারে সমস্যা হয়েছে। কিছুক্ষণ পর আবার চেষ্টা করুন।')
       : 'অজানা ত্রুটি হয়েছে।';
-    
+
     return new Response(
       JSON.stringify({ error: errorMessage }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

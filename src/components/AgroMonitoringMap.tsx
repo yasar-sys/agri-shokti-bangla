@@ -349,6 +349,41 @@ export function AgroMonitoringMap({
     }, [polygonData, showNDVIOverlay, onPolygonClick]);
 
     // ===================================
+    // SYNC SATELLITE CONTEXT (Innovation Edge)
+    // ===================================
+    useEffect(() => {
+        if (polygonData.length > 0) {
+            // Find the most critical polygon (lowest NDVI or active warning)
+            const criticalPoly = polygonData.find(d => d.ndvi?.data?.mean !== undefined && d.ndvi.data.mean < 0.3);
+
+            if (criticalPoly && criticalPoly.weather && criticalPoly.ndvi?.data?.mean) {
+                const context = {
+                    ndvi: criticalPoly.ndvi.data.mean,
+                    status: 'Low/Stressed',
+                    temp: kelvinToCelsius(criticalPoly.weather.main.temp).toFixed(1),
+                    humidity: criticalPoly.weather.main.humidity,
+                    alert: 'Possible Nitrogen Deficiency or Water Stress detected from Satellite'
+                };
+                sessionStorage.setItem('currentSatelliteContext', JSON.stringify(context));
+                console.log('Satellite Context Synced:', context);
+            } else {
+                // Fallback: Use the first polygon's data if available
+                const first = polygonData[0];
+                if (first && first.weather && first.ndvi?.data?.mean) {
+                    const context = {
+                        ndvi: first.ndvi.data.mean,
+                        status: getNDVIStatus(first.ndvi.data.mean).status,
+                        temp: kelvinToCelsius(first.weather.main.temp).toFixed(1),
+                        humidity: first.weather.main.humidity,
+                        alert: 'Routine Check'
+                    };
+                    sessionStorage.setItem('currentSatelliteContext', JSON.stringify(context));
+                }
+            }
+        }
+    }, [polygonData]);
+
+    // ===================================
     // HANDLERS
     // ===================================
     const handleRecenter = useCallback(() => {

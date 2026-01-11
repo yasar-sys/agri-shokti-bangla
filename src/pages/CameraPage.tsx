@@ -23,7 +23,7 @@ export default function CameraPage() {
         toast.error(t('imageSizeError'));
         return;
       }
-      
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setCapturedImage(e.target?.result as string);
@@ -34,7 +34,7 @@ export default function CameraPage() {
 
   const handleAnalyze = async () => {
     if (!capturedImage) return;
-    
+
     setIsAnalyzing(true);
     setProgress(0);
     setStatusText(t('processingImage'));
@@ -48,9 +48,24 @@ export default function CameraPage() {
 
     try {
       setStatusText(t('aiAnalyzing'));
-      
+
+      // Get satellite context if available (Innovation Edge: Ground Truthing Loop)
+      const satelliteContextStr = sessionStorage.getItem('currentSatelliteContext');
+      let satelliteData = null;
+      if (satelliteContextStr) {
+        try {
+          satelliteData = JSON.parse(satelliteContextStr);
+          console.log('Attaching satellite context to analysis:', satelliteData);
+        } catch (e) {
+          console.error('Failed to parse satellite context');
+        }
+      }
+
       const { data, error } = await supabase.functions.invoke('detect-disease', {
-        body: { imageBase64: capturedImage }
+        body: {
+          imageBase64: capturedImage,
+          satelliteData: satelliteData
+        }
       });
 
       clearInterval(progressInterval);
@@ -95,7 +110,7 @@ export default function CameraPage() {
 
       sessionStorage.setItem('diseaseResult', JSON.stringify(data.result));
       sessionStorage.setItem('scannedImage', capturedImage);
-      
+
       setTimeout(() => {
         navigate("/diagnosis");
       }, 500);
@@ -128,7 +143,7 @@ export default function CameraPage() {
       {/* Header */}
       <header className="relative px-5 pt-6 pb-5">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-secondary/50 to-transparent" />
-        
+
         <div className="flex items-center gap-4">
           <Link
             to="/home"
@@ -152,7 +167,7 @@ export default function CameraPage() {
           <div className="relative aspect-[3/4] rounded-3xl overflow-hidden border-2 border-dashed border-border/50 glass-card">
             {/* Animated border */}
             <div className="absolute inset-0 rounded-3xl border-2 border-secondary/20 animate-pulse" />
-            
+
             {/* Camera viewfinder overlay */}
             <div className="absolute inset-0 flex items-center justify-center p-8">
               <div className="relative w-full aspect-square max-w-[280px]">
@@ -161,7 +176,7 @@ export default function CameraPage() {
                 <div className="absolute top-0 right-0 w-12 h-12 border-t-3 border-r-3 border-secondary rounded-tr-2xl shadow-glow" />
                 <div className="absolute bottom-0 left-0 w-12 h-12 border-b-3 border-l-3 border-secondary rounded-bl-2xl shadow-glow" />
                 <div className="absolute bottom-0 right-0 w-12 h-12 border-b-3 border-r-3 border-secondary rounded-br-2xl shadow-glow" />
-                
+
                 <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6">
                   <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-secondary/20 to-secondary/5 flex items-center justify-center mb-4 shadow-soft animate-bounce-subtle">
                     <Camera className="w-10 h-10 text-secondary" />
@@ -180,7 +195,7 @@ export default function CameraPage() {
               alt="Captured crop"
               className="w-full h-full object-cover"
             />
-            
+
             {/* Clear button */}
             <button
               onClick={clearImage}
