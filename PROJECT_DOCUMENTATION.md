@@ -143,6 +143,25 @@ Role: Team Lead, Prompt Engineering & AI Integration Specialist
 - **PWA**: Vite PWA Plugin
 - **Version Control**: GitHub integration
 
+## 3.1 Innovation Edge (The "10X" Features)
+
+To distinguish AgriShokti from generic wrappers, we implemented two "Generation Leap" features:
+
+### 🚀 1. Satellite-to-Ground-Truth Loop
+A self-correcting feedback mechanism that bridges the gap between orbit and soil.
+1.  **Sensing**: **Sentinel-2** satellite (via AgroMonitoring API) detects a sudden NDVI drop (Yellow Patch) in a specific coordinate.
+2.  **Alerting**: The system proactively alerts the farmer: *"Possible stress detected in North corner. Please verify."*
+3.  **Ground Truthing**: Farmer takes a photo of the crop.
+4.  **Synthesis**: **Gemini 2.5 Flash** correlates the Satellite anomaly with the Visual symptom (e.g., "Nitrogen deficiency") to confirm the diagnosis.
+
+### 🧩 2. "n8n-Style" Workflow Orchestration
+We architected our backend not as a monolith, but as a node-based workflow using **Supabase Edge Functions**:
+-   **Trigger Node**: Image Upload / Schedule.
+-   **Vision Node**: `/detect-disease` (Gemini Vision).
+-   **Logic Node**: `/rag-answer` (Vector Search against BARI PDFs).
+-   **Action Node**: `/text-to-speech` (Bangla Voice Synthesis).
+-   **Result**: A modular, maintainable, and verifiable decision chain.
+
 ---
 
 ## 3. Architecture
