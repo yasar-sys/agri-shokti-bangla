@@ -1,6 +1,6 @@
 # Agri-Logic Pipeline: Comprehensive Architecture
 
-This document serves as the official technical blueprint for **Agri Shokti**, designed to demonstrate high-level technical implementation and AI reasoning for the **MXB 2026** AgriTech judging committee.
+This document serves as the official technical blueprint for **Agri Shokti**, demonstrating the "n8n-style" workflow orchestration and Agentic AI reasoning for the **MXB 2026** AgriTech judging committee.
 
 ---
 
@@ -9,66 +9,72 @@ Our architecture implements a "Generational Leap" in agricultural advisory, movi
 
 ```mermaid
 graph TD
-    %% Stage 1: Contextual Sensing
-    subgraph "Stage 1: Contextual Sensing (The Eyes)"
-        S1[("📡 AgroMonitoring API / Sentinel-2")] --> S2["🗺️ Field Health Map<br/>(Live NDVI Analysis)"]
-        S3[("🌡️ OpenWeatherMap")] --> S2
+    %% Use Class styling for distinct sections
+    classDef sensing fill:#e1f5fe,stroke:#01579b,stroke-width:2px;
+    classDef reasoning fill:#fff3e0,stroke:#e65100,stroke-width:2px;
+    classDef validation fill:#e8f5e9,stroke:#1b5e20,stroke-width:2px;
+    classDef action fill:#f3e5f5,stroke:#4a148c,stroke-width:2px;
+
+    %% Stage 1: Sensing
+    subgraph S1 [Stage 1: Contextual Sensing]
+        A[📡 AgroMonitoring API] -->|NDVI Data| B(Field Health Map)
+        W[🌡️ NASA POWER Weather] --> B
+        User[📸 User Photo] -->|Upload| C(Input Handler)
     end
 
-    %% Stage 2: Adaptive Reasoning
-    subgraph "Stage 2: Adaptive Reasoning (The Brain)"
-        R1["🧠 Gemini 2.5 Flash Agent"]
-        R2{{"📑 Ingest Ground Context<br/>(Soil pH/Moisture)"}}
-        R1 <--> R2
-        S2 --> R1
+    %% Stage 2: Reasoning
+    subgraph S2 [Stage 2: Adaptive Reasoning]
+        B -->|Context| D{🧠 Gemini 2.5 Flash}
+        C -->|Visuals| D
+        E[🌱 Soil Data (Crop-CASMA)] --> D
     end
 
-    %% Stage 3: Expert Validation
-    subgraph "Stage 3: Expert Validation (The Library)"
-        V1[("📚 BARC / FAO Knowledge Base<br/>(Vector DB)")]
-        R1 -->|Query| V1
-        V1 -->|Factual Grounding| R1
+    %% Stage 3: Validation
+    subgraph S3 [Stage 3: Expert Validation]
+        D -->|Draft Logic| F[📚 RAG Agent]
+        F -->|Search| G[(BARI / FAO DB)]
+        G -->|Verified Protocol| F
+        F -->|Approved Logic| H(Synthesizer)
     end
 
-    %% Stage 4: Hyper-Localized Delivery (The Voice)
-    subgraph "Stage 4: Action Layer (The Muscle)"
-        D1["🎙️ Bangla Voice Advisor<br/>(Local Dialect Synthesis)"]
-        D2["⚡ n8n Automation Triggers<br/>(Alerts / Dashboards)"]
-        R1 --> D1 & D2
+    %% Stage 4: Action
+    subgraph S4 [Stage 4: Hyper-Localized Delivery]
+        H -->|JSON| I[🎙️ Bangla Voice Engine]
+        H -->|Alert| J[⚡ Notification Trigger]
+        H -->|UI Update| K[📱 Mobile Cards]
     end
 
-    %% Feedback Loop
-    subgraph "The 10X Edge: Self-Learning Loop"
-        L1["📸 Farmer Verification Photo"]
-        L1 -->|Ground Truth Check| R1
-    end
-
-    style R1 fill:#e74c3c,stroke:#fff,color:#fff
+    class A,B,W,User,C sensing;
+    class D,E reasoning;
+    class F,G,H validation;
+    class I,J,K action;
 ```
 
 ---
 
-## 2. AI Core: Multi-Agent Orchestration (MCP)
-Agri Shokti employs a specialized **Model Context Protocol (MCP)** to coordinate various domain experts in parallel.
+## 2. "n8n Alike" Workflow Orchestration
+Agri Shokti uses **Supabase Edge Functions** to mimic a node-based automation workflow (similar to n8n). Each step is a discrete "Node" that passes data to the next.
 
-| Specialist Agent | Function | Source/API |
-| :--- | :--- | :--- |
-| **Geospatial Agent** | Processes Sentinel-2 imagery for crop stress zones. | Google Earth Engine |
-| **Vision Agent** | Identifies pests/deficiencies in leaf photos. | Custom Multimodal Prompts |
-| **Market Agent** | Analyzes live BDT price streams for selling windows. | Market-AI Service |
-| **RAG Agent** | Performs semantic search against BARC guidelines. | Supabase pgvector |
+| Step | Node Type | Function Details | Input -> Output |
+| :--- | :--- | :--- | :--- |
+| **1. Trigger** | `Webhook` | **User uploads image** or **Scheduler** (Daily 7 AM). | `Base64 Image` -> `event_id` |
+| **2. Vision Node** | `AI Analysis` | **`detect-disease`**: Analyzes visual symptoms. | `Image` -> `Disease Probabilities` |
+| **3. Logic Node** | `Vector Search` | **`rag-answer`**: Fetches BARI treatment protocols. | `Disease Name` -> `Treatment Plan` |
+| **4. Voice Node** | `Synthesis` | **`text-to-speech`**: Generates Bangla audio file. | `Text` -> `Audio Blob` |
+| **5. Action Node** | `DB Write` | **`update_history`**: Saves result & notifies user. | `Result` -> `Confirmation` |
 
 ---
 
-## 3. Technology Stack Layering (Judge Overview)
+## 3. Technology Stack Layering
 Our stack bridges high-level satellite data with ground-level reality.
 
-*   **Geospatial Layer**: **AgroMonitoring API**, Google Earth Engine, NASA SoilGrids.
-*   **AI/ML Core**: **Gemini 2.5 Flash** (Orchestration), text-embedding-004.
+*   **Geospatial Layer**: **AgroMonitoring API** (Sentinel-2), NASA OpenET, NASA Crop-CASMA.
+*   **AI/ML Core**: **Gemini 2.5 Flash** (Multimodal Orchestrator), text-embedding-004.
 *   **Backend & DB**: **Supabase** (PostgreSQL, pgvector, Edge Functions).
-*   **Action Layer**: **n8n.io** (Workflow automation), Voice-first UI in **Bangla**.
+*   **Frontend**: React (Vite) + Tailwind CSS + Recharts (Visualization).
+*   **Reliability**: Offline-first PWA architecture with background sync.
 
 ---
 
 > [!TIP]
-> **Agricultural Consultant Analogy**: Think of our system as a highly skilled consultant. The satellite data is their **eyes**; the BARC database is their **library**; the LLM is their **brain**; and the localized voice-first UI is their **voice** used to speak to the farmer in their own language.
+> **Agricultural Consultant Analogy**: Think of our system as a team of experts. The Satellite is the **Scout**; the Database is the **Librarian**; the LLM is the **Chief Agronomist**; and the Voice Interface is the **Field Officer** speaking directly to the farmer.

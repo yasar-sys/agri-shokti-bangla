@@ -9,9 +9,9 @@ This document serves as the mandatory "Show Your Work" repository for **Agri Sho
 *Used to define the AgriTech challenge and refine our 10X intervention.*
 
 ### **Prompt: Defining the Rural Sensing Gap**
-*   **The Intent (The "Why")**: To identify the specific technical friction points for Bangladeshi smallholders that a generic chatbot could not solve, specifically focussing on actionable insights from satellite data.
+*   **The Intent (The "Why")**: To identify the specific technical friction points for Bangladeshi smallholders that a generic chatbot could not solve.
 *   **The Prompt Text**: *"Act as a specialist in Bangladesh agriculture. Identify the top 3 friction points for smallholder farmers in Sylhet regarding access to BARI (Bangladesh Agricultural Research Institute) guidelines. How can Gemini 2.5 Flash's multimodal capabilities combined with AgroMonitoring's satellite indices (NDVI) bridge this gap?"*
-*   **The Outcome & Influence**: This prompted identified the "Technical sensing gap"—the fact that farmers have data (photos) but no "brain" to interpret them against official PDFs. This influenced our entire **4-Stage Agri-Logic Pipeline**.
+*   **The Outcome & Influence**: Identified the "Technical sensing gap". This influenced our **4-Stage Agri-Logic Pipeline** (Sensing -> Reasoning -> Exper Validation -> Delivery).
 
 ---
 
@@ -19,34 +19,55 @@ This document serves as the mandatory "Show Your Work" repository for **Agri Sho
 *Used to scaffold the Technical Nervous System and Agentic workflows.*
 
 ### **Prompt: Architecting the MCP-Style Specialist Router**
-*   **The Intent (The "Why")**: To design a system that doesn't just "chat" but coordinates specialized agents (Geospatial, Vision, Market) in parallel.
+*   **The Intent (The "Why")**: To design a system where specialized agents (Geospatial, Vision, Market) work in parallel.
 *   **The Prompt Text**: *"Outline a Model Context Protocol (MCP) style architecture for an AgriTech platform. Use Supabase Edge Functions as the orchestrator for Gemini 2.5 Flash, NASA SoilGrids API, and a pgvector document store. Visualize the flow from User Input to Specialist Agent routing."*
-*   **The Outcome & Influence**: This directly shaped our **SYSTEM_FLOW.md**. It influenced the design of our "Specialist Agents" (VisionBot, GeoBot), moving us away from a monolithic AI to a modular, agentic specialized core.
+*   **The Outcome & Influence**: This shaped our **SYSTEM_FLOW.md** and the modular Edge Function architecture (`/functions/detect-disease`, `/functions/rag-answer`).
 
 ---
 
-## 3. Coding & Agent Workflows
-*Used to generate logic and orchestrate the Action Layer.*
+## 3. Coding & Agent Workflows (Live System Prompts)
+*The actual "Brains" of the system running in production.*
 
-### **Prompt: Enforcing Structured Output for Mobile UI**
-*   **The Intent (The "Why")**: To ensure the AI returns data that a mobile app can render (cards/charts) rather than just unstructured text.
-*   **The Prompt Text**: *"Write a system prompt for the Agri-Vision Agent. It must analyze a leaf photo and return ONLY a JSON object. Schema: {disease_name: string, confidence: number, symptoms: string[], treatment_bn: string}. Ensure all advice is grounded in DAE (Department of Agricultural Extension) standards."*
-*   **The Outcome & Influence**: This generated the core system prompt for our `detect-disease` Edge Function. It influenced our **Action Layer** by enabling real-time UI card rendering and ensuring 100% technical accuracy for treatment recommendations.
+### **System Prompt: Agri-Vision Agent (Disease Detection)**
+*   **Function**: `/functions/detect-disease`
+*   **The Intent**: To analyze crop images and return structured JSON for the UI to render.
+*   **The Prompt**:
+    > "You are an expert plant pathologist specialized in Bangladeshi crops (Rice, Potato, Tomato, Brinjal). Analyze this image.
+    > Return ONLY a JSON object with this schema:
+    > {
+    >   'diseaseName': string,
+    >   'confidence': number,
+    >   'symptoms': string[],
+    >   'treatment': string (Step-by-step chemical advice),
+    >   'organicSolution': string (Neem/organic advice),
+    >   'fertilizer': string (Nitrogen/Potash adjustment),
+    >   'yieldImpact': string
+    > }
+    > Always cross-reference symptoms with typical Bangladeshi local diseases (e.g., 'Bakanae' for rice)."
 
-### **Prompt: Parsing AgroMonitoring NDVI for Fronend Visualization**
-*   **The Intent (The "Why")**: To correctly interpret the complex JSON response from the AgroMonitoring API and format it for the Recharts library on the frontend.
-*   **The Prompt Text**: *"I have an endpoint `agromonitoring-ndvi` that returns historical NDVI data. Write a TypeScript interface for the API response and a helper function to transform this data into an array of `{ date: string, mean: number, min: number, max: number }` objects for Recharts. Handle cases where `data` might be missing or limited."*
-*   **The Outcome & Influence**: This ensured our `NDVITimeSeriesChart` component could reliably render satellite history, handling edge cases where satellite coverage was cloudy or incomplete.
+### **System Prompt: The "AgriBot" (Conversational)**
+*   **Function**: `/functions/chat`
+*   **The Intent**: To provide a empathetic, voice-first conversation partner.
+*   **The Prompt**:
+    > "You are 'AgriShokti', a helpful agricultural assistant for Bangladeshi farmers. Speak in simple, clear Bengali.
+    > - If asked about pesticides, WARNING: Always suggest safety gear.
+    > - Be concise (voice output).
+    > - If you don't know, say 'I will ask the Upazila Officer'."
+
+### **Prompt: Parsing AgroMonitoring NDVI for Frontend**
+*   **The Intent**: To transform complex satellite JSON into Recharts-ready data.
+*   **The Prompt Text**: *"I have an endpoint `agromonitoring-ndvi` that returns historical NDVI data. Write a TypeScript interface for the API response and a helper function to transform this data into an array of `{ date: string, mean: number }` objects for Recharts. Handle cloudy days (missing data)."*
+*   **The Outcome**: Enabled the robust `NDVITimeSeriesChart` component.
 
 ---
 
-## 4. Evaluation & Reasoning
-*Used to verify the AI’s accuracy and test for hallucinations (The Guardrails).*
+## 4. Evaluation & Reasoning (Guardrails)
+*Used to verify the AI’s accuracy and test for hallucinations.*
 
 ### **Prompt: The "Local Agronomist" Hallucination Check**
 *   **The Intent (The "Why")**: To create a safety pass that validates AI generated advice against verified national datasets (BARC).
 *   **The Prompt Text**: *"You are a local agronomist in Bangladesh. Review the following AI-generated fertilizer advice. Compare it against the BARI Fertilizer Recommendation Guide 2023. If the Urea dosage for Boro rice exceeds regional safety thresholds by more than 5%, trigger a hallucination flag and provide the exact BARI citation."*
-*   **The Outcome & Influence**: This influenced our **Decision Logic layer**. It created the "Fact-Check Pass" described in our `AI_LOGIC_DETAILS.md`, ensuring farmers never receive unsafe or un-vetted chemical recommendations.
+*   **The Outcome & Influence**: This influenced our **Decision Logic layer**. It created the "Fact-Check Pass" described in our `AI_LOGIC_DETAILS.md`.
 
 ---
 
