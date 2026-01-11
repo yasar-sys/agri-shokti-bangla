@@ -309,28 +309,35 @@ export function AgroMonitoringMap({
                             l.resetStyle();
                         });
 
-                        layer.setStyle({
-                            weight: 3,
-                            color: '#000',
-                            fillOpacity: 0.8
-                        });
+                        // Type assertion for Leaflet Path methods
+                        if ('setStyle' in layer) {
+                            (layer as L.Path).setStyle({
+                                weight: 3,
+                                color: '#000',
+                                fillOpacity: 0.8
+                            });
+                        }
                     });
 
                     // Highlight on hover
                     layer.on('mouseover', () => {
-                        layer.setStyle({
-                            weight: 3,
-                            fillOpacity: 0.8
-                        });
+                        if ('setStyle' in layer) {
+                            (layer as L.Path).setStyle({
+                                weight: 3,
+                                fillOpacity: 0.8
+                            });
+                        }
                     });
 
                     layer.on('mouseout', () => {
                         // Only reset if not selected (simplified logic for now)
-                        layer.setStyle({
-                            weight: 2,
-                            color: '#ffffff',
-                            fillOpacity: 0.6
-                        });
+                        if ('setStyle' in layer) {
+                            (layer as L.Path).setStyle({
+                                weight: 2,
+                                color: '#ffffff',
+                                fillOpacity: 0.6
+                            });
+                        }
                     });
                 },
             });
