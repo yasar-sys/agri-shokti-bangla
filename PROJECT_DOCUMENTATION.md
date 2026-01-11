@@ -4,7 +4,7 @@
 > 
 > **Project Name:** AgriShokti (কৃষিশক্তি - "Agricultural Power")
 > 
-> Version: 1.0.0 | Last Updated: December 23, 2024
+> Version: 1.0.0 | Last Updated: January 11, 2026
 
 ---
 
@@ -33,9 +33,9 @@
 
 ## 1. Project Overview
 
-### What is AgriBrain AI?
+### What is AgriShokti AI?
 
-AgriBrain AI (agriশক্তি) is a Progressive Web Application (PWA) designed to empower Bangladeshi farmers with AI-powered agricultural assistance. The app provides real-time crop disease detection, personalized farming advice, market prices, weather alerts, and community support—all in Bengali language.
+AgriShokti AI (agriশক্তি) is a Progressive Web Application (PWA) designed to empower Bangladeshi farmers with AI-powered agricultural assistance. The app provides real-time crop disease detection, personalized farming advice, market prices, weather alerts, and community support—all in Bengali language.
 
 ### Key Value Propositions
 
@@ -109,7 +109,7 @@ Role: Team Lead, Prompt Engineering & AI Integration Specialist
 | React Router | 6.30.1 | Routing |
 | TanStack Query | 5.83.0 | Data Fetching |
 | Recharts | 2.15.4 | Charts & Visualization |
-| Mapbox GL | 3.17.0 | Maps |
+| [Mapbox GL](https://leafletjs.com/) |  | Maps |
 | Framer Motion | - | Animations |
 
 ### Backend (Lovable Cloud / Supabase)
@@ -127,15 +127,15 @@ Role: Team Lead, Prompt Engineering & AI Integration Specialist
 |---------|-------|---------|
 | Lovable AI Gateway | google/gemini-2.5-flash | Chat, RAG, Disease Detection |
 
-### NASA Data Integration
+### NASA Data Integration(still not available)
 
 | Service | Data Source | Purpose |
 |---------|-------------|---------|
-| NASA OpenET | Landsat, MODIS, Weather Stations | Evapotranspiration & Water Management |
-| Crop-CASMA | SMAP, MODIS, GPM | Soil Moisture & Drought Monitoring |
-| NASA POWER | GMAO GEOS-FP | Weather Forecasting & Climate Data |
+| NASA OpenET(still not available) | Landsat, MODIS, Weather Stations | Evapotranspiration & Water Management |
+| Crop-CASMA(still not available) | SMAP, MODIS, GPM | Soil Moisture & Drought Monitoring |
+| NASA POWER(still not available) | GMAO GEOS-FP | Weather Forecasting & Climate Data |
 | Earth Observation | Landsat-8/9, Sentinel-2, MODIS | Vegetation Indices & Crop Health |
-| NASA GIBS | Multiple Satellites | Satellite Imagery & Visualization |
+| NASA GIBS(still not available) | Multiple Satellites | Satellite Imagery & Visualization |
 | AgroMonitoring | Sentinel-2, Landsat (+NDVI) | Real-time Crop Health Indices |
 
 ### DevOps & Infrastructure
@@ -174,8 +174,8 @@ We architected our backend not as a monolith, but as a node-based workflow using
 ┌─────────────────────────────────────────────────────────────────┐
 │                         CLIENT (PWA)                            │
 │  ┌─────────────┐ ┌─────────────┐ ┌─────────────┐ ┌────────────┐ │
-│  │   React     │ │ TanStack    │ │  Tailwind   │ │   Mapbox   │ │
-│  │  Components │ │   Query     │ │     CSS     │ │     GL     │ │
+│  │   React     │ │ TanStack    │ │  Tailwind   │ │  leaflet   │ │
+│  │  Components │ │   Query     │ │     CSS     │ │            │ │
 │  └─────────────┘ └─────────────┘ └─────────────┘ └────────────┘ │
 └───────────────────────────┬─────────────────────────────────────┘
                             │
@@ -192,7 +192,7 @@ We architected our backend not as a monolith, but as a node-based workflow using
 ┌─────────────────────────────────────────────────────────────────┐
 │                      EXTERNAL SERVICES                          │
 │  ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐  │
-│  │   Lovable AI    │  │     Mapbox      │  │  Weather API    │  │
+│  │   Lovable AI    │  │                 │  │  Weather API    │  │
 │  │    Gateway      │  │      Maps       │  │  (OpenWeather)  │  │
 │  └─────────────────┘  └─────────────────┘  └─────────────────┘  │
 └─────────────────────────────────────────────────────────────────┘
@@ -215,7 +215,7 @@ User Action → React Component → Custom Hook → Supabase Client → Database
 #### 4.1 AI Chat Assistant
 - Real-time conversation with AI agricultural expert
 - Bengali language support
-- Voice input capability
+- Voice input capability(infuture)
 - Chat history persistence
 - Text-to-speech for AI responses
 
@@ -253,10 +253,11 @@ User Action → React Component → Custom Hook → Supabase Client → Database
 - AI-moderated content
 
 #### 4.7 NASA Farm Navigators 🛰️
-- **OpenET Integration**: Real-time evapotranspiration data for water management
-- **Crop-CASMA**: Soil moisture analysis and drought monitoring
-- **Earth Observation**: Landsat, MODIS, Sentinel-2 satellite data integration
-- **NASA Weather**: POWER and GMAO weather forecasting for agriculture
+- **OpenET Integration**: Real-time evapotranspiration data for water management (demo)
+- **Crop-CASMA**: Soil moisture analysis and drought monitoring (demo)
+- **Earth Observation**: Landsat, MODIS, Sentinel-2 satellite data integration (demo)
+- **NASA Weather**: POWER and GMAO weather forecasting for agriculture (demo)
+ 
 - **NDVI Analysis**: Vegetation health monitoring and change detection
 - **Water Balance**: Automated irrigation recommendations and water budgeting
 - **Drought Alerts**: Early warning system for water stress conditions
@@ -763,7 +764,7 @@ All tables have RLS enabled with appropriate policies:
 
 ---
 
-### 6.5 Mapbox Token (`/functions/get-mapbox-token`)
+### 6.5 Mapbox Token/Leaflet (`/functions/get-mapbox-token`)
 
 **Purpose**: Securely provide Mapbox token for map functionality
 
@@ -995,6 +996,7 @@ VitePWA({
 
 - **Bengali (বাংলা)** - Primary
 - **English** - Secondary
+-  **chatgaiya/noakhali** - some of words added here in future more will be intigrated 
 
 ### Implementation
 
@@ -1067,7 +1069,7 @@ Git Push → Lovable CI → Build → Deploy → CDN
 | VITE_SUPABASE_URL | Supabase project URL |
 | VITE_SUPABASE_PUBLISHABLE_KEY | Supabase anon key |
 | LOVABLE_API_KEY | Lovable AI Gateway key |
-| MAPBOX_PUBLIC_TOKEN | Mapbox API key |
+| MAPBOX_PUBLIC_TOKEN | Mapbox API key (not available right now)| 
 
 ### Build Configuration
 
@@ -1113,7 +1115,7 @@ const { data, error } = await supabase.functions.invoke('chat', {
 | `/functions/v1/detect-disease` | POST | Disease detection |
 | `/functions/v1/rag-answer` | POST | Knowledge Q&A |
 | `/functions/v1/scan-fertilizer` | POST | Fertilizer analysis |
-| `/functions/v1/get-mapbox-token` | GET | Mapbox token |
+| `/functions/v1/get-mapbox-token` | GET | Mapbox token(not available) |
 
 ---
 
@@ -1354,7 +1356,7 @@ For support or questions, contact **TEAM_NEWBIES**.
 
 ---
 
-**© 2024 AgriShokti - TEAM_NEWBIES**
+**© 2026 AgriShokti - TEAM_NEWBIES**
 
 *Developed by Samin Yasar & Team | Mymensingh Engineering College*
 
