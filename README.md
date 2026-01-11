@@ -21,9 +21,10 @@
 | Name | Institution | Role |
 |---|---|---|
 | **Samin Yasar** | Mymensingh Engineering College | Team Lead & Prompt Engineer |
-| **Rahiatul Jannat** | Mymensingh Engineering College | Frontend Developer |
+| **Rahiatul Jannat** | Mymensingh Engineering College | System Analyst |
 | **Maisha Osman Umama** | Mymensingh Engineering College | System Analyst |
 | **Neshat Sultana Keya** | Gazipur Agricultural University | Agricultural Expert |
+| **Mahmud Niloy** | Mymensingh Engineering College | System Analyst |
 
 ---
 
