@@ -338,9 +338,9 @@ serve(async (req) => {
           );
         }
 
-        // Filter good images (low cloud coverage) and fetch NDVI stats for each
+        // Filter good images (accept up to 80% cloud coverage to ensure data availability)
         const goodImages = images
-          .filter(img => img.cl < 60) // Accept images with <60% clouds
+          .filter(img => img.cl < 80) // Accept images with <80% clouds
           .sort((a, b) => a.dt - b.dt);
 
         // Fetch NDVI stats for each image (limit to avoid too many requests)
