@@ -294,7 +294,7 @@ serve(async (req) => {
 
       case 'ndvi-history': {
         // Read params from body (Supported: days)
-        const days = body.days ? parseInt(body.days) : 30;
+        const days = body.days ? parseInt(body.days) : 180;
 
         if (!polygonId) {
           throw new Error('Polygon ID is required');
@@ -303,7 +303,7 @@ serve(async (req) => {
         const end = Math.floor(Date.now() / 1000);
         const start = end - (days * 24 * 60 * 60);
 
-        const cacheKey = `ndvi-history-v4-${polygonId}-${days}`;
+        const cacheKey = `ndvi-history-v5-${polygonId}-${days}`;
         const cached = getCachedData(cacheKey);
         if (cached) {
           return new Response(JSON.stringify(cached), {
@@ -311,19 +311,133 @@ serve(async (req) => {
           });
         }
 
-        // Use /image/search endpoint (works on free tier) instead of /ndvi/history (paid only)
-        const searchUrl = `${AGRO_API.BASE_URL}/image/search?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`;
-        console.log(`Fetching satellite images for NDVI history: ${searchUrl.replace(AGRO_API_KEY, 'HIDDEN')}`);
+        // ======== DIRECT NDVI HISTORY API (User's working endpoint) ========
+        // Using: https://api.agromonitoring.com/agro/1.0/ndvi/history?polyid=...&start=...&end=...&appid=...
+        const ndviHistoryUrl = `${AGRO_API.BASE_URL}/ndvi/history?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`;
+        console.log(`Fetching NDVI history from direct API: ${ndviHistoryUrl.replace(AGRO_API_KEY, 'HIDDEN')}`);
 
-        const response = await fetch(searchUrl);
+        const response = await fetch(ndviHistoryUrl);
+        
+        // If direct NDVI history works, use it
+        if (response.ok) {
+          const ndviHistoryRaw = await response.json();
+          console.log(`Got ${Array.isArray(ndviHistoryRaw) ? ndviHistoryRaw.length : 0} NDVI history points from direct API`);
+          
+          if (!Array.isArray(ndviHistoryRaw) || ndviHistoryRaw.length === 0) {
+            return new Response(
+              JSON.stringify({
+                error: 'no_data',
+                message: 'No NDVI history data available',
+                messageBn: 'NDVI ইতিহাস ডেটা পাওয়া যায়নি',
+                polygonId,
+                days
+              }),
+              { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            );
+          }
+          
+          // Transform direct NDVI history response
+          // Expected format: [{dt, source, zoom, dc, cl, data: {std, p75, min, max, median, p25, num, mean}}]
+          const processedHistory = ndviHistoryRaw.map((item: any) => ({
+            date: new Date(item.dt * 1000).toISOString().split('T')[0],
+            timestamp: item.dt,
+            ndvi: item.data?.mean ?? 0,
+            min: item.data?.min ?? 0,
+            max: item.data?.max ?? 0,
+            median: item.data?.median ?? 0,
+            std: item.data?.std ?? 0,
+            cloudCoverage: item.cl ?? 0,
+            type: item.source || 'Sentinel-2'
+          })).sort((a: any, b: any) => a.timestamp - b.timestamp);
 
-        if (!response.ok) {
-          const errorText = await response.text();
-          console.error(`Image search failed: ${response.status}`, errorText);
-          throw new Error(`AgroMonitoring API Error (${response.status}): ${errorText}`);
+          // Calculate aggregate statistics
+          const ndviValues = processedHistory.map((h: any) => h.ndvi);
+          const currentNDVI = ndviValues[ndviValues.length - 1];
+          const avgNDVI = ndviValues.reduce((a: number, b: number) => a + b, 0) / ndviValues.length;
+          const minNDVI = Math.min(...ndviValues);
+          const maxNDVI = Math.max(...ndviValues);
+
+          // Trend Analysis
+          let trend: 'improving' | 'stable' | 'declining' = 'stable';
+          let trendBn = 'স্থিতিশীল';
+
+          if (processedHistory.length >= 2) {
+            const midpoint = Math.floor(processedHistory.length / 2);
+            const recentAvg = ndviValues.slice(midpoint).reduce((a: number, b: number) => a + b, 0) / (ndviValues.length - midpoint);
+            const olderAvg = ndviValues.slice(0, midpoint).reduce((a: number, b: number) => a + b, 0) / midpoint;
+
+            if (recentAvg > olderAvg + 0.05) {
+              trend = 'improving';
+              trendBn = 'উন্নতি হচ্ছে';
+            } else if (recentAvg < olderAvg - 0.05) {
+              trend = 'declining';
+              trendBn = 'অবনতি হচ্ছে';
+            }
+          }
+
+          // Drop Detection
+          const warnings: any[] = [];
+          for (let i = 1; i < processedHistory.length; i++) {
+            const prev = processedHistory[i - 1].ndvi;
+            const curr = processedHistory[i].ndvi;
+            if (prev > 0) {
+              const dropPercent = ((prev - curr) / prev) * 100;
+              if (dropPercent > 10) {
+                warnings.push({
+                  date: processedHistory[i].date,
+                  previousNDVI: prev,
+                  currentNDVI: curr,
+                  dropPercent: Math.round(dropPercent),
+                  severity: dropPercent > 25 ? 'critical' : 'warning',
+                  message: `NDVI dropped by ${Math.round(dropPercent)}%`,
+                  messageBn: `NDVI ${Math.round(dropPercent)}% কমেছে`
+                });
+              }
+            }
+          }
+
+          const result = {
+            polygonId,
+            days,
+            history: processedHistory,
+            statistics: {
+              current: currentNDVI,
+              average: avgNDVI,
+              min: minNDVI,
+              max: maxNDVI
+            },
+            trend,
+            trendBn,
+            warnings,
+            dataPoints: processedHistory.length,
+            source: 'AgroMonitoring NDVI History API',
+            sourceInfo: {
+              provider: 'AgroMonitoring.com',
+              satellite: 'Sentinel-2 / Landsat 8',
+              dataType: 'NDVI (Normalized Difference Vegetation Index)',
+              updateFrequency: '5-10 দিন (আবহাওয়া ভিত্তিক)'
+            }
+          };
+
+          setCachedData(cacheKey, result);
+          return new Response(JSON.stringify(result), {
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          });
         }
 
-        const images: SatelliteImage[] = await response.json();
+        // ======== FALLBACK: Use image/search + stats if direct NDVI history fails ========
+        console.log('Direct NDVI history API failed, falling back to image/search...');
+        const searchUrl = `${AGRO_API.BASE_URL}/image/search?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`;
+        
+        const imageResponse = await fetch(searchUrl);
+
+        if (!imageResponse.ok) {
+          const errorText = await imageResponse.text();
+          console.error(`Image search failed: ${imageResponse.status}`, errorText);
+          throw new Error(`AgroMonitoring API Error (${imageResponse.status}): ${errorText}`);
+        }
+
+        const images: SatelliteImage[] = await imageResponse.json();
 
         if (!images || images.length === 0) {
           return new Response(
@@ -338,21 +452,19 @@ serve(async (req) => {
           );
         }
 
-        // Filter good images (accept up to 80% cloud coverage to ensure data availability)
+        // Filter and process images
         const goodImages = images
-          .filter(img => img.cl < 80) // Accept images with <80% clouds
+          .filter(img => img.cl < 80)
           .sort((a, b) => a.dt - b.dt);
 
-        // Fetch NDVI stats for each image (limit to avoid too many requests)
-        const processedHistory: any[] = [];
-        const imagesToProcess = goodImages.slice(-20); // Last 20 good images
+        const processedHistoryFallback: any[] = [];
+        const imagesToProcess = goodImages.slice(-20);
 
         for (const img of imagesToProcess) {
-          let ndviMean = 0.5; // Default fallback
-          let ndviMin = 0.2;
-          let ndviMax = 0.8;
+          let ndviMean = 0;
+          let ndviMin = 0;
+          let ndviMax = 0;
 
-          // Try to fetch NDVI stats from the stats URL
           if (img.stats?.ndvi) {
             try {
               const statsResponse = await fetch(img.stats.ndvi);
@@ -367,7 +479,7 @@ serve(async (req) => {
             }
           }
 
-          processedHistory.push({
+          processedHistoryFallback.push({
             date: new Date(img.dt * 1000).toISOString().split('T')[0],
             timestamp: img.dt,
             ndvi: ndviMean,
@@ -379,7 +491,7 @@ serve(async (req) => {
           });
         }
 
-        if (processedHistory.length === 0) {
+        if (processedHistoryFallback.length === 0) {
           return new Response(
             JSON.stringify({
               error: 'no_clear_data',
@@ -392,70 +504,35 @@ serve(async (req) => {
           );
         }
 
-        // Calculate aggregate statistics
-        const ndviValues = processedHistory.map(h => h.ndvi);
-        const currentNDVI = ndviValues[ndviValues.length - 1];
-        const avgNDVI = ndviValues.reduce((a, b) => a + b, 0) / ndviValues.length;
-        const minNDVI = Math.min(...ndviValues);
-        const maxNDVI = Math.max(...ndviValues);
+        const ndviValuesFallback = processedHistoryFallback.map(h => h.ndvi);
+        const currentNDVIFallback = ndviValuesFallback[ndviValuesFallback.length - 1];
+        const avgNDVIFallback = ndviValuesFallback.reduce((a, b) => a + b, 0) / ndviValuesFallback.length;
 
-        // Trend Analysis
-        let trend: 'improving' | 'stable' | 'declining' = 'stable';
-        let trendBn = 'স্থিতিশীল';
-
-        if (processedHistory.length >= 2) {
-          const midpoint = Math.floor(processedHistory.length / 2);
-          const recentAvg = ndviValues.slice(midpoint).reduce((a, b) => a + b, 0) / (ndviValues.length - midpoint);
-          const olderAvg = ndviValues.slice(0, midpoint).reduce((a, b) => a + b, 0) / midpoint;
-
-          if (recentAvg > olderAvg + 0.05) {
-            trend = 'improving';
-            trendBn = 'উন্নতি হচ্ছে';
-          } else if (recentAvg < olderAvg - 0.05) {
-            trend = 'declining';
-            trendBn = 'অবনতি হচ্ছে';
-          }
-        }
-
-        // Drop Detection
-        const warnings: any[] = [];
-        for (let i = 1; i < processedHistory.length; i++) {
-          const prev = processedHistory[i - 1].ndvi;
-          const curr = processedHistory[i].ndvi;
-          const dropPercent = ((prev - curr) / prev) * 100;
-
-          if (dropPercent > 10) {
-            warnings.push({
-              date: processedHistory[i].date,
-              previousNDVI: prev,
-              currentNDVI: curr,
-              dropPercent: Math.round(dropPercent),
-              severity: dropPercent > 25 ? 'critical' : 'warning',
-              message: `NDVI dropped by ${Math.round(dropPercent)}%`,
-              messageBn: `NDVI ${Math.round(dropPercent)}% কমেছে`
-            });
-          }
-        }
-
-        const result = {
+        const resultFallback = {
           polygonId,
           days,
-          history: processedHistory,
+          history: processedHistoryFallback,
           statistics: {
-            current: currentNDVI,
-            average: avgNDVI,
-            min: minNDVI,
-            max: maxNDVI
+            current: currentNDVIFallback,
+            average: avgNDVIFallback,
+            min: Math.min(...ndviValuesFallback),
+            max: Math.max(...ndviValuesFallback)
           },
-          trend,
-          trendBn,
-          warnings,
-          dataPoints: processedHistory.length,
-          source: 'satellite-images' // Indicate data source
+          trend: 'stable' as const,
+          trendBn: 'স্থিতিশীল',
+          warnings: [],
+          dataPoints: processedHistoryFallback.length,
+          source: 'Satellite Image Stats (Fallback)',
+          sourceInfo: {
+            provider: 'AgroMonitoring.com',
+            satellite: 'Sentinel-2',
+            dataType: 'NDVI from Satellite Stats',
+            updateFrequency: '5-10 দিন'
+          }
         };
 
-        setCachedData(cacheKey, result);
-        return new Response(JSON.stringify(result), {
+        setCachedData(cacheKey, resultFallback);
+        return new Response(JSON.stringify(resultFallback), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
       }

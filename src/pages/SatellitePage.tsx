@@ -300,7 +300,12 @@ export default function SatellitePage() {
                       <Wifi className="w-3 h-3 text-green-500" />
                       <span>লাইভ হাই-রেজোলিউশন স্যাটেলাইট সক্রিয়</span>
                     </div>
-                    <div>উৎস: Sentinel-2 & Landsat-8 (Via AgroMonitoring)</div>
+                    <div className="flex items-center gap-1.5">
+                      <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30">
+                        Real Data
+                      </Badge>
+                      <span>উৎস: Sentinel-2 & Landsat-8 (AgroMonitoring API)</span>
+                    </div>
                   </div>
                 </div>
 
@@ -333,9 +338,19 @@ export default function SatellitePage() {
             </div>
           ) : (
             // =========================
-            // NASA VIEW (Legacy)
+            // NASA VIEW (Demo Data)
             // =========================
             <>
+              {/* Demo Data Notice */}
+              <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2">
+                <div className="container mx-auto flex items-center gap-2 text-amber-700 dark:text-amber-400 text-sm">
+                  <span className="font-semibold">⚠️ ডেমো ডেটা:</span>
+                  <span>
+                    এই ভিউ NASA GIBS/MODIS সিমুলেটেড ডেটা ব্যবহার করছে। বাস্তব NDVI বিশ্লেষণের জন্য AgroMonitoring সোর্স নির্বাচন করুন।
+                  </span>
+                </div>
+              </div>
+
               <NASASatelliteMap
                 latitude={location?.latitude ?? 23.8103}
                 longitude={location?.longitude ?? 90.4125}
