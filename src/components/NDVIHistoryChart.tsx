@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Area, AreaChart, Legend } from 'recharts';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Loader2, TrendingUp, TrendingDown, Minus, RefreshCw, Satellite, AlertTriangle } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -45,7 +46,7 @@ function toBengali(num: number): string {
   return num.toString().split('').map(d => d === '.' ? '.' : bn[parseInt(d)] || d).join('');
 }
 
-export function NDVIHistoryChart({ userId, fieldZoneId, days = 60, showAllZones = false, polygonId }: NDVIHistoryChartProps) {
+export function NDVIHistoryChart({ userId, fieldZoneId, days = 365, showAllZones = false, polygonId }: NDVIHistoryChartProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [history, setHistory] = useState<NDVIHistoryData[]>([]);
@@ -91,13 +92,15 @@ export function NDVIHistoryChart({ userId, fieldZoneId, days = 60, showAllZones 
         setTrend(data.trend || 'stable');
         setTrendBn(data.trendBn || 'স্থিতিশীল');
         
-        // Set summary from AgroMonitoring statistics
+        // Set summary from AgroMonitoring statistics with source info
         if (data.statistics) {
           setSummary({
             latest_ndvi: data.statistics.current,
             average_ndvi: data.statistics.average,
             max_ndvi: data.statistics.max,
-            min_ndvi: data.statistics.min
+            min_ndvi: data.statistics.min,
+            source: data.source || 'AgroMonitoring',
+            sourceInfo: data.sourceInfo || null
           });
         }
 
@@ -359,6 +362,29 @@ export function NDVIHistoryChart({ userId, fieldZoneId, days = 60, showAllZones 
             <p className="text-lg font-bold text-destructive">{toBengali(Math.round(summary.min_ndvi * 100))}%</p>
           </Card>
         </div>
+      )}
+
+      {/* Data Source Info */}
+      {!showAllZones && summary?.source && (
+        <Card className="bg-muted/30 border-border/50">
+          <CardContent className="py-3">
+            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+              <Satellite className="w-3 h-3" />
+              <span className="font-medium">ডেটা সোর্স:</span>
+              <span>{summary.source}</span>
+              {summary.sourceInfo?.satellite && (
+                <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                  {summary.sourceInfo.satellite}
+                </Badge>
+              )}
+            </div>
+            {summary.sourceInfo?.updateFrequency && (
+              <p className="text-[10px] text-muted-foreground mt-1 ml-5">
+                আপডেট: {summary.sourceInfo.updateFrequency}
+              </p>
+            )}
+          </CardContent>
+        </Card>
       )}
 
       {/* AI Recommendations */}
