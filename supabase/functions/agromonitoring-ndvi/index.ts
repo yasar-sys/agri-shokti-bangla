@@ -307,16 +307,18 @@ serve(async (req) => {
 
       case 'ndvi-history': {
         // Read params from body (Supported: days)
-        const days = body.days ? parseInt(body.days) : 180;
+        const days = body.days ? parseInt(body.days) : 365;
 
         if (!polygonId) {
           throw new Error('Polygon ID is required');
         }
 
+        // Use extended time range for better data availability
+        // From Nov 2023 (when satellite data starts) to now
         const end = Math.floor(Date.now() / 1000);
-        const start = end - (days * 24 * 60 * 60);
+        const start = 1700000000; // Nov 14, 2023 - ensures we get all available historical data
 
-        const cacheKey = `ndvi-history-v5-${polygonId}-${days}`;
+        const cacheKey = `ndvi-history-v6-${polygonId}-${end}`;
         const cached = getCachedData(cacheKey);
         if (cached) {
           return new Response(JSON.stringify(cached), {
@@ -328,6 +330,7 @@ serve(async (req) => {
         // Using: https://api.agromonitoring.com/agro/1.0/ndvi/history?polyid=...&start=...&end=...&appid=...
         const ndviHistoryUrl = `${AGRO_API.BASE_URL}/ndvi/history?polyid=${polygonId}&start=${start}&end=${end}&appid=${AGRO_API_KEY}`;
         console.log(`Fetching NDVI history from direct API: ${ndviHistoryUrl.replace(AGRO_API_KEY, 'HIDDEN')}`);
+        console.log(`Time range: ${new Date(start * 1000).toISOString()} to ${new Date(end * 1000).toISOString()}`);
 
         const response = await fetch(ndviHistoryUrl);
         
