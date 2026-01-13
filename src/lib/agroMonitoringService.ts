@@ -30,11 +30,25 @@ import type {
 const AGRO_API_KEY = '883142b44374ecc8a4db77ea67276305';
 const AGRO_BASE_URL = 'https://api.agromonitoring.com/agro/1.0';
 
+// নতুন ছোট পলিগন (ভালো NDVI ডেটার জন্য)
 export const POLYGON_IDS = [
-    '69614b3ae8a5760009397260',
-    '696151c05a63918df3b2b0df',
-    '6961521a2a38995f0d73aa47',
+    '69614b3ae8a5760009397260', // Iowa Demo Field (202.98 ha)
+    '6965e9e35a63914783b2b110', // Maloti Port Colony (7.47 ha)
+    '6965ea2a3502733c8442f7fe', // Mymensingh Engineering College (6.00 ha)
+    '6965ea5c6f78d821dd84aeb1', // BAU (78.92 ha)
+    '6965eac4a049de7f3a4b4081', // Bagharpara (51.64 ha)
+    '6965eafbd1895d6355badd8c', // Rangpur (128.34 ha)
 ] as const;
+
+// পলিগন মেটাডেটা
+export const POLYGON_METADATA: Record<string, { name: string; nameBn: string; center: [number, number]; area: number }> = {
+    '69614b3ae8a5760009397260': { name: 'Iowa Demo Field', nameBn: 'আইওয়া ডেমো ফিল্ড', center: [-93.2617, 42.0715], area: 202.98 },
+    '6965e9e35a63914783b2b110': { name: 'Maloti Port Colony', nameBn: 'মালতি পোর্ট কলোনি', center: [89.5914, 22.5148], area: 7.47 },
+    '6965ea2a3502733c8442f7fe': { name: 'Mymensingh Engineering College', nameBn: 'ময়মনসিংহ ইঞ্জিনিয়ারিং কলেজ', center: [90.3448, 24.7816], area: 6.00 },
+    '6965ea5c6f78d821dd84aeb1': { name: 'BAU', nameBn: 'বাংলাদেশ কৃষি বিশ্ববিদ্যালয়', center: [90.4314, 24.7208], area: 78.92 },
+    '6965eac4a049de7f3a4b4081': { name: 'Bagharpara', nameBn: 'বাঘারপাড়া', center: [89.3432, 23.2201], area: 51.64 },
+    '6965eafbd1895d6355badd8c': { name: 'Rangpur', nameBn: 'রংপুর', center: [88.8630, 25.9399], area: 128.34 },
+};
 
 // ===================================
 // CACHING
