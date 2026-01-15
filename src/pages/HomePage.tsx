@@ -498,7 +498,7 @@ export default function HomePage() {
         </Link>
       </section>
 
-      {/* Today's Tip */}
+      {/* Today's Tip - Multiple rotating tips */}
       <section className="px-5 mb-5 animate-slide-up stagger-2">
         <div className="relative overflow-hidden glass-card rounded-2xl p-4 border border-primary/30">
           {/* Animated gradient */}
@@ -514,10 +514,27 @@ export default function HomePage() {
                 {t('todayTip')}
               </h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                {t('todayTipText')}
+                {[
+                  "সকালে সেচ দিলে পানির অপচয় কম হয় এবং গাছ বেশি পানি শোষণ করে।",
+                  "মাটির pH ৬-৭ এর মধ্যে রাখলে বেশিরভাগ ফসল ভালো হয়।",
+                  "জৈব সার ব্যবহারে মাটির স্বাস্থ্য ভালো থাকে ও ফলন বাড়ে।",
+                  "ফসল ঘুরিয়ে চাষ করলে মাটির উর্বরতা বজায় থাকে।",
+                  "পোকা দমনে প্রথমে জৈব পদ্ধতি ব্যবহার করুন।",
+                  "বীজ বপনের আগে বীজ শোধন করলে রোগ কম হয়।",
+                  "সঠিক সময়ে সার দিলে ফলন ২০-৩০% বাড়ে।"
+                ][new Date().getDate() % 7]}
               </p>
             </div>
           </div>
+        </div>
+      </section>
+
+      {/* Farmer Quote */}
+      <section className="px-5 mb-5">
+        <div className="glass-card rounded-2xl p-4 border border-secondary/20 text-center">
+          <p className="text-sm text-muted-foreground italic leading-relaxed">
+            "কৃষকের হাতেই দেশের ভবিষ্যৎ, তাদের শ্রমেই আমাদের অন্ন।"
+          </p>
         </div>
       </section>
 

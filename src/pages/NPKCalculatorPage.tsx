@@ -7,16 +7,73 @@ import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import { Input } from "@/components/ui/input";
 
 const crops = [
+  // সিরিয়াল/শস্য
   { id: "rice", name: "ধান", emoji: "🌾" },
   { id: "wheat", name: "গম", emoji: "🌿" },
+  { id: "corn", name: "ভুট্টা", emoji: "🌽" },
+  { id: "barley", name: "যব", emoji: "🌾" },
+  { id: "millet", name: "বাজরা", emoji: "🌾" },
+  
+  // সবজি
   { id: "potato", name: "আলু", emoji: "🥔" },
   { id: "onion", name: "পেঁয়াজ", emoji: "🧅" },
   { id: "tomato", name: "টমেটো", emoji: "🍅" },
-  { id: "corn", name: "ভুট্টা", emoji: "🌽" },
+  { id: "eggplant", name: "বেগুন", emoji: "🍆" },
+  { id: "cabbage", name: "বাঁধাকপি", emoji: "🥬" },
+  { id: "cauliflower", name: "ফুলকপি", emoji: "🥦" },
+  { id: "carrot", name: "গাজর", emoji: "🥕" },
+  { id: "radish", name: "মুলা", emoji: "🥗" },
+  { id: "spinach", name: "পালং শাক", emoji: "🥬" },
+  { id: "redSpinadh", name: "লাল শাক", emoji: "🌿" },
+  { id: "gourd", name: "লাউ", emoji: "🫛" },
+  { id: "pumpkin", name: "কুমড়া", emoji: "🎃" },
+  { id: "cucumber", name: "শসা", emoji: "🥒" },
+  { id: "bitterGourd", name: "করলা", emoji: "🥒" },
+  { id: "okra", name: "ঢেঁড়স", emoji: "🌿" },
+  { id: "taro", name: "কচু", emoji: "🥔" },
+  { id: "sweetPotato", name: "মিষ্টি আলু", emoji: "🍠" },
+  { id: "beans", name: "শিম/বরবটি", emoji: "🫘" },
+  { id: "chili", name: "মরিচ", emoji: "🌶️" },
+  { id: "garlic", name: "রসুন", emoji: "🧄" },
+  
+  // মসলা/তেলবীজ
+  { id: "mustard", name: "সরিষা", emoji: "🌻" },
+  { id: "ginger", name: "আদা", emoji: "🫚" },
+  { id: "turmeric", name: "হলুদ", emoji: "🌿" },
+  { id: "coriander", name: "ধনিয়া", emoji: "🌿" },
+  { id: "cumin", name: "জিরা", emoji: "🌿" },
+  { id: "sesame", name: "তিল", emoji: "🌿" },
+  { id: "sunflower", name: "সূর্যমুখী", emoji: "🌻" },
+  { id: "groundnut", name: "চিনাবাদাম", emoji: "🥜" },
+  
+  // ডাল
+  { id: "lentil", name: "মসুর ডাল", emoji: "🫘" },
+  { id: "chickpea", name: "ছোলা", emoji: "🫘" },
+  { id: "greenGram", name: "মুগ ডাল", emoji: "🫘" },
+  { id: "blackGram", name: "মাষকলাই", emoji: "🫘" },
+  { id: "pigeonPea", name: "অড়হর ডাল", emoji: "🫘" },
+  
+  // ফল
+  { id: "mango", name: "আম", emoji: "🥭" },
+  { id: "banana", name: "কলা", emoji: "🍌" },
+  { id: "papaya", name: "পেঁপে", emoji: "🍈" },
+  { id: "guava", name: "পেয়ারা", emoji: "🍐" },
+  { id: "lemon", name: "লেবু", emoji: "🍋" },
+  { id: "watermelon", name: "তরমুজ", emoji: "🍉" },
+  { id: "jackfruit", name: "কাঁঠাল", emoji: "🍈" },
+  { id: "litchi", name: "লিচু", emoji: "🍒" },
+  
+  // অন্যান্য
+  { id: "jute", name: "পাট", emoji: "🌿" },
+  { id: "sugarcane", name: "আখ", emoji: "🎋" },
+  { id: "tea", name: "চা", emoji: "🍵" },
+  { id: "cotton", name: "তুলা", emoji: "☁️" },
+  { id: "tobacco", name: "তামাক", emoji: "🌿" },
 ];
 
-// Base fertilizer per acre
+// Base fertilizer per acre (in kg)
 const baseFertilizers: Record<string, { name: string; npk: string; color: string; baseAmount: number }[]> = {
+  // সিরিয়াল/শস্য
   rice: [
     { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 80 },
     { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 40 },
@@ -28,6 +85,24 @@ const baseFertilizers: Record<string, { name: string; npk: string; color: string
     { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 56 },
     { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 22 },
   ],
+  corn: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 200 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 100 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 80 },
+    { name: "জিংক সালফেট", npk: "০-০-০-০", color: "bg-chart-4", baseAmount: 4 },
+  ],
+  barley: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 60 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 45 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 20 },
+  ],
+  millet: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 50 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 30 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 20 },
+  ],
+  
+  // সবজি
   potato: [
     { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 140 },
     { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 90 },
@@ -46,11 +121,236 @@ const baseFertilizers: Record<string, { name: string; npk: string; color: string
     { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 80 },
     { name: "বোরন", npk: "০-০-০-০", color: "bg-chart-5", baseAmount: 4 },
   ],
-  corn: [
-    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 200 },
-    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 100 },
+  eggplant: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 100 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 80 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 60 },
+  ],
+  cabbage: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 110 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 70 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 50 },
+    { name: "বোরন", npk: "০-০-০-০", color: "bg-chart-5", baseAmount: 3 },
+  ],
+  cauliflower: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 120 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 75 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 55 },
+    { name: "বোরন", npk: "০-০-০-০", color: "bg-chart-5", baseAmount: 4 },
+  ],
+  carrot: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 70 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 60 },
     { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 80 },
+  ],
+  radish: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 60 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 40 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 40 },
+  ],
+  spinach: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 80 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 30 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 25 },
+  ],
+  redSpinadh: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 75 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 28 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 22 },
+  ],
+  gourd: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 100 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 60 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 50 },
+  ],
+  pumpkin: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 90 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 55 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 45 },
+  ],
+  cucumber: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 85 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 50 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 40 },
+  ],
+  bitterGourd: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 95 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 55 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 45 },
+  ],
+  okra: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 70 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 45 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 35 },
+  ],
+  taro: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 90 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 50 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 70 },
+  ],
+  sweetPotato: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 60 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 40 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 90 },
+  ],
+  beans: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 30 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 50 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 40 },
+  ],
+  chili: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 100 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 70 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 50 },
+  ],
+  garlic: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 75 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 55 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 55 },
+    { name: "সালফার", npk: "০-০-০-০", color: "bg-chart-4", baseAmount: 6 },
+  ],
+  
+  // মসলা/তেলবীজ
+  mustard: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 65 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 50 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 30 },
+    { name: "সালফার", npk: "০-০-০-০", color: "bg-chart-4", baseAmount: 10 },
+  ],
+  ginger: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 120 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 80 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 100 },
+  ],
+  turmeric: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 110 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 75 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 90 },
+  ],
+  coriander: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 40 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 30 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 20 },
+  ],
+  cumin: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 35 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 28 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 18 },
+  ],
+  sesame: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 45 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 35 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 25 },
+  ],
+  sunflower: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 80 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 60 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 40 },
+    { name: "বোরন", npk: "০-০-০-০", color: "bg-chart-5", baseAmount: 2 },
+  ],
+  groundnut: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 25 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 70 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 40 },
+    { name: "জিপসাম", npk: "০-০-০-১৮", color: "bg-chart-4", baseAmount: 80 },
+  ],
+  
+  // ডাল
+  lentil: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 20 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 45 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 25 },
+  ],
+  chickpea: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 20 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 50 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 30 },
+  ],
+  greenGram: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 15 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 40 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 20 },
+  ],
+  blackGram: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 18 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 42 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 22 },
+  ],
+  pigeonPea: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 20 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 55 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 30 },
+  ],
+  
+  // ফল
+  mango: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 200 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 150 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 200 },
+    { name: "বোরন", npk: "০-০-০-০", color: "bg-chart-5", baseAmount: 5 },
+  ],
+  banana: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 300 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 100 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 350 },
+  ],
+  papaya: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 180 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 120 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 200 },
+  ],
+  guava: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 150 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 100 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 150 },
+  ],
+  lemon: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 160 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 110 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 180 },
     { name: "জিংক সালফেট", npk: "০-০-০-০", color: "bg-chart-4", baseAmount: 4 },
+  ],
+  watermelon: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 100 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 70 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 80 },
+  ],
+  jackfruit: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 250 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 180 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 220 },
+  ],
+  litchi: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 180 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 140 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 200 },
+  ],
+  
+  // অন্যান্য
+  jute: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 60 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 24 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 30 },
+  ],
+  sugarcane: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 250 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 120 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 150 },
+  ],
+  tea: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 180 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 60 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 80 },
+  ],
+  cotton: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 100 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 60 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 50 },
+  ],
+  tobacco: [
+    { name: "ইউরিয়া", npk: "৪৬-০-০", color: "bg-chart-3", baseAmount: 80 },
+    { name: "TSP", npk: "০-৪৬-০", color: "bg-chart-2", baseAmount: 70 },
+    { name: "MOP", npk: "০-০-৬০", color: "bg-primary", baseAmount: 120 },
   ],
 };
 
@@ -58,6 +358,8 @@ const warnings = [
   "ইউরিয়া + TSP একসাথে দেবেন না",
   "ভেজা মাটিতে ইউরিয়া দিলে গ্যাস হয়ে উড়ে যায়",
   "অতিরিক্ত সার ফসলের ক্ষতি করে",
+  "সার দেওয়ার পর হালকা সেচ দিন",
+  "ডাল জাতীয় ফসলে কম ইউরিয়া দিন",
 ];
 
 export default function NPKCalculatorPage() {
@@ -120,21 +422,21 @@ export default function NPKCalculatorPage() {
 
       {/* Crop Selection */}
       <section className="px-4 py-4">
-        <h2 className="text-sm font-semibold text-foreground mb-2">ফসল নির্বাচন করুন</h2>
-        <div className="flex gap-2 overflow-x-auto pb-2">
+        <h2 className="text-sm font-semibold text-foreground mb-2">ফসল নির্বাচন করুন ({crops.length}টি ফসল)</h2>
+        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
           {crops.map((crop) => (
             <button
               key={crop.id}
               onClick={() => setSelectedCrop(crop.id)}
               className={cn(
-                "flex-shrink-0 px-4 py-2 rounded-xl border flex items-center gap-2 transition-all backdrop-blur-sm",
+                "flex-shrink-0 px-3 py-2 rounded-xl border flex items-center gap-2 transition-all backdrop-blur-sm text-sm",
                 selectedCrop === crop.id 
                   ? "bg-secondary/20 border-secondary text-secondary" 
                   : "bg-card/80 border-border text-foreground"
               )}
             >
               <span>{crop.emoji}</span>
-              <span className="text-sm">{crop.name}</span>
+              <span>{crop.name}</span>
             </button>
           ))}
         </div>
