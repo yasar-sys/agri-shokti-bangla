@@ -49,6 +49,7 @@ export default function FertilizerScanPage() {
   const [result, setResult] = useState<ScanResult | null>(null);
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
+  const [tokenUsage, setTokenUsage] = useState<{promptTokens: number; completionTokens: number; totalTokens: number; model: string} | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
@@ -120,6 +121,11 @@ export default function FertilizerScanPage() {
       if (data.result) {
         setResult(data.result);
         setStatusText("বিশ্লেষণ সম্পন্ন!");
+        
+        // Store token usage
+        if (data.tokenUsage) {
+          setTokenUsage(data.tokenUsage);
+        }
       } else if (data.error) {
         throw new Error(data.error);
       }
@@ -142,6 +148,7 @@ export default function FertilizerScanPage() {
     setResult(null);
     setProgress(0);
     setStatusText("");
+    setTokenUsage(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -330,6 +337,12 @@ export default function FertilizerScanPage() {
                       <span className="text-sm font-semibold text-secondary">{progress}%</span>
                     </div>
                     <Progress value={progress} className="h-2" />
+                    {tokenUsage && (
+                      <div className="mt-3 pt-3 border-t border-border/50 flex items-center justify-center gap-2 text-xs text-muted-foreground">
+                        <Beaker className="w-3 h-3" />
+                        <span><span className="font-semibold text-secondary">{tokenUsage.totalTokens.toLocaleString()}</span> টোকেন ব্যবহৃত</span>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -362,9 +375,18 @@ export default function FertilizerScanPage() {
                   {result.authenticityConfidence}% নিশ্চয়তা
                 </div>
               </div>
-              <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                <AlertTriangle className="w-4 h-4" />
-                <span>AI সার যাচাইকরণ • POST /api/scan-fertilizer</span>
+              <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" />
+                  <span>AI সার যাচাইকরণ</span>
+                </div>
+                {tokenUsage && (
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-secondary/10 rounded-full">
+                    <Beaker className="w-3 h-3 text-secondary" />
+                    <span className="font-semibold text-secondary">{tokenUsage.totalTokens.toLocaleString()}</span>
+                    <span>টোকেন</span>
+                  </div>
+                )}
               </div>
             </div>
 

@@ -11,17 +11,38 @@
 ### সফটওয়্যার ইনস্টল করুন:
 
 1. **Node.js** (v18+): https://nodejs.org/
-2. **Android Studio**: https://developer.android.com/studio
-3. **Java JDK 17**: Android Studio এর সাথে আসে
-4. **Git**: https://git-scm.com/
+2. **VS Code**: https://code.visualstudio.com/ (প্রস্তাবিত)
+3. **Android Studio** অথবা **Android SDK Command Line Tools**: 
+   - Android Studio: https://developer.android.com/studio
+   - শুধু SDK চাইলে: https://developer.android.com/studio#command-line-tools-only
+4. **Java JDK 17**: https://adoptium.net/
+5. **Git**: https://git-scm.com/
 
-### Android Studio সেটআপ:
-1. Android Studio ইনস্টল করুন
-2. SDK Manager থেকে ইনস্টল করুন:
-   - Android SDK Platform 34 (Android 14)
-   - Android SDK Build-Tools 34.0.0
-   - Android SDK Command-line Tools
-   - Android Emulator (ঐচ্ছিক)
+### VS Code Extensions (প্রস্তাবিত):
+1. **Ionic** - Capacitor প্রজেক্ট ম্যানেজমেন্ট
+2. **Android iOS Emulator** - এমুলেটর চালানোর জন্য
+3. **ESLint** - কোড কোয়ালিটি
+4. **Prettier** - কোড ফরম্যাটিং
+
+### Android SDK সেটআপ (VS Code দিয়ে):
+
+**Windows:**
+```bash
+# Environment variables সেট করুন
+setx ANDROID_HOME "%LOCALAPPDATA%\Android\Sdk"
+setx PATH "%PATH%;%ANDROID_HOME%\platform-tools;%ANDROID_HOME%\cmdline-tools\latest\bin"
+```
+
+**macOS/Linux:**
+```bash
+# ~/.bashrc বা ~/.zshrc ফাইলে যোগ করুন
+export ANDROID_HOME=$HOME/Library/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools:$ANDROID_HOME/cmdline-tools/latest/bin
+```
+
+**SDK Components ইনস্টল করুন:**
+```bash
+sdkmanager "platform-tools" "platforms;android-34" "build-tools;34.0.0"
 
 ---
 
@@ -58,10 +79,22 @@ npx cap update android
 npx cap sync android
 ```
 
-### ধাপ ৪: Android Studio তে প্রজেক্ট খুলুন
+### ধাপ ৪: VS Code তে বিল্ড করুন
 
+**Terminal ব্যবহার করে (VS Code Integrated Terminal):**
 ```bash
-# Android Studio তে প্রজেক্ট খুলুন
+# Android ফোল্ডারে যান
+cd android
+
+# Debug APK বিল্ড করুন
+./gradlew assembleDebug
+
+# APK লোকেশন: android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+**অথবা Android Studio তে খুলতে পারেন:**
+```bash
+# Android Studio তে প্রজেক্ট খুলুন (ঐচ্ছিক)
 npx cap open android
 ```
 

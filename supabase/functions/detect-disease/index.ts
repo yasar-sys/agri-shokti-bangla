@@ -184,8 +184,14 @@ serve(async (req) => {
 
     const data = await response.json();
     const aiResponse = data.choices?.[0]?.message?.content || '';
+    
+    // Extract token usage info
+    const tokenUsage = data.usage || {};
+    const promptTokens = tokenUsage.prompt_tokens || 0;
+    const completionTokens = tokenUsage.completion_tokens || 0;
+    const totalTokens = tokenUsage.total_tokens || 0;
 
-    console.log('AI response received, length:', aiResponse.length);
+    console.log('AI response received, length:', aiResponse.length, 'tokens:', totalTokens);
 
     // Parse JSON from response
     let analysisResult;
@@ -221,7 +227,15 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ result: analysisResult }),
+      JSON.stringify({ 
+        result: analysisResult,
+        tokenUsage: {
+          promptTokens,
+          completionTokens,
+          totalTokens,
+          model: 'google/gemini-2.5-flash'
+        }
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
