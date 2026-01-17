@@ -15,6 +15,7 @@ export default function CameraPage() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
+  const [tokenUsage, setTokenUsage] = useState<{promptTokens: number; completionTokens: number; totalTokens: number; model: string} | null>(null);
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -72,8 +73,12 @@ export default function CameraPage() {
 
       setProgress(100);
       setStatusText(t('analysisComplete'));
-
-      // Save scan to database if user is logged in
+      
+      // Store token usage info
+      if (data.tokenUsage) {
+        setTokenUsage(data.tokenUsage);
+        sessionStorage.setItem('lastTokenUsage', JSON.stringify(data.tokenUsage));
+      }
       const { data: { user } } = await supabase.auth.getUser();
       if (user && data.result) {
         try {
@@ -114,6 +119,7 @@ export default function CameraPage() {
     setIsAnalyzing(false);
     setProgress(0);
     setStatusText("");
+    setTokenUsage(null);
   };
 
   return (
@@ -208,6 +214,13 @@ export default function CameraPage() {
                   <Zap className="w-3 h-3" />
                   Gemini Vision AI
                 </p>
+                {tokenUsage && (
+                  <div className="mt-4 px-4 py-2 bg-card/80 rounded-xl border border-border/50">
+                    <p className="text-xs text-muted-foreground flex items-center gap-2">
+                      <span className="font-medium text-secondary">{tokenUsage.totalTokens.toLocaleString()}</span> টোকেন ব্যবহৃত
+                    </p>
+                  </div>
+                )}
               </div>
             )}
           </div>

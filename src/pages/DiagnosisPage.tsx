@@ -31,6 +31,7 @@ export default function DiagnosisPage() {
   const [diseaseData, setDiseaseData] = useState<DiseaseResult | null>(null);
   const [scannedImage, setScannedImage] = useState<string | null>(null);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [tokenUsage, setTokenUsage] = useState<{promptTokens: number; completionTokens: number; totalTokens: number; model: string} | null>(null);
 
   useEffect(() => {
     const storedResult = sessionStorage.getItem('diseaseResult');
@@ -41,6 +42,12 @@ export default function DiagnosisPage() {
     }
     if (storedImage) {
       setScannedImage(storedImage);
+    }
+    
+    // Get token usage from session storage
+    const storedTokenUsage = sessionStorage.getItem('lastTokenUsage');
+    if (storedTokenUsage) {
+      setTokenUsage(JSON.parse(storedTokenUsage));
     }
     
     if (!storedResult) {
@@ -428,10 +435,17 @@ export default function DiagnosisPage() {
             </div>
           )}
           
-          {/* Confidence Badge */}
-          <div className="absolute top-3 right-3 glass-strong px-3 py-2 rounded-xl flex items-center gap-2">
-            <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
-            <span className="text-sm font-bold text-secondary">{diseaseData.confidence}%</span>
+          <div className="absolute top-3 right-3 flex items-center gap-2">
+            {tokenUsage && (
+              <div className="glass-strong px-3 py-2 rounded-xl flex items-center gap-2">
+                <Zap className="w-3 h-3 text-primary" />
+                <span className="text-xs font-bold text-primary">{tokenUsage.totalTokens.toLocaleString()} টোকেন</span>
+              </div>
+            )}
+            <div className="glass-strong px-3 py-2 rounded-xl flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-secondary animate-pulse" />
+              <span className="text-sm font-bold text-secondary">{diseaseData.confidence}%</span>
+            </div>
           </div>
         </div>
       </section>
