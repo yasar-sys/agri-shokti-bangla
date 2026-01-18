@@ -1,8 +1,21 @@
 {
   "rewrites": [
-    { "source": "/(.*)", "destination": "/" }
+    { "source": "/((?!manifest\\.json|sw\\.js|sw-push\\.js|satellite-sw\\.js|workbox-.*\\.js|favicon\\.png|favicon\\.ico|robots\\.txt).*)", "destination": "/" }
   ],
   "headers": [
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
