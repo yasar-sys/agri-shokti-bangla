@@ -15,37 +15,12 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.png", "agri-brain-logo.png"],
-      manifest: {
-        name: "agriশক্তি - কৃষকের AI সহকারী",
-        short_name: "agriশক্তি",
-        description: "বাংলাদেশের কৃষকদের জন্য AI-চালিত কৃষি সহায়ক অ্যাপ",
-        theme_color: "#0d2818",
-        background_color: "#0d2818",
-        display: "standalone",
-        orientation: "portrait",
-        start_url: "/",
-        scope: "/",
-        icons: [
-          {
-            src: "favicon.png",
-            sizes: "192x192",
-            type: "image/png",
-            purpose: "any maskable"
-          },
-          {
-            src: "favicon.png",
-            sizes: "512x512",
-            type: "image/png",
-            purpose: "any maskable"
-          }
-        ],
-        categories: ["agriculture", "productivity", "utilities"],
-        lang: "bn",
-        dir: "ltr"
-      },
+      includeAssets: ["favicon.png", "agri-brain-logo.png", "manifest.json"],
+      manifest: false,
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}"],
+        navigateFallback: "/index.html",
+        navigateFallbackDenylist: [/^\/manifest\.json$/, /^\/sw.*\.js$/, /^\/workbox-.*\.js$/],
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -54,7 +29,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "google-fonts-cache",
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -68,7 +43,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "gstatic-fonts-cache",
               expiration: {
                 maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365 // 1 year
+                maxAgeSeconds: 60 * 60 * 24 * 365
               },
               cacheableResponse: {
                 statuses: [0, 200]
@@ -82,7 +57,7 @@ export default defineConfig(({ mode }) => ({
               cacheName: "api-cache",
               expiration: {
                 maxEntries: 50,
-                maxAgeSeconds: 60 * 5 // 5 minutes
+                maxAgeSeconds: 60 * 5
               },
               networkTimeoutSeconds: 10
             }
@@ -90,7 +65,7 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       devOptions: {
-        enabled: true
+        enabled: false
       }
     })
   ].filter(Boolean),

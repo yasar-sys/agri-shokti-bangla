@@ -1,0 +1,42 @@
+{
+  "name": "agriশক্তি - কৃষকের AI সহকারী",
+  "short_name": "agriশক্তি",
+  "description": "বাংলাদেশের কৃষকদের জন্য AI-চালিত কৃষি সহায়ক অ্যাপ",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0d2818",
+  "background_color": "#0d2818",
+  "lang": "bn",
+  "dir": "ltr",
+  "categories": ["agriculture", "productivity", "utilities"],
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/favicon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
