@@ -26,8 +26,9 @@ export function useSatelliteServiceWorker() {
 
   const registerServiceWorker = async () => {
     try {
+      // Important: scope this SW to /satellite/ to avoid conflicting with the main PWA SW (/sw.js)
       const registration = await navigator.serviceWorker.register('/satellite-sw.js', {
-        scope: '/',
+        scope: '/satellite/',
       });
 
       console.log('[SW] Service Worker registered:', registration.scope);
