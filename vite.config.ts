@@ -15,7 +15,13 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
-      includeAssets: ["favicon.png", "agri-brain-logo.png", "manifest.json"],
+      includeAssets: [
+        "favicon.png",
+        "agri-brain-logo.png",
+        "manifest.json",
+        "icons/icon-512.png",
+        "icons/icon-512-maskable.png",
+      ],
       manifest: false,
       workbox: {
         globPatterns: ["**/*.{js,css,html,ico,png,svg,jpg,jpeg,webp,woff,woff2}"],
