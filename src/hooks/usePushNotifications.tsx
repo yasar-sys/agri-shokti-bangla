@@ -57,11 +57,13 @@ export function usePushNotifications() {
       // Check current permission
       const permission = Notification.permission;
 
-      // Check if already subscribed
+      // Check if already subscribed (we store push SW under /push/ scope)
       try {
-        const registration = await navigator.serviceWorker.ready;
-        const subscription = await registration.pushManager.getSubscription();
-        
+        const registration = await navigator.serviceWorker.getRegistration('/push/');
+        const subscription = registration
+          ? await registration.pushManager.getSubscription()
+          : null;
+
         setState({
           isSupported: true,
           isSubscribed: !!subscription,
@@ -86,16 +88,14 @@ export function usePushNotifications() {
   // Register service worker for push
   const registerServiceWorker = useCallback(async () => {
     try {
-      // Check if already registered
-      const existingReg = await navigator.serviceWorker.getRegistration('/sw-push.js');
-      if (existingReg) {
-        return existingReg;
-      }
+      // Use a dedicated scope to avoid conflicting with the main PWA SW.
+      const scope = '/push/';
 
-      const registration = await navigator.serviceWorker.register('/sw-push.js', {
-        scope: '/'
-      });
-      
+      // Check if already registered for this scope
+      const existingReg = await navigator.serviceWorker.getRegistration(scope);
+      if (existingReg) return existingReg;
+
+      const registration = await navigator.serviceWorker.register('/sw-push.js', { scope });
       console.log('Push SW registered:', registration.scope);
       return registration;
     } catch (error) {
@@ -123,9 +123,8 @@ export function usePushNotifications() {
         return false;
       }
 
-      // Register service worker
-      await registerServiceWorker();
-      const registration = await navigator.serviceWorker.ready;
+      // Register service worker (push scope)
+      const registration = await registerServiceWorker();
 
       // Subscribe to push
       const applicationServerKey = urlBase64ToUint8Array(VAPID_PUBLIC_KEY);
@@ -190,8 +189,8 @@ export function usePushNotifications() {
     setState(prev => ({ ...prev, loading: true, error: null }));
 
     try {
-      const registration = await navigator.serviceWorker.ready;
-      const subscription = await registration.pushManager.getSubscription();
+      const registration = await navigator.serviceWorker.getRegistration('/push/');
+      const subscription = registration ? await registration.pushManager.getSubscription() : null;
 
       if (subscription) {
         const endpoint = subscription.endpoint;

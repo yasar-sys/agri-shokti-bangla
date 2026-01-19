@@ -19,6 +19,7 @@ export default defineConfig(({ mode }) => ({
         "favicon.png",
         "agri-brain-logo.png",
         "manifest.json",
+        "icons/icon-192.png",
         "icons/icon-512.png",
         "icons/icon-512-maskable.png",
       ],
