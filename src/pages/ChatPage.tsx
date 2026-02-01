@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Send, Bot, ArrowLeft, Sparkles, Volume2, VolumeX, Trash2 } from "lucide-react";
+import { Send, Bot, ArrowLeft, Sparkles, Volume2, VolumeX, Trash2, Phone } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +10,7 @@ import { VoiceInputButton } from "@/components/ui/VoiceInputButton";
 import { useChatHistory } from "@/hooks/useChatHistory";
 import { useTextToSpeech } from "@/hooks/useTextToSpeech";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { VoiceConversation } from "@/components/VoiceConversation";
 
 interface Message {
   id: string;
@@ -39,6 +40,7 @@ export default function ChatPage() {
   const [inputText, setInputText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [speakingMessageId, setSpeakingMessageId] = useState<string | null>(null);
+  const [showVoiceConversation, setShowVoiceConversation] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
@@ -228,6 +230,17 @@ export default function ChatPage() {
           </div>
 
 
+          {/* Voice Conversation Button */}
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setShowVoiceConversation(true)}
+            className="w-11 h-11 rounded-2xl bg-gradient-to-br from-secondary to-secondary/80 border-0 hover:scale-105 transition-all shadow-lg shadow-secondary/20"
+            title="ভয়েস কথোপকথন"
+          >
+            <Phone className="w-4 h-4 text-secondary-foreground" />
+          </Button>
+
           {/* Clear History Button */}
           {messages.length > 1 && (
             <Button
@@ -403,6 +416,12 @@ export default function ChatPage() {
           </p>
         )}
       </section>
+
+      {/* Voice Conversation Modal */}
+      <VoiceConversation 
+        isOpen={showVoiceConversation} 
+        onClose={() => setShowVoiceConversation(false)} 
+      />
     </div>
   );
 }
