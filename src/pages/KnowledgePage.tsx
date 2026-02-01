@@ -14,7 +14,7 @@ const categories = [
   { id: "sources", icon: Database, label: "ডেটা সোর্স", color: "text-primary" },
 ];
 
-const knowledgeContent: Record<string, { title: string; content: string }[]> = {
+const knowledgeContent: Record<string, { title: string; content: string; url?: string }[]> = {
   crops: [
     {
       title: "ধান চাষের সঠিক সময়",
@@ -74,51 +74,63 @@ const knowledgeContent: Record<string, { title: string; content: string }[]> = {
   books: [
     {
       title: "আধুনিক ধান চাষ প্রযুক্তি",
-      content: "প্রকাশক: বাংলাদেশ ধান গবেষণা ইনস্টিটিউট (BRRI)। ISBN: 978-984-8945-35-2। BRRI উদ্ভাবিত সকল জাতের বিস্তারিত তথ্য, রোগ-পোকা ব্যবস্থাপনা ও উচ্চ ফলনশীল চাষাবাদ পদ্ধতি।"
+      content: "প্রকাশক: বাংলাদেশ ধান গবেষণা ইনস্টিটিউট (BRRI)। ISBN: 978-984-8945-35-2। BRRI উদ্ভাবিত সকল জাতের বিস্তারিত তথ্য, রোগ-পোকা ব্যবস্থাপনা ও উচ্চ ফলনশীল চাষাবাদ পদ্ধতি।",
+      url: "https://brri.gov.bd/site/page/e0b24d9a-69b5-48ac-a5c9-aa51f0d5a145"
     },
     {
       title: "সমন্বিত বালাই ব্যবস্থাপনা (IPM) হ্যান্ডবুক",
-      content: "প্রকাশক: কৃষি সম্প্রসারণ অধিদপ্তর (DAE), ২০২৩। জৈব ও রাসায়নিক পদ্ধতির সমন্বয়ে পোকামাকড় দমনের বিজ্ঞানভিত্তিক গাইড।"
+      content: "প্রকাশক: কৃষি সম্প্রসারণ অধিদপ্তর (DAE), ২০২৩। জৈব ও রাসায়নিক পদ্ধতির সমন্বয়ে পোকামাকড় দমনের বিজ্ঞানভিত্তিক গাইড।",
+      url: "https://dae.gov.bd/site/page/7e5ded4e-4a7c-4c55-8c58-ed6f8f8e0d56/IPM"
     },
     {
       title: "মৃত্তিকা ও সার সুপারিশমালা",
-      content: "প্রকাশক: মৃত্তিকা সম্পদ উন্নয়ন ইনস্টিটিউট (SRDI)। ফসলভিত্তিক সুষম সার প্রয়োগের সরকারি নির্দেশিকা।"
+      content: "প্রকাশক: মৃত্তিকা সম্পদ উন্নয়ন ইনস্টিটিউট (SRDI)। ফসলভিত্তিক সুষম সার প্রয়োগের সরকারি নির্দেশিকা।",
+      url: "https://srdi.gov.bd"
     },
     {
       title: "সবজি উৎপাদন প্রযুক্তি",
-      content: "প্রকাশক: BARI, গাজীপুর। ISBN: 978-984-523-089-7। বাংলাদেশের প্রধান ৫০+ সবজির চাষ প্রযুক্তি ও রোগ ব্যবস্থাপনা।"
+      content: "প্রকাশক: BARI, গাজীপুর। ISBN: 978-984-523-089-7। বাংলাদেশের প্রধান ৫০+ সবজির চাষ প্রযুক্তি ও রোগ ব্যবস্থাপনা।",
+      url: "https://bari.gov.bd/site/page/publications"
     },
     {
       title: "ফলদ বৃক্ষ রোপণ ও পরিচর্যা",
-      content: "প্রকাশক: BARI হর্টিকালচার বিভাগ। আম, লিচু, কাঁঠাল, পেয়ারা ও কলার বাণিজ্যিক চাষ পদ্ধতি।"
+      content: "প্রকাশক: BARI হর্টিকালচার বিভাগ। আম, লিচু, কাঁঠাল, পেয়ারা ও কলার বাণিজ্যিক চাষ পদ্ধতি।",
+      url: "https://bari.gov.bd/site/page/horticulture"
     },
     {
       title: "জৈব কৃষি নির্দেশিকা",
-      content: "প্রকাশক: কৃষি মন্ত্রণালয়, ২০২২। রাসায়নিক সার ছাড়া টেকসই কৃষির সরকারি গাইডলাইন।"
+      content: "প্রকাশক: কৃষি মন্ত্রণালয়, ২০২২। রাসায়নিক সার ছাড়া টেকসই কৃষির সরকারি গাইডলাইন।",
+      url: "https://moa.gov.bd"
     },
     {
       title: "Bangladesh Journal of Agricultural Research",
-      content: "ISSN: 0258-7122। BARI প্রকাশিত ত্রৈমাসিক বৈজ্ঞানিক জার্নাল। কৃষি গবেষণার সর্বশেষ ফলাফল প্রকাশিত হয়।"
+      content: "ISSN: 0258-7122। BARI প্রকাশিত ত্রৈমাসিক বৈজ্ঞানিক জার্নাল। কৃষি গবেষণার সর্বশেষ ফলাফল প্রকাশিত হয়।",
+      url: "https://www.banglajol.info/index.php/BJAR"
     },
     {
       title: "Journal of Bangladesh Agricultural University",
-      content: "ISSN: 1810-3030। বাংলাদেশ কৃষি বিশ্ববিদ্যালয়ের গবেষণা জার্নাল। ফসল উন্নয়ন ও প্রযুক্তি বিষয়ক প্রবন্ধ।"
+      content: "ISSN: 1810-3030। বাংলাদেশ কৃষি বিশ্ববিদ্যালয়ের গবেষণা জার্নাল। ফসল উন্নয়ন ও প্রযুক্তি বিষয়ক প্রবন্ধ।",
+      url: "https://www.banglajol.info/index.php/JBAU"
     },
     {
       title: "ধান গবেষণা সাময়িকী",
-      content: "প্রকাশক: BRRI। বার্ষিক প্রকাশনা। ধান সংক্রান্ত সর্বশেষ গবেষণা ও প্রযুক্তি।"
+      content: "প্রকাশক: BRRI। বার্ষিক প্রকাশনা। ধান সংক্রান্ত সর্বশেষ গবেষণা ও প্রযুক্তি।",
+      url: "https://brri.gov.bd/site/page/publications"
     },
     {
       title: "কৃষকের কৃষি প্রযুক্তি হাতবই",
-      content: "প্রকাশক: BARC (Bangladesh Agricultural Research Council)। কৃষকদের জন্য সহজ ভাষায় লেখা প্রযুক্তি সংকলন।"
+      content: "প্রকাশক: BARC (Bangladesh Agricultural Research Council)। কৃষকদের জন্য সহজ ভাষায় লেখা প্রযুক্তি সংকলন।",
+      url: "https://barc.gov.bd"
     },
     {
       title: "ফসল উৎপাদন ক্যালেন্ডার",
-      content: "প্রকাশক: DAE। মৌসুম ভিত্তিক ফসল চাষের সময়সূচি ও কৃষি কর্মপঞ্জি।"
+      content: "প্রকাশক: DAE। মৌসুম ভিত্তিক ফসল চাষের সময়সূচি ও কৃষি কর্মপঞ্জি।",
+      url: "https://dae.gov.bd/site/page/crop_calendar"
     },
     {
       title: "Plant Disease Journal - BARI",
-      content: "ISSN: 2414-4576। ফসলের রোগ সনাক্তকরণ ও ব্যবস্থাপনা বিষয়ক গবেষণা জার্নাল।"
+      content: "ISSN: 2414-4576। ফসলের রোগ সনাক্তকরণ ও ব্যবস্থাপনা বিষয়ক গবেষণা জার্নাল।",
+      url: "https://bari.gov.bd/site/page/plant-pathology"
     },
   ],
   team: [],
@@ -347,20 +359,43 @@ export default function KnowledgePage() {
             <h2 className="text-base font-semibold text-foreground mb-2">
               {categories.find(c => c.id === activeCategory)?.label} বিষয়ক তথ্য
             </h2>
-            {knowledgeContent[activeCategory]?.map((item, index) => (
-              <div
-                key={index}
-                className="bg-card border border-border rounded-xl p-4 hover:border-primary/30 transition-colors"
-              >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-medium text-foreground mb-2">{item.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{item.content}</p>
+            {knowledgeContent[activeCategory]?.map((item, index) => {
+              const hasUrl = 'url' in item && item.url;
+              const CardWrapper = hasUrl ? 'a' : 'div';
+              const cardProps = hasUrl ? { 
+                href: item.url, 
+                target: '_blank', 
+                rel: 'noopener noreferrer' 
+              } : {};
+              
+              return (
+                <CardWrapper
+                  key={index}
+                  {...cardProps}
+                  className={cn(
+                    "bg-card border border-border rounded-xl p-4 transition-colors block",
+                    hasUrl && "hover:border-primary/50 hover:bg-primary/5 cursor-pointer"
+                  )}
+                >
+                  <div className="flex items-start justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h3 className="font-medium text-foreground">{item.title}</h3>
+                        {hasUrl && <ExternalLink className="w-4 h-4 text-primary flex-shrink-0" />}
+                      </div>
+                      <p className="text-sm text-muted-foreground leading-relaxed">{item.content}</p>
+                      {hasUrl && (
+                        <p className="text-xs text-primary mt-2 flex items-center gap-1">
+                          <BookOpen className="w-3 h-3" />
+                          অনলাইনে পড়ুন →
+                        </p>
+                      )}
+                    </div>
+                    {!hasUrl && <ChevronRight className="w-5 h-5 text-muted-foreground ml-2 flex-shrink-0" />}
                   </div>
-                  <ChevronRight className="w-5 h-5 text-muted-foreground ml-2 flex-shrink-0" />
-                </div>
-              </div>
-            ))}
+                </CardWrapper>
+              );
+            })}
           </section>
         </>
       )}
