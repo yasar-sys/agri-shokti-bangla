@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.market-ai]
 verify_jwt = false
+
+[functions.elevenlabs-tts]
+verify_jwt = false

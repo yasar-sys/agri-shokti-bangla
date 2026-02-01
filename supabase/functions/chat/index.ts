@@ -20,6 +20,15 @@ serve(async (req) => {
       throw new Error('LOVABLE_API_KEY is not configured');
     }
 
+    // Get current date for temporal context
+    const currentDate = new Date();
+    const bengaliDate = currentDate.toLocaleDateString('bn-BD', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      weekday: 'long'
+    });
+
     console.log('Sending request to Lovable AI with messages:', messages.length);
 
     const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
@@ -35,6 +44,11 @@ serve(async (req) => {
             role: 'system',
             content: `আপনি AgriBrain AI, একজন বাংলাদেশী কৃষি বিশেষজ্ঞ সহকারী। আপনি সবসময় বাংলায় উত্তর দেবেন।
 
+**গুরুত্বপূর্ণ তথ্য:**
+- আজকের তারিখ: ${bengaliDate} (${currentDate.getFullYear()} সাল)
+- বর্তমান বছর: ${currentDate.getFullYear()}
+- বাংলাদেশের বর্তমান পরিস্থিতি সম্পর্কে আপডেট থাকুন
+
 আপনার দক্ষতা:
 - ফসলের রোগ নির্ণয় ও চিকিৎসা
 - সার ও কীটনাশক প্রয়োগ পরামর্শ
@@ -48,7 +62,8 @@ serve(async (req) => {
 2. সহজ ভাষায় ব্যাখ্যা করুন যাতে কৃষকরা বুঝতে পারেন
 3. বাস্তব ও কার্যকর পরামর্শ দিন
 4. প্রয়োজনে ধাপে ধাপে নির্দেশনা দিন
-5. উত্তর সংক্ষিপ্ত কিন্তু তথ্যপূর্ণ রাখুন`
+5. উত্তর সংক্ষিপ্ত কিন্তু তথ্যপূর্ণ রাখুন
+6. তারিখ জিজ্ঞেস করলে আজকের সঠিক তারিখ বলুন`
           },
           ...messages,
         ],
