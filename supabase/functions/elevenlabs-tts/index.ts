@@ -39,13 +39,14 @@ serve(async (req) => {
       );
     }
 
-    // Use Roger voice - good for multilingual including Bengali
-    // Valid voice IDs from ElevenLabs
-    const selectedVoice = voiceId || 'CwhRBWXzGAHq8TQ4Fs17'; // Roger
+    // Roger voice - good for multilingual including Bengali
+    const selectedVoice = voiceId || 'CwhRBWXzGAHq8TQ4Fs17';
 
+    // Use mp3_44100_128 for high quality
     const apiUrl = `https://api.elevenlabs.io/v1/text-to-speech/${selectedVoice}?output_format=mp3_44100_128`;
     
-    console.log('Calling ElevenLabs API:', apiUrl);
+    console.log('Calling ElevenLabs API...');
+    console.log('URL:', apiUrl);
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -61,22 +62,29 @@ serve(async (req) => {
           similarity_boost: 0.75,
           style: 0.5,
           use_speaker_boost: true,
-          speed: 0.95, // Slightly slower for Bengali clarity
+          speed: 0.95, // Slightly slower for clarity
         },
       }),
     });
 
     console.log('ElevenLabs Response Status:', response.status);
-    console.log('ElevenLabs Response Headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error('ElevenLabs API Error:', response.status, errorText);
       
       let errorMessage = 'TTS generation failed';
+      let errorCode = 'API_ERROR';
+      
       try {
         const errorJson = JSON.parse(errorText);
         errorMessage = errorJson.detail?.message || errorJson.message || errorText;
+        
+        // Check for quota/billing issues
+        if (errorMessage.includes('Free Tier') || errorMessage.includes('quota') || errorMessage.includes('characters_exceeded')) {
+          errorCode = 'QUOTA_EXCEEDED';
+          errorMessage = 'ElevenLabs free tier quota exceeded. Please upgrade or try again later.';
+        }
       } catch {
         errorMessage = errorText;
       }
@@ -85,7 +93,7 @@ serve(async (req) => {
         JSON.stringify({ 
           error: errorMessage, 
           status: response.status,
-          code: 'API_ERROR'
+          code: errorCode
         }),
         { status: response.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
@@ -102,13 +110,14 @@ serve(async (req) => {
       );
     }
 
-    // Return binary audio directly
+    // Return binary audio directly with proper headers
     return new Response(audioBuffer, {
       status: 200,
       headers: {
         ...corsHeaders,
         'Content-Type': 'audio/mpeg',
         'Content-Length': audioBuffer.byteLength.toString(),
+        'Cache-Control': 'no-cache',
       },
     });
 
