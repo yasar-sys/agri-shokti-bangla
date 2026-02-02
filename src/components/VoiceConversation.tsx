@@ -37,6 +37,7 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
     isSpeaking,
     isLoading: ttsLoading,
     error: ttsError,
+    usingFallback,
   } = useElevenLabsTTS();
 
   // Show TTS errors
@@ -363,7 +364,7 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
               <div className="flex items-center gap-2">
                 <Volume2 className="w-4 h-4 animate-pulse text-green-500" />
                 <span className="text-sm text-muted-foreground">
-                  {ttsLoading ? 'অডিও লোড হচ্ছে...' : 'বলছি...'}
+                  {ttsLoading ? 'অডিও লোড হচ্ছে...' : usingFallback ? 'বলছি (Browser TTS)...' : 'বলছি...'}
                 </span>
               </div>
             </div>
