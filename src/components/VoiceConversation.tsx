@@ -1,9 +1,8 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { Mic, MicOff, Volume2, VolumeX, Loader2, MessageCircle, X, Phone } from 'lucide-react';
+import { Mic, MicOff, Volume2, VolumeX, Loader2, MessageCircle, X, Phone, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useBengaliVoiceInput } from '@/hooks/useBengaliVoiceInput';
 import { useElevenLabsTTS } from '@/hooks/useElevenLabsTTS';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface VoiceConversationProps {
@@ -11,83 +10,131 @@ interface VoiceConversationProps {
   onClose: () => void;
 }
 
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: Date;
+}
+
 export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
   const { toast } = useToast();
   
-  const [conversationHistory, setConversationHistory] = useState<Array<{role: string; content: string}>>([]);
+  const [conversationHistory, setConversationHistory] = useState<Message[]>([]);
   const [currentTranscript, setCurrentTranscript] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
-  const [aiResponse, setAiResponse] = useState('');
   const [status, setStatus] = useState<'idle' | 'listening' | 'processing' | 'speaking'>('idle');
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [conversationHistory, aiResponse]);
+  }, [conversationHistory]);
+
+  // Voice Output (Text-to-Speech)
+  const {
+    speak,
+    stop: stopSpeaking,
+    isSpeaking,
+    isLoading: ttsLoading,
+    error: ttsError,
+  } = useElevenLabsTTS();
+
+  // Show TTS errors
+  useEffect(() => {
+    if (ttsError) {
+      console.error('[Voice] TTS Error:', ttsError);
+      toast({
+        variant: 'destructive',
+        title: 'ভয়েস আউটপুট সমস্যা',
+        description: ttsError,
+      });
+    }
+  }, [ttsError, toast]);
 
   // Process voice input and get AI response
   const processVoiceInput = useCallback(async (userMessage: string) => {
     if (!userMessage.trim()) return;
 
-    console.log('Processing voice input:', userMessage);
+    console.log('[Voice] Processing input:', userMessage);
     setIsProcessing(true);
     setStatus('processing');
-    setAiResponse('');
 
     try {
       // Add user message to history
-      const newHistory = [...conversationHistory, { role: 'user', content: userMessage }];
-      setConversationHistory(newHistory);
+      const userMsg: Message = { 
+        role: 'user', 
+        content: userMessage, 
+        timestamp: new Date() 
+      };
+      setConversationHistory(prev => [...prev, userMsg]);
 
-      console.log('Calling chat function with messages:', newHistory.length);
+      // Build messages for API
+      const allMessages = [...conversationHistory, userMsg];
+      const apiMessages = allMessages.map(m => ({ 
+        role: m.role, 
+        content: m.content 
+      }));
 
-      // Get AI response - using fetch instead of supabase.functions.invoke for better control
-      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
-          'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
-        body: JSON.stringify({ 
-          messages: newHistory.map(m => ({ 
-            role: m.role === 'user' ? 'user' : 'assistant', 
-            content: m.content 
-          })) 
-        }),
-      });
+      console.log('[Voice] Calling chat API with', apiMessages.length, 'messages');
+
+      // Get AI response
+      const response = await fetch(
+        `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/chat`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+            'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          },
+          body: JSON.stringify({ messages: apiMessages }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`Chat request failed: ${response.status}`);
+        const errorText = await response.text();
+        console.error('[Voice] Chat API error:', response.status, errorText);
+        throw new Error(`Chat API failed: ${response.status}`);
       }
 
       const data = await response.json();
-      console.log('AI response received:', data);
+      console.log('[Voice] AI response received');
 
       const aiText = data.response || 'দুঃখিত, উত্তর দিতে পারছি না।';
-      setAiResponse(aiText);
-
+      
       // Add AI response to history
-      setConversationHistory([...newHistory, { role: 'assistant', content: aiText }]);
+      const aiMsg: Message = { 
+        role: 'assistant', 
+        content: aiText, 
+        timestamp: new Date() 
+      };
+      setConversationHistory(prev => [...prev, aiMsg]);
 
       // Speak the response using ElevenLabs
+      console.log('[Voice] Starting TTS for response...');
       setStatus('speaking');
-      await speak(aiText);
+      
+      // Use a shorter version for TTS if text is too long
+      const textToSpeak = aiText.length > 500 
+        ? aiText.substring(0, 500) + '...' 
+        : aiText;
+      
+      await speak(textToSpeak);
+      console.log('[Voice] TTS completed');
 
     } catch (error) {
-      console.error('Voice conversation error:', error);
+      console.error('[Voice] Error:', error);
       toast({
         variant: 'destructive',
         title: 'সমস্যা হয়েছে',
-        description: 'উত্তর পেতে সমস্যা হয়েছে। আবার চেষ্টা করুন।',
+        description: error instanceof Error ? error.message : 'উত্তর পেতে সমস্যা হয়েছে',
       });
     } finally {
       setIsProcessing(false);
       setCurrentTranscript('');
       setStatus('idle');
     }
-  }, [conversationHistory, toast]);
+  }, [conversationHistory, toast, speak]);
 
   // Voice Input (Speech-to-Text)
   const {
@@ -99,12 +146,14 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
     error: sttError,
   } = useBengaliVoiceInput({
     onResult: async (finalTranscript) => {
-      console.log('Final transcript received:', finalTranscript);
-      setCurrentTranscript(finalTranscript);
-      await processVoiceInput(finalTranscript);
+      console.log('[Voice] Final transcript:', finalTranscript);
+      if (finalTranscript.trim()) {
+        setCurrentTranscript(finalTranscript);
+        await processVoiceInput(finalTranscript);
+      }
     },
     onError: (error) => {
-      console.error('STT Error:', error);
+      console.error('[Voice] STT Error:', error);
       toast({
         variant: 'destructive',
         title: 'ভয়েস ইনপুট সমস্যা',
@@ -112,14 +161,6 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
       });
     },
   });
-
-  // Voice Output (Text-to-Speech)
-  const {
-    speak,
-    stop: stopSpeaking,
-    isSpeaking,
-    isLoading: ttsLoading,
-  } = useElevenLabsTTS();
 
   // Update current transcript in real-time
   useEffect(() => {
@@ -134,12 +175,12 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
       setStatus('listening');
     } else if (isProcessing) {
       setStatus('processing');
-    } else if (isSpeaking) {
+    } else if (isSpeaking || ttsLoading) {
       setStatus('speaking');
     } else {
       setStatus('idle');
     }
-  }, [isListening, isProcessing, isSpeaking]);
+  }, [isListening, isProcessing, isSpeaking, ttsLoading]);
 
   // Cleanup on close
   const handleClose = useCallback(() => {
@@ -147,15 +188,30 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
     stopSpeaking();
     setConversationHistory([]);
     setCurrentTranscript('');
-    setAiResponse('');
     onClose();
   }, [stopListening, stopSpeaking, onClose]);
 
   // Handle mic button click
   const handleMicClick = useCallback(() => {
-    if (isProcessing || isSpeaking || ttsLoading) return;
+    if (isProcessing || isSpeaking || ttsLoading) {
+      console.log('[Voice] Cannot start listening - busy');
+      return;
+    }
+    console.log('[Voice] Toggling listening');
     toggleListening();
   }, [isProcessing, isSpeaking, ttsLoading, toggleListening]);
+
+  // Handle suggestion click
+  const handleSuggestionClick = useCallback((suggestion: string) => {
+    console.log('[Voice] Suggestion clicked:', suggestion);
+    processVoiceInput(suggestion);
+  }, [processVoiceInput]);
+
+  // Test TTS function
+  const testTTS = useCallback(async () => {
+    console.log('[Voice] Testing TTS...');
+    await speak('হ্যালো! আমি আপনার কৃষি সহায়ক।');
+  }, [speak]);
 
   if (!isOpen) return null;
 
@@ -175,35 +231,53 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
   const getStatusColor = () => {
     switch (status) {
       case 'listening':
-        return 'text-destructive';
+        return 'text-red-500';
       case 'processing':
-        return 'text-primary';
+        return 'text-blue-500';
       case 'speaking':
-        return 'text-secondary';
+        return 'text-green-500';
       default:
         return 'text-muted-foreground';
     }
   };
 
+  const suggestions = [
+    'ধানের রোগ কী?',
+    'আজকের আবহাওয়া',
+    'সার কখন দেব?',
+    'পোকা দমন',
+  ];
+
   return (
-    <div className="fixed inset-0 z-50 bg-background/95 backdrop-blur-md flex flex-col">
+    <div className="fixed inset-0 z-50 bg-background flex flex-col">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border/50 bg-card/50">
+      <div className="flex items-center justify-between p-4 border-b border-border bg-card">
         <div className="flex items-center gap-3">
           <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
             <Phone className="w-6 h-6 text-primary-foreground" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-foreground">ভয়েস সহায়ক</h2>
-            <p className="text-xs text-muted-foreground">AgriBrain AI</p>
+            <p className="text-xs text-muted-foreground">AgriBrain AI - বাংলায় কথা বলুন</p>
           </div>
         </div>
-        <button
-          onClick={handleClose}
-          className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
-        >
-          <X className="w-5 h-5 text-destructive" />
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Test TTS Button */}
+          <button
+            onClick={testTTS}
+            disabled={isSpeaking || ttsLoading}
+            className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors disabled:opacity-50"
+            title="Test TTS"
+          >
+            <Volume2 className="w-5 h-5 text-primary" />
+          </button>
+          <button
+            onClick={handleClose}
+            className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
+          >
+            <X className="w-5 h-5 text-destructive" />
+          </button>
+        </div>
       </div>
 
       {/* Conversation Area */}
@@ -214,16 +288,18 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
               <MessageCircle className="w-12 h-12 text-primary" />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">স্বাগতম!</h3>
-            <p className="text-muted-foreground text-sm max-w-xs">
-              মাইক বাটনে চাপুন এবং বাংলায় আপনার কৃষি সম্পর্কিত প্রশ্ন করুন। 
-              AI আপনাকে সাহায্য করবে।
+            <p className="text-muted-foreground text-sm max-w-xs mb-6">
+              মাইক বাটনে চাপুন এবং বাংলায় আপনার কৃষি সম্পর্কিত প্রশ্ন করুন।
             </p>
-            <div className="mt-6 flex flex-wrap gap-2 justify-center">
-              {['ধানের রোগ কী?', 'আজকের আবহাওয়া', 'সার কখন দেব?'].map((suggestion) => (
+            
+            {/* Quick Suggestions */}
+            <div className="flex flex-wrap gap-2 justify-center">
+              {suggestions.map((suggestion) => (
                 <button
                   key={suggestion}
-                  onClick={() => processVoiceInput(suggestion)}
-                  className="px-3 py-2 rounded-full bg-primary/10 text-primary text-sm hover:bg-primary/20 transition-colors"
+                  onClick={() => handleSuggestionClick(suggestion)}
+                  disabled={isProcessing || isSpeaking}
+                  className="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
                 >
                   {suggestion}
                 </button>
@@ -245,10 +321,13 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
                     "max-w-[85%] rounded-2xl px-4 py-3 shadow-sm",
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-br-sm'
-                      : 'bg-card border border-border/50 text-foreground rounded-bl-sm'
+                      : 'bg-card border border-border text-foreground rounded-bl-sm'
                   )}
                 >
                   <p className="text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
+                  <p className="text-xs opacity-60 mt-1">
+                    {msg.timestamp.toLocaleTimeString('bn-BD', { hour: '2-digit', minute: '2-digit' })}
+                  </p>
                 </div>
               </div>
             ))}
@@ -268,7 +347,7 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
         {/* Processing Indicator */}
         {status === 'processing' && (
           <div className="flex justify-start">
-            <div className="bg-card border border-border/50 rounded-2xl rounded-bl-sm px-4 py-3">
+            <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
                 <span className="text-sm text-muted-foreground">চিন্তা করছি...</span>
@@ -276,10 +355,24 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
             </div>
           </div>
         )}
+
+        {/* Speaking Indicator */}
+        {status === 'speaking' && (
+          <div className="flex justify-start">
+            <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3">
+              <div className="flex items-center gap-2">
+                <Volume2 className="w-4 h-4 animate-pulse text-green-500" />
+                <span className="text-sm text-muted-foreground">
+                  {ttsLoading ? 'অডিও লোড হচ্ছে...' : 'বলছি...'}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Voice Control Area */}
-      <div className="p-6 bg-gradient-to-t from-card to-transparent">
+      <div className="p-6 bg-card border-t border-border">
         {/* Status Text */}
         <p className={cn("text-center text-sm font-medium mb-4", getStatusColor())}>
           {getStatusText()}
@@ -288,7 +381,7 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
         {/* Voice Controls */}
         <div className="flex items-center justify-center gap-4">
           {/* Stop Speaking Button */}
-          {isSpeaking && (
+          {(isSpeaking || ttsLoading) && (
             <button
               onClick={stopSpeaking}
               className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
@@ -304,13 +397,13 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
             className={cn(
               "w-20 h-20 rounded-full flex items-center justify-center transition-all transform shadow-2xl",
               status === 'listening'
-                ? "bg-gradient-to-br from-destructive to-destructive/80 scale-110 animate-pulse"
-                : "bg-gradient-to-br from-primary to-primary/80 hover:scale-105",
+                ? "bg-red-500 scale-110 animate-pulse"
+                : "bg-primary hover:scale-105",
               "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
           >
             {status === 'listening' ? (
-              <MicOff className="w-8 h-8 text-destructive-foreground" />
+              <MicOff className="w-8 h-8 text-white" />
             ) : status === 'processing' ? (
               <Loader2 className="w-8 h-8 text-primary-foreground animate-spin" />
             ) : (
@@ -318,19 +411,23 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
             )}
           </button>
 
-          {/* Volume/Speaking Indicator */}
-          {isSpeaking && (
+          {/* Refresh/Clear Button */}
+          {conversationHistory.length > 0 && (
             <button
-              className="w-14 h-14 rounded-full bg-secondary flex items-center justify-center shadow-lg animate-pulse"
+              onClick={() => setConversationHistory([])}
+              className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
             >
-              <Volume2 className="w-6 h-6 text-secondary-foreground" />
+              <RefreshCw className="w-6 h-6 text-foreground" />
             </button>
           )}
         </div>
 
-        {/* Error Message */}
+        {/* Error Messages */}
         {sttError && (
           <p className="text-xs text-destructive text-center mt-4">{sttError}</p>
+        )}
+        {ttsError && (
+          <p className="text-xs text-destructive text-center mt-2">TTS: {ttsError}</p>
         )}
 
         {/* Browser Support Warning */}
