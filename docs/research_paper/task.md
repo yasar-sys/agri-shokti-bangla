@@ -1,0 +1,27 @@
+# Task List: Agri-Shokti AI Research Paper
+
+- [x] Analyze Repository and Project Structure <!-- id: 0 -->
+    - [x] List project files and identify key components <!-- id: 1 -->
+    - [x] Read README.md and existing documentation <!-- id: 2 -->
+    - [x] specific code analysis for features (AI, NDVI, Weather, Logic) <!-- id: 3 -->
+- [x] Draft Research Paper Structure <!-- id: 4 -->
+    - [x] Define Title, Abstract, and Keywords <!-- id: 5 -->
+    - [x] Write Introduction and Problem Statement <!-- id: 6 -->
+    - [x] Draft Literature Review (Simulated/General based on domain) <!-- id: 7 -->
+- [x] Develop System Architecture and Methodology <!-- id: 8 -->
+    - [x] Create Architecture Diagram description <!-- id: 9 -->
+    - [x] Detail Methodology (Tech stack, AI models, Data flow) <!-- id: 10 -->
+- [x] Write Implementation and Results <!-- id: 11 -->
+    - [x] Describe Implementation Details (Frontend, Backend, APIs) <!-- id: 12 -->
+    - [x] Formulate Case Study/Experimental Setup <!-- id: 13 -->
+- [x] Finalize Paper <!-- id: 14 -->
+    - [x] Discussion, Limitations, Future Work, Conclusion <!-- id: 15 -->
+    - [x] Review and Format (IEEE/ACM style) <!-- id: 16 -->
+- [x] Enhance for IEEE Submission <!-- id: 17 -->
+    - [x] Delete old PDF <!-- id: 18 -->
+    - [x] Generate Architectural Diagrams (Mermaid) <!-- id: 19 -->
+    - [x] Generate Result Graphs (Python/Matplotlib) <!-- id: 20 -->
+    - [x] Update Paper with Figures and specific IEEE formatting <!-- id: 21 -->
+- [ ] Save to GitHub <!-- id: 22 -->
+    - [ ] Copy artifacts to repo <!-- id: 23 -->
+    - [ ] Commit and Push <!-- id: 24 -->
