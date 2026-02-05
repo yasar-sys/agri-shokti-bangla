@@ -49,10 +49,11 @@ const features = [
   }
 ];
 
-const teamMembers = [
-  { name: "সামিন ইয়াসার", role: "টিম লিড", roleEn: "Team Lead" },
-  { name: "অন্যান্য সদস্যবৃন্দ", role: "ডেভেলপার", roleEn: "Developers" }
-];
+ const teamMembers = [
+   { name: "সামিন ইয়াসার", role: "টিম মেম্বার", roleEn: "Team Member" },
+   { name: "রাহিয়াতুল জান্নাত", role: "টিম মেম্বার", roleEn: "Team Member" },
+   { name: "মাজহারুল ইসলাম আবিদ", role: "টিম মেম্বার", roleEn: "Team Member" }
+ ];
 
 const impactStats = [
   { label: "টার্গেট কৃষক", value: "৩.৫ কোটি+", icon: Users },
@@ -208,7 +209,7 @@ export default function AboutPage() {
         <div className="bg-card/80 backdrop-blur-sm border border-border rounded-xl p-4">
           <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
             <Users className="w-4 h-4 text-secondary" />
-            টিম NEWBIES
+             টিম পরিচিতি
           </h3>
           <div className="space-y-2">
             {teamMembers.map((member, idx) => (
@@ -222,6 +223,9 @@ export default function AboutPage() {
                 </div>
               </div>
             ))}
+             <div className="mt-3 pt-3 border-t border-border/50 text-center">
+               <p className="text-xs text-muted-foreground">ময়মনসিংহ ইঞ্জিনিয়ারিং কলেজ</p>
+             </div>
           </div>
         </div>
       </section>
