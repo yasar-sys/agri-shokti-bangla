@@ -40,7 +40,7 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
-import { useState, useEffect } from "react";
+ import { useState, useEffect, useRef, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
 import { Session } from "@supabase/supabase-js";
@@ -82,6 +82,39 @@ export default function HomePage() {
   const { prices: marketPrices, loading: marketLoading } = useMarketPrices();
   const { trackPageView, trackFeatureUse } = useAnalyticsTracker();
   const { t, language } = useLanguage();
+
+   // Swipe handling for services carousel
+   const touchStartX = useRef<number | null>(null);
+   const touchEndX = useRef<number | null>(null);
+   const minSwipeDistance = 50;
+
+   const handleTouchStart = useCallback((e: React.TouchEvent) => {
+     touchEndX.current = null;
+     touchStartX.current = e.targetTouches[0].clientX;
+   }, []);
+
+   const handleTouchMove = useCallback((e: React.TouchEvent) => {
+     touchEndX.current = e.targetTouches[0].clientX;
+   }, []);
+
+   const handleTouchEnd = useCallback(() => {
+     if (!touchStartX.current || !touchEndX.current) return;
+     
+     const distance = touchStartX.current - touchEndX.current;
+     const isLeftSwipe = distance > minSwipeDistance;
+     const isRightSwipe = distance < -minSwipeDistance;
+     
+     const numPages = Math.ceil(24 / SERVICES_PER_PAGE); // 24 services
+     if (isLeftSwipe) {
+       setCurrentPage((prev) => (prev + 1) % numPages);
+     }
+     if (isRightSwipe) {
+       setCurrentPage((prev) => (prev - 1 + numPages) % numPages);
+     }
+     
+     touchStartX.current = null;
+     touchEndX.current = null;
+   }, []);
 
   // Services array with translation keys
   const services = [
@@ -569,7 +602,12 @@ export default function HomePage() {
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-3">
+         <div 
+           className="grid grid-cols-3 gap-3"
+           onTouchStart={handleTouchStart}
+           onTouchMove={handleTouchMove}
+           onTouchEnd={handleTouchEnd}
+         >
           {currentServices.map((service, index) => (
             <Link
               key={service.to}
