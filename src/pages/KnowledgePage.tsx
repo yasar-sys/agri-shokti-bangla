@@ -230,73 +230,51 @@ export default function KnowledgePage() {
                 <Users className="w-6 h-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-lg font-bold text-primary">TEAM_NEWBIES</h2>
+                 <h2 className="text-lg font-bold text-primary">টিম পরিচিতি</h2>
                 <p className="text-xs text-muted-foreground">agriশক্তি ডেভেলপমেন্ট টিম</p>
               </div>
             </div>
 
-            {/* Team Lead */}
-            <div className="bg-card/50 rounded-xl p-4 mb-3 border border-primary/30">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center">
-                  <span className="text-primary font-bold">SY</span>
-                </div>
-                <div>
-                  <p className="text-sm text-muted-foreground">টিম লিড</p>
-                  <h3 className="font-semibold text-foreground">Samin Yasar</h3>
-                  <span className="text-xs text-muted-foreground">Mymensingh Engineering College</span>
-                </div>
-              </div>
-            </div>
-
             {/* Members */}
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">টিম মেম্বার</h4>
+             <h4 className="text-sm font-medium text-muted-foreground mb-2">সদস্যবৃন্দ</h4>
             <div className="space-y-2">
               <div className="bg-card/50 rounded-xl p-3 border border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
-                    <span className="text-secondary text-xs font-bold">RJ</span>
+                     <span className="text-secondary text-xs font-bold">SY</span>
                   </div>
                   <div>
-                    <span className="font-medium text-foreground block">Rahiatul Jannat</span>
-                    <span className="text-xs text-muted-foreground">Mymensingh Engineering College</span>
+                     <span className="font-medium text-foreground block">সামিন ইয়াসার</span>
+                     <span className="text-xs text-muted-foreground">টিম মেম্বার</span>
                   </div>
                 </div>
               </div>
               <div className="bg-card/50 rounded-xl p-3 border border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
-                    <span className="text-secondary text-xs font-bold">MO</span>
+                     <span className="text-secondary text-xs font-bold">RJ</span>
                   </div>
                   <div>
-                    <span className="font-medium text-foreground block">Maisha Osman Umama</span>
-                    <span className="text-xs text-muted-foreground">Mymensingh Engineering College</span>
+                     <span className="font-medium text-foreground block">রাহিয়াতুল জান্নাত</span>
+                     <span className="text-xs text-muted-foreground">টিম মেম্বার</span>
                   </div>
                 </div>
               </div>
               <div className="bg-card/50 rounded-xl p-3 border border-border">
                 <div className="flex items-center gap-3">
                   <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
-                    <span className="text-secondary text-xs font-bold">MN</span>
+                     <span className="text-secondary text-xs font-bold">MA</span>
                   </div>
                   <div>
-                    <span className="font-medium text-foreground block">Mahmud Niloy</span>
-                    <span className="text-xs text-muted-foreground">Mymensingh Engineering College</span>
-                  </div>
-                </div>
-              </div>
-              <div className="bg-card/50 rounded-xl p-3 border border-border">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-secondary/20 flex items-center justify-center">
-                    <span className="text-secondary text-xs font-bold">NS</span>
-                  </div>
-                  <div>
-                    <span className="font-medium text-foreground block">Neshat Sultana Keya</span>
-                    <span className="text-xs text-muted-foreground">Gazipur Agricultural University</span>
+                     <span className="font-medium text-foreground block">মাজহারুল ইসলাম আবিদ</span>
+                     <span className="text-xs text-muted-foreground">টিম মেম্বার</span>
                   </div>
                 </div>
               </div>
             </div>
+             <div className="mt-3 pt-3 border-t border-border/50 text-center">
+               <p className="text-xs text-muted-foreground">ময়মনসিংহ ইঞ্জিনিয়ারিং কলেজ</p>
+             </div>
           </div>
 
           {/* Project Info */}
