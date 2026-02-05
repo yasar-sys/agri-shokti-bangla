@@ -308,6 +308,7 @@ const translations: Record<Language, Record<string, string>> = {
     activeDays: "সক্রিয় দিন",
     scanHistory: "স্ক্যান ইতিহাস",
     myCalendar: "আমার ক্যালেন্ডার",
+     myCalendarDesc: "আপনার ক্যালেন্ডার দেখুন",
     newFarmer: "নতুন কৃষক",
     farmer: "কৃষক",
 
@@ -689,6 +690,7 @@ const translations: Record<Language, Record<string, string>> = {
     activeDays: "Active Days",
     scanHistory: "Scan History",
     myCalendar: "My Calendar",
+     myCalendarDesc: "View your calendar",
     newFarmer: "New Farmer",
     farmer: "Farmer",
 
