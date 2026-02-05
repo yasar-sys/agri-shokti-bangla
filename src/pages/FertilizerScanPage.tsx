@@ -50,7 +50,8 @@ export default function FertilizerScanPage() {
   const [progress, setProgress] = useState(0);
   const [statusText, setStatusText] = useState("");
   const [tokenUsage, setTokenUsage] = useState<{promptTokens: number; completionTokens: number; totalTokens: number; model: string} | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const galleryInputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -149,8 +150,11 @@ export default function FertilizerScanPage() {
     setProgress(0);
     setStatusText("");
     setTokenUsage(null);
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+    if (cameraInputRef.current) {
+      cameraInputRef.current.value = '';
+    }
+    if (galleryInputRef.current) {
+      galleryInputRef.current.value = '';
     }
   };
 
@@ -231,10 +235,7 @@ export default function FertilizerScanPage() {
       {/* Scan Area - Camera Style like Disease Detection */}
       <section className="px-4 mb-4">
         {!imagePreview ? (
-          <div 
-            className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-card/80 to-card/60 border border-border backdrop-blur-sm cursor-pointer group"
-            onClick={() => fileInputRef.current?.click()}
-          >
+          <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-card/80 to-card/60 border border-border backdrop-blur-sm">
             {/* Scan Frame */}
             <div className="aspect-[4/3] relative flex items-center justify-center p-8">
               {/* Corner brackets */}
@@ -245,7 +246,7 @@ export default function FertilizerScanPage() {
               
               {/* Center content */}
               <div className="text-center">
-                <div className="w-20 h-20 bg-gradient-to-br from-secondary/30 to-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+                <div className="w-20 h-20 bg-gradient-to-br from-secondary/30 to-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
                   <Camera className="w-10 h-10 text-secondary" />
                 </div>
                 <h3 className="font-bold text-foreground text-lg mb-2">সারের প্যাকেট স্ক্যান করুন</h3>
@@ -257,22 +258,38 @@ export default function FertilizerScanPage() {
 
             {/* Action buttons */}
             <div className="p-4 border-t border-border/50 flex gap-3">
-              <button className="flex-1 py-3 bg-gradient-to-r from-secondary to-emerald-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+              <button 
+                onClick={() => cameraInputRef.current?.click()}
+                className="flex-1 py-3 bg-gradient-to-r from-secondary to-emerald-500 text-white rounded-xl font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity"
+              >
                 <Camera className="w-5 h-5" />
                 ছবি তুলুন
               </button>
-              <button className="flex-1 py-3 bg-muted text-foreground rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-muted/80 transition-colors">
+              <button 
+                onClick={() => galleryInputRef.current?.click()}
+                className="flex-1 py-3 bg-muted text-foreground rounded-xl font-semibold flex items-center justify-center gap-2 hover:bg-muted/80 transition-colors"
+              >
                 <Upload className="w-5 h-5" />
                 গ্যালারি
               </button>
             </div>
             
+            {/* Camera input - with capture attribute */}
             <input
               type="file"
-              ref={fileInputRef}
+              ref={cameraInputRef}
               className="hidden"
               accept="image/*"
               capture="environment"
+              onChange={handleFileSelect}
+            />
+            
+            {/* Gallery input - without capture attribute */}
+            <input
+              type="file"
+              ref={galleryInputRef}
+              className="hidden"
+              accept="image/*"
               onChange={handleFileSelect}
             />
           </div>
