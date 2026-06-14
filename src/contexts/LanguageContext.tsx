@@ -788,6 +788,22 @@ const translations: Record<Language, Record<string, string>> = {
     takeCropPhotoAI: "Take crop photo, AI will analyze",
     todayTipText: "60% chance of rain. Irrigate in the morning, don't spray pesticides in the afternoon. Best time for rice seedling transplantation.",
     agricultureQuote: "\"Agriculture is the foundation of civilization, and farmers are the backbone of the nation.\" — Bangabandhu Sheikh Mujibur Rahman",
+
+    // Notification Center
+    notificationCenter: "Notification Center",
+    noNotifications: "No notifications",
+    noNotificationsDesc: "You have no new notifications right now",
+    markAllRead: "Mark all as read",
+    clearAll: "Clear all",
+    newNotification: "New",
+    weatherAlertLabel: "Weather Alert",
+    marketUpdateLabel: "Market Update",
+    farmingTipLabel: "Farming Tip",
+    reminderLabel: "Reminder",
+    timeNow: "just now",
+    timeMinAgo: "min ago",
+    timeHourAgo: "hr ago",
+    timeDayAgo: "day ago",
   },
   ctg: {
     // Chittagongian dialect
