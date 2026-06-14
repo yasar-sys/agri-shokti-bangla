@@ -65,22 +65,23 @@ export function useNotifications() {
       });
     });
 
-    // Smart market movement alerts
-    (prices || []).forEach((p: any) => {
-      const trend = p.trend || p.price_trend;
-      if (trend === "up" || trend === "down") {
+    // Smart market movement alerts (notable price changes vs yesterday)
+    (prices || []).forEach((p) => {
+      if (!p.yesterday_price || !p.today_price) return;
+      const diff = p.today_price - p.yesterday_price;
+      const pct = (diff / p.yesterday_price) * 100;
+      if (Math.abs(pct) >= 3) {
+        const up = diff > 0;
         items.push({
-          id: `market-${p.id}`,
+          id: `market-${p.id}-${p.updated_at}`,
           type: "market",
-          title: `${p.crop_name || p.name || ""} ${trend === "up" ? "↑" : "↓"}`,
-          message:
-            trend === "up"
-              ? `${p.crop_name || p.name || ""}: ${p.price ?? p.current_price ?? ""} ${p.unit || ""}`
-              : `${p.crop_name || p.name || ""}: ${p.price ?? p.current_price ?? ""} ${p.unit || ""}`,
-          createdAt: p.updated_at || p.created_at || new Date().toISOString(),
+          title: `${p.crop_emoji || ""} ${p.crop_name} ${up ? "↑" : "↓"} ${Math.abs(pct).toFixed(0)}%`,
+          message: `${p.today_price} ${p.unit || ""} (${up ? "+" : ""}${diff.toFixed(0)})`,
+          createdAt: p.updated_at || new Date().toISOString(),
         });
       }
     });
+
 
     // Daily farming tips
     (tips || []).slice(0, 3).forEach((tip) => {
