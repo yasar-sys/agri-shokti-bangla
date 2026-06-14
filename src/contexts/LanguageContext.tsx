@@ -390,6 +390,22 @@ const translations: Record<Language, Record<string, string>> = {
     takeCropPhotoAI: "ফসলের ছবি তুলুন, AI বিশ্লেষণ করবে",
     todayTipText: "বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দিন, বিকেলে কীটনাশক স্প্রে করবেন না। ধানের চারা রোপণের সেরা সময়।",
     agricultureQuote: "\"কৃষি হলো সভ্যতার ভিত্তি, আর কৃষক হলেন জাতির মেরুদণ্ড।\" — বঙ্গবন্ধু শেখ মুজিবুর রহমান",
+
+    // Notification Center
+    notificationCenter: "নোটিফিকেশন কেন্দ্র",
+    noNotifications: "কোনো নোটিফিকেশন নেই",
+    noNotificationsDesc: "এই মুহূর্তে আপনার কোনো নতুন নোটিফিকেশন নেই",
+    markAllRead: "সব পড়া হিসেবে চিহ্নিত করুন",
+    clearAll: "সব মুছুন",
+    newNotification: "নতুন",
+    weatherAlertLabel: "আবহাওয়া সতর্কতা",
+    marketUpdateLabel: "বাজার আপডেট",
+    farmingTipLabel: "কৃষি টিপস",
+    reminderLabel: "অনুস্মারক",
+    timeNow: "এইমাত্র",
+    timeMinAgo: "মিনিট আগে",
+    timeHourAgo: "ঘণ্টা আগে",
+    timeDayAgo: "দিন আগে",
   },
   en: {
     // Common
