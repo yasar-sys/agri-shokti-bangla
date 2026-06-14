@@ -48,6 +48,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import agriBrainLogo from "@/assets/agri-brain-logo.png";
+import { NotificationCenter } from "@/components/ui/NotificationCenter";
 import farmerAvatar from "@/assets/farmer-avatar.png";
 import { useLocation } from "@/hooks/useLocation";
 import { useWeather } from "@/hooks/useWeather";
@@ -432,6 +433,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
+                <NotificationCenter />
                 {weather.loading ? (
                   <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
                 ) : (
