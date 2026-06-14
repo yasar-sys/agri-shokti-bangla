@@ -24,6 +24,7 @@ const languageOptions: { code: Language; label: string; flag: string }[] = [
   { code: "en", label: "English", flag: "🇺🇸" },
   { code: "ctg", label: "চাঁটগাঁইয়া", flag: "🏔️" },
   { code: "noakhali", label: "নোয়াখাইল্লা", flag: "🌊" },
+  { code: "hi", label: "हिन्दी", flag: "🇮🇳" },
 ];
 
 export default function SettingsPage() {
