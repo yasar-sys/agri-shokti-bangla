@@ -1972,7 +1972,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     localStorage.setItem("app-language", language);
     // Update document lang attribute for accessibility
-    document.documentElement.lang = language === "en" ? "en" : "bn";
+    document.documentElement.lang = language === "en" ? "en" : language === "hi" ? "hi" : "bn";
   }, [language]);
 
   const setLanguage = (lang: Language) => {
