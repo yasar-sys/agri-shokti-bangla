@@ -1,8 +1,9 @@
-import { GraduationCap, BookOpen, Sprout, Bug, Droplets, Sun, ChevronRight, ArrowLeft, Users, School, Database, ExternalLink } from "lucide-react";
+import { GraduationCap, BookOpen, Sprout, Bug, Droplets, Sun, ChevronRight, ArrowLeft, Users, School, Database, ExternalLink, Trophy } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import awardImage from "@/assets/award-2026.jpg.asset.json";
 
 const categories = [
   { id: "crops", icon: Sprout, label: "ফসল চাষ", color: "text-secondary" },
@@ -222,9 +223,42 @@ export default function KnowledgePage() {
 
       {/* Team Section */}
       {activeCategory === "team" && (
-        <section className="px-4 space-y-4">
+        <section className="px-4 space-y-4 max-w-3xl mx-auto w-full">
+          {/* Achievement Card */}
+          <div className="bg-gradient-to-br from-secondary/20 to-primary/20 border border-secondary/40 rounded-2xl p-4 sm:p-6">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-full bg-secondary/30 flex items-center justify-center flex-shrink-0">
+                <Trophy className="w-6 h-6 text-secondary" />
+              </div>
+              <div>
+                <h2 className="text-lg sm:text-xl font-bold text-secondary">আমাদের অর্জন</h2>
+                <p className="text-xs sm:text-sm text-muted-foreground">National Youth Idea Contest 2026</p>
+              </div>
+            </div>
+
+            <div className="rounded-xl overflow-hidden border border-border mb-4">
+              <img
+                src={awardImage.url}
+                alt="National Youth Idea Contest 2026 - ২য় স্থান, প্রজেক্ট শোকেসিং"
+                className="w-full h-auto object-cover"
+                loading="lazy"
+              />
+            </div>
+
+            <div className="bg-card/60 rounded-xl p-4 border border-border space-y-2">
+              <div className="flex items-center gap-2">
+                <Trophy className="w-5 h-5 text-secondary flex-shrink-0" />
+                <h3 className="font-bold text-foreground text-base sm:text-lg">২য় স্থান অর্জন 🏆</h3>
+              </div>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <span className="font-medium text-foreground">National Youth Idea Contest 2026</span>-এর প্রজেক্ট শোকেসিং (Project Presentation) ক্যাটাগরিতে আমাদের টিম agriশক্তি ২য় স্থান অর্জন করেছে।
+              </p>
+            </div>
+          </div>
+
           {/* Team Card */}
-          <div className="bg-gradient-to-br from-primary/20 to-secondary/20 border border-border rounded-2xl p-6">
+          <div className="bg-gradient-to-br from-primary/20 to-secondary/20 border border-border rounded-2xl p-4 sm:p-6">
+
             <div className="flex items-center gap-3 mb-4">
               <div className="w-12 h-12 rounded-full bg-primary/30 flex items-center justify-center">
                 <Users className="w-6 h-6 text-primary" />
