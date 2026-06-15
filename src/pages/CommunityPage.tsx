@@ -4,6 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useCommunityPosts } from "@/hooks/useCommunityPosts";
+import { CommentSection } from "@/components/community/CommentSection";
 import { SEOHead, createFAQSchema } from "@/components/seo/SEOHead";
 import { formatDistanceToNow } from "date-fns";
 import { bn } from "date-fns/locale";
@@ -29,10 +30,11 @@ const getCropEmoji = (cropType: string | null) => {
 };
 
 export default function CommunityPage() {
-  const { posts, topContributors, loading, toggleLike, isPostLiked, createPost } = useCommunityPosts();
+  const { posts, topContributors, loading, toggleLike, isPostLiked, createPost, fetchComments, addComment } = useCommunityPosts();
   const [newPostContent, setNewPostContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const [showPostForm, setShowPostForm] = useState(false);
+  const [openComments, setOpenComments] = useState<string | null>(null);
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
@@ -275,7 +277,13 @@ export default function CommunityPage() {
                   )} />
                   <span className="font-medium">{post.likes_count || 0}</span>
                 </button>
-                <button className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors">
+                <button
+                  onClick={() => setOpenComments(openComments === post.id ? null : post.id)}
+                  className={cn(
+                    "flex items-center gap-1.5 text-sm transition-colors",
+                    openComments === post.id ? "text-secondary" : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
                   <MessageCircle className="w-5 h-5" />
                   <span>{post.comments_count || 0}</span>
                 </button>
@@ -284,6 +292,15 @@ export default function CommunityPage() {
                   <span>শেয়ার</span>
                 </button>
               </div>
+
+              {/* Comments */}
+              {openComments === post.id && (
+                <CommentSection
+                  postId={post.id}
+                  fetchComments={fetchComments}
+                  addComment={addComment}
+                />
+              )}
             </article>
           ))}
         </section>
