@@ -4,6 +4,7 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useCommunityPosts } from "@/hooks/useCommunityPosts";
+import { CommentSection } from "@/components/community/CommentSection";
 import { SEOHead, createFAQSchema } from "@/components/seo/SEOHead";
 import { formatDistanceToNow } from "date-fns";
 import { bn } from "date-fns/locale";
