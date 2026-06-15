@@ -1,4 +1,4 @@
-import { GraduationCap, BookOpen, Sprout, Bug, Droplets, Sun, ChevronRight, ArrowLeft, Users, School, Database, ExternalLink } from "lucide-react";
+import { GraduationCap, BookOpen, Sprout, Bug, Droplets, Sun, ChevronRight, ArrowLeft, Users, School, Database, ExternalLink, Trophy } from "lucide-react";
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
