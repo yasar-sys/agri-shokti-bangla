@@ -62,6 +62,11 @@ export function useCommunityPosts() {
           fetchUserLikes();
         }
       )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'post_comments' },
+        () => fetchPosts()
+      )
       .subscribe();
 
     return () => {
