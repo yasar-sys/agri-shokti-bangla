@@ -25,6 +25,16 @@ interface TopContributor {
   avatar: string;
 }
 
+export interface PostComment {
+  id: string;
+  post_id: string;
+  user_id: string | null;
+  author_name: string;
+  content: string;
+  is_expert_reply: boolean | null;
+  created_at: string;
+}
+
 export function useCommunityPosts() {
   const [posts, setPosts] = useState<CommunityPost[]>([]);
   const [topContributors, setTopContributors] = useState<TopContributor[]>([]);
