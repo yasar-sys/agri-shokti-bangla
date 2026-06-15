@@ -206,6 +206,61 @@ export function useCommunityPosts() {
 
   const isPostLiked = (postId: string) => userLikes.includes(postId);
 
+  const fetchComments = async (postId: string): Promise<PostComment[]> => {
+    try {
+      const { data, error } = await supabase
+        .from('post_comments')
+        .select('*')
+        .eq('post_id', postId)
+        .order('created_at', { ascending: true });
+
+      if (error) throw error;
+      return (data || []) as PostComment[];
+    } catch (err) {
+      console.error('Error fetching comments:', err);
+      return [];
+    }
+  };
+
+  const addComment = async (postId: string, content: string): Promise<PostComment | null> => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast.error('মন্তব্য করতে লগইন করুন');
+        return null;
+      }
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('full_name')
+        .eq('user_id', user.id)
+        .single();
+
+      const authorName = profile?.full_name || user.email?.split('@')[0] || 'কৃষক';
+
+      const { data, error } = await supabase
+        .from('post_comments')
+        .insert({ post_id: postId, user_id: user.id, author_name: authorName, content })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      // Keep comments_count in sync (no DB trigger present)
+      const current = posts.find(p => p.id === postId)?.comments_count || 0;
+      await supabase
+        .from('community_posts')
+        .update({ comments_count: current + 1 })
+        .eq('id', postId);
+
+      return data as PostComment;
+    } catch (err) {
+      console.error('Error adding comment:', err);
+      toast.error('মন্তব্য করতে সমস্যা হয়েছে');
+      return null;
+    }
+  };
+
   return {
     posts,
     topContributors,
@@ -213,6 +268,8 @@ export function useCommunityPosts() {
     toggleLike,
     createPost,
     isPostLiked,
+    fetchComments,
+    addComment,
     refetch: fetchPosts
   };
 }
