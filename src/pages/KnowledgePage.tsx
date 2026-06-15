@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
+import awardImage from "@/assets/award-2026.jpg.asset.json";
 
 const categories = [
   { id: "crops", icon: Sprout, label: "ফসল চাষ", color: "text-secondary" },
