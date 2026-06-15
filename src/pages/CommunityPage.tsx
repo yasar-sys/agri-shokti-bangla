@@ -29,10 +29,11 @@ const getCropEmoji = (cropType: string | null) => {
 };
 
 export default function CommunityPage() {
-  const { posts, topContributors, loading, toggleLike, isPostLiked, createPost } = useCommunityPosts();
+  const { posts, topContributors, loading, toggleLike, isPostLiked, createPost, fetchComments, addComment } = useCommunityPosts();
   const [newPostContent, setNewPostContent] = useState('');
   const [isPosting, setIsPosting] = useState(false);
   const [showPostForm, setShowPostForm] = useState(false);
+  const [openComments, setOpenComments] = useState<string | null>(null);
 
   const handleCreatePost = async () => {
     if (!newPostContent.trim()) return;
