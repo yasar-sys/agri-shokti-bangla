@@ -1,11 +1,10 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req) => {
+Deno.serve(async (req) => {
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -25,9 +24,18 @@ serve(async (req) => {
       (p.emoji && query.includes(p.emoji))
     );
 
+    // Current date/time in Bangladesh timezone (Asia/Dhaka, UTC+6)
+    const nowBD = new Date(Date.now() + 6 * 60 * 60 * 1000);
+    const bnDate = nowBD.toLocaleDateString('bn-BD', {
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', timeZone: 'UTC',
+    });
+    const isoDate = nowBD.toISOString().slice(0, 10);
+
     const systemPrompt = `আপনি AgriBrain বাজার বিশ্লেষক AI। আপনি বাংলাদেশের কৃষি পণ্যের বাজার দর বিশ্লেষণ করেন।
 
-বর্তমান বাজার দর:
+আজকের তারিখ: ${bnDate} (${isoDate})। তারিখ সম্পর্কে জিজ্ঞাসা করলে সবসময় এই আজকের তারিখটি ব্যবহার করুন, কখনো পুরনো বা ভুল তারিখ দেবেন না।
+
+বর্তমান বাজার দর (পণ্যের মধ্যে শস্য, সবজি, মাছ, মুরগি, হাঁস, ডিম, গবাদি পশু ও দুধ অন্তর্ভুক্ত):
 ${priceContext}
 
 নির্দেশনা:
