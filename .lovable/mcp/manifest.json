@@ -1,0 +1,98 @@
+{
+  "version": 1,
+  "sdk_version": "0.24.0",
+  "path": "/functions/v1/mcp",
+  "auth": {
+    "type": "none"
+  },
+  "mcp": {
+    "server": {
+      "name": "agrishokti-mcp",
+      "version": "0.1.0",
+      "title": "agriশক্তি MCP"
+    },
+    "tools": [
+      {
+        "name": "about_app",
+        "title": "About agriশক্তি",
+        "description": "Returns a short description of the agriশক্তি (Agri Shokti) app — a Bangla-first AI agriculture assistant for Bangladeshi farmers.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_weather",
+        "title": "Get weather forecast",
+        "description": "Get current weather and short-term forecast for a location in Bangladesh (or anywhere) using Open-Meteo. Provide latitude and longitude.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "latitude": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90,
+              "description": "Latitude in decimal degrees."
+            },
+            "longitude": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180,
+              "description": "Longitude in decimal degrees."
+            }
+          },
+          "required": [
+            "latitude",
+            "longitude"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_farming_tip",
+        "title": "Get farming tip",
+        "description": "Return a short Bangla farming tip for a given crop category. Categories: rice, wheat, jute, vegetable.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "crop": {
+              "type": "string",
+              "enum": [
+                "rice",
+                "wheat",
+                "jute",
+                "vegetable"
+              ],
+              "description": "Crop category to get a tip for."
+            }
+          },
+          "required": [
+            "crop"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}
