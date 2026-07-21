@@ -8,7 +8,7 @@
   "mcp": {
     "server": {
       "name": "agrishokti-mcp",
-      "version": "0.1.0",
+      "version": "0.2.0",
       "title": "agriশক্তি MCP"
     },
     "tools": [
@@ -87,6 +87,48 @@
           },
           "required": [
             "crop"
+          ],
+          "additionalProperties": false,
+          "$schema": "http://json-schema.org/draft-07/schema#"
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_market_prices",
+        "title": "Get market prices",
+        "description": "Fetch today's fresh bazaar prices for crops, vegetables, fish, poultry, and livestock in Bangladesh — including yesterday's price and day-over-day change. Optional filter by crop name (Bangla or English substring).",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": true
+        },
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "crop": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Optional crop/item name filter (substring match, e.g. 'ধান', 'rice', 'ইলিশ'). Pass null for all items."
+            },
+            "limit": {
+              "anyOf": [
+                {
+                  "type": "integer",
+                  "minimum": 1,
+                  "maximum": 100
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Max rows to return (default 50). Pass null for default."
+            }
+          },
+          "required": [
+            "crop",
+            "limit"
           ],
           "additionalProperties": false,
           "$schema": "http://json-schema.org/draft-07/schema#"
