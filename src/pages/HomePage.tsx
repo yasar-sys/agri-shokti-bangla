@@ -36,7 +36,8 @@ import {
   Shield,
   BarChart3,
   ArrowLeftRight,
-  Video
+  Video,
+  Sprout
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -143,6 +144,7 @@ export default function HomePage() {
     { icon: MapPin, labelKey: "landCalculator", to: "/land-calculator", gradient: "from-emerald-500/20 to-green-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", descKey: "landDesc" },
     { icon: BarChart3, labelKey: "impactAnalytics", to: "/impact", gradient: "from-gradient-start/20 to-gradient-end/20", iconColor: "text-secondary", borderColor: "border-secondary/30", descKey: "impactDesc" },
     { icon: ArrowLeftRight, labelKey: "cropBarter", to: "/barter", gradient: "from-yellow-500/20 to-orange-500/20", iconColor: "text-yellow-400", borderColor: "border-yellow-500/30", descKey: "barterDesc" },
+    { icon: Sprout, labelKey: "yieldMax", to: "/yieldmax", gradient: "from-green-500/20 to-lime-500/20", iconColor: "text-green-400", borderColor: "border-green-500/30", descKey: "yieldMaxDesc" },
   ];
 
   const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
