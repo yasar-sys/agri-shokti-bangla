@@ -97,8 +97,8 @@ export default function YieldPredictionPage() {
   const [history, setHistory] = useState<HistoryRow[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
 
-  const { location } = useLocation();
-  const { weather } = useWeather(location?.latitude, location?.longitude);
+  const location = useLocation();
+  const weather = useWeather(location.latitude, location.longitude);
   const { speak, stop, isSpeaking, isLoading: ttsLoading } = useElevenLabsTTS();
 
   useEffect(() => {
@@ -118,8 +118,8 @@ export default function YieldPredictionPage() {
       .then(({ data }: any) => setHistory(data || []));
   }, [userId]);
 
-  const rainfallMm = (weather as any)?.rainfall ?? 800;
-  const avgTempC = weather?.temperature ?? 28;
+  const rainfallMm = 800;
+  const avgTempC = weather?.temp ?? 28;
   const humidity = weather?.humidity ?? 70;
 
   const runPrediction = async () => {
@@ -128,8 +128,8 @@ export default function YieldPredictionPage() {
       const common = {
         crop,
         areaHectares: area,
-        latitude: location?.latitude,
-        longitude: location?.longitude,
+        latitude: location.latitude,
+        longitude: location.longitude,
         rainfallMm,
         avgTempC,
         humidity,
@@ -157,8 +157,8 @@ export default function YieldPredictionPage() {
       user_id: userId,
       crop_name: crop,
       field_name: fieldName || null,
-      latitude: location?.latitude ?? null,
-      longitude: location?.longitude ?? null,
+      latitude: location.latitude ?? null,
+      longitude: location.longitude ?? null,
       area_hectares: area,
       estimated_yield_min: result.min,
       estimated_yield_max: result.max,
