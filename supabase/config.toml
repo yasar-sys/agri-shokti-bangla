@@ -47,3 +47,6 @@ verify_jwt = false
 
 [functions.elevenlabs-tts]
 verify_jwt = false
+
+[functions.predict-yield]
+verify_jwt = false
