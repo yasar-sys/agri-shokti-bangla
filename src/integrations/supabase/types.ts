@@ -1337,6 +1337,69 @@ export type Database = {
         }
         Relationships: []
       }
+      yield_predictions: {
+        Row: {
+          area_hectares: number | null
+          confidence: number
+          created_at: string
+          crop_name: string
+          estimated_yield_avg: number
+          estimated_yield_max: number
+          estimated_yield_min: number
+          field_name: string | null
+          id: string
+          latitude: number | null
+          longitude: number | null
+          reasoning_bn: string | null
+          scenario_inputs: Json | null
+          scenario_label: string | null
+          signals: Json | null
+          updated_at: string
+          user_id: string
+          yield_unit: string
+        }
+        Insert: {
+          area_hectares?: number | null
+          confidence?: number
+          created_at?: string
+          crop_name: string
+          estimated_yield_avg: number
+          estimated_yield_max: number
+          estimated_yield_min: number
+          field_name?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          reasoning_bn?: string | null
+          scenario_inputs?: Json | null
+          scenario_label?: string | null
+          signals?: Json | null
+          updated_at?: string
+          user_id: string
+          yield_unit?: string
+        }
+        Update: {
+          area_hectares?: number | null
+          confidence?: number
+          created_at?: string
+          crop_name?: string
+          estimated_yield_avg?: number
+          estimated_yield_max?: number
+          estimated_yield_min?: number
+          field_name?: string | null
+          id?: string
+          latitude?: number | null
+          longitude?: number | null
+          reasoning_bn?: string | null
+          scenario_inputs?: Json | null
+          scenario_label?: string | null
+          signals?: Json | null
+          updated_at?: string
+          user_id?: string
+          yield_unit?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
