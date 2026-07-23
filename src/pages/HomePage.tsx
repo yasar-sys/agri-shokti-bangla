@@ -37,7 +37,8 @@ import {
   BarChart3,
   ArrowLeftRight,
   Video,
-  Sprout
+  Sprout,
+  Droplets
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
@@ -145,6 +146,7 @@ export default function HomePage() {
     { icon: BarChart3, labelKey: "impactAnalytics", to: "/impact", gradient: "from-gradient-start/20 to-gradient-end/20", iconColor: "text-secondary", borderColor: "border-secondary/30", descKey: "impactDesc" },
     { icon: ArrowLeftRight, labelKey: "cropBarter", to: "/barter", gradient: "from-yellow-500/20 to-orange-500/20", iconColor: "text-yellow-400", borderColor: "border-yellow-500/30", descKey: "barterDesc" },
     { icon: Sprout, labelKey: "yieldMax", to: "/yieldmax", gradient: "from-green-500/20 to-lime-500/20", iconColor: "text-green-400", borderColor: "border-green-500/30", descKey: "yieldMaxDesc" },
+    { icon: Droplets, labelKey: "precisionFarm", to: "/precision-farm", gradient: "from-blue-500/20 to-cyan-500/20", iconColor: "text-blue-400", borderColor: "border-blue-500/30", descKey: "precisionFarmDesc" },
   ];
 
   const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
