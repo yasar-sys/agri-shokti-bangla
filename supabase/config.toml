@@ -50,3 +50,9 @@ verify_jwt = false
 
 [functions.predict-yield]
 verify_jwt = false
+
+[functions.irrigation-forecast]
+verify_jwt = false
+
+[functions.vrf-map]
+verify_jwt = false
