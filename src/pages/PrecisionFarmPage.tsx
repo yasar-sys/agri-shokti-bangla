@@ -19,7 +19,7 @@ const CROP_BN: Record<string, string> = {
 
 export default function PrecisionFarmPage() {
   const nav = useNavigate();
-  const { location } = useLocation();
+  const location = useLocation();
   const { speak, isLoading: ttsLoading } = useElevenLabsTTS();
 
   // Irrigation state

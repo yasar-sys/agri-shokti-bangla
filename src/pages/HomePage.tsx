@@ -37,7 +37,8 @@ import {
   BarChart3,
   ArrowLeftRight,
   Video,
-  Sprout
+  Sprout,
+  Droplets
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
