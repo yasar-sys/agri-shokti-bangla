@@ -131,7 +131,7 @@ export default function PrecisionFarmPage() {
               <Card className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm text-foreground flex-1">{irr.summary_bn}</p>
-                  <Button size="icon" variant="ghost" onClick={() => speak(irr.summary_bn, 'bn')} disabled={ttsLoading}>
+                  <Button size="icon" variant="ghost" onClick={() => speak(irr.summary_bn)} disabled={ttsLoading}>
                     <Volume2 className="w-4 h-4" />
                   </Button>
                 </div>
@@ -192,7 +192,7 @@ export default function PrecisionFarmPage() {
               <Card className="p-4 space-y-3">
                 <div className="flex items-start justify-between gap-2">
                   <p className="text-sm text-foreground flex-1">{vrf.summary_bn}</p>
-                  <Button size="icon" variant="ghost" onClick={() => speak(vrf.summary_bn, 'bn')} disabled={ttsLoading}>
+                  <Button size="icon" variant="ghost" onClick={() => speak(vrf.summary_bn)} disabled={ttsLoading}>
                     <Volume2 className="w-4 h-4" />
                   </Button>
                 </div>
