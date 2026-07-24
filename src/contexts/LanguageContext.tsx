@@ -406,6 +406,10 @@ const translations: Record<Language, Record<string, string>> = {
     timeMinAgo: "মিনিট আগে",
     timeHourAgo: "ঘণ্টা আগে",
     timeDayAgo: "দিন আগে",
+    yieldMax: "ইয়িল্ডম্যাক্স",
+    yieldMaxDesc: "ফলন পূর্বাভাস",
+    precisionFarm: "প্রিসিশন ফার্ম",
+    precisionFarmDesc: "সেচ ও VRF ম্যাপ",
   },
   en: {
     // Common
