@@ -17,6 +17,8 @@ export default defineConfig(({ mode }) => ({
     mode === "development" && componentTagger(),
     VitePWA({
       registerType: "autoUpdate",
+      injectRegister: null,
+      filename: "sw.js",
       includeAssets: [
         "favicon.png",
         "agri-brain-logo.png",
