@@ -808,6 +808,10 @@ const translations: Record<Language, Record<string, string>> = {
     timeMinAgo: "min ago",
     timeHourAgo: "hr ago",
     timeDayAgo: "day ago",
+    yieldMax: "YieldMax",
+    yieldMaxDesc: "Yield prediction",
+    precisionFarm: "Precision Farm",
+    precisionFarmDesc: "Irrigation & VRF map",
   },
   ctg: {
     // Chittagongian dialect
@@ -1186,6 +1190,10 @@ const translations: Record<Language, Record<string, string>> = {
     takeCropPhotoAI: "ফসলর ছবি তোল, AI বিশ্লেষণ গরবো",
     todayTipText: "বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দে, বিকেলে কীটনাশক স্প্রে গরো না। ধানের চারা রোপণের সেরা সময়।",
     agricultureQuote: "\"কৃষি অইলো সভ্যতার ভিত্তি, আর কৃষক অইলো জাতির মেরুদণ্ড।\" — বঙ্গবন্ধু শেখ মুজিবুর রহমান",
+    yieldMax: "ইয়িল্ডম্যাক্স",
+    yieldMaxDesc: "ফলন পূর্বাভাস",
+    precisionFarm: "প্রিসিশন ফার্ম",
+    precisionFarmDesc: "সেচ ও VRF ম্যাপ",
   },
   noakhali: {
     // Noakhali dialect
@@ -1564,6 +1572,10 @@ const translations: Record<Language, Record<string, string>> = {
     takeCropPhotoAI: "ফসলের ছবি তোল, AI বিশ্লেষণ করবে",
     todayTipText: "বৃষ্টির সম্ভাবনা ৬০%। সকালে সেচ দে, বিকেলে কীটনাশক স্প্রে করো না। ধানের চারা রোপণের সেরা সময়।",
     agricultureQuote: "\"কৃষি হইলো সভ্যতার ভিত্তি, আর কৃষক হইলো জাতির মেরুদণ্ড।\" — বঙ্গবন্ধু শেখ মুজিবুর রহমান",
+    yieldMax: "ইয়িল্ডম্যাক্স",
+    yieldMaxDesc: "ফলন পূর্বাভাস",
+    precisionFarm: "প্রিসিশন ফার্ম",
+    precisionFarmDesc: "সেচ ও VRF ম্যাপ",
   },
   hi: {
     // Common
@@ -1962,6 +1974,10 @@ const translations: Record<Language, Record<string, string>> = {
     timeMinAgo: "मिनट पहले",
     timeHourAgo: "घंटे पहले",
     timeDayAgo: "दिन पहले",
+    yieldMax: "यील्डमैक्स",
+    yieldMaxDesc: "उपज पूर्वानुमान",
+    precisionFarm: "प्रिसिज़न फ़ार्म",
+    precisionFarmDesc: "सिंचाई और VRF मानचित्र",
   },
 };
 
