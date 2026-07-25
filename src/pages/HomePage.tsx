@@ -438,6 +438,7 @@ export default function HomePage() {
                 </div>
               </div>
               <div className="flex items-center gap-3">
+                <InstallAppButton />
                 <NotificationCenter />
                 {weather.loading ? (
                   <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
