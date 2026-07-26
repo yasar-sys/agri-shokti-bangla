@@ -157,7 +157,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   // Real-time subscriptions
   useEffect(() => {
     const zonesChannel = supabase
-      .channel('ndvi-realtime-updates')
+      .channel(`ndvi-realtime-updates-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'field_zones' }, (payload) => {
         if (payload.eventType === 'UPDATE') {
           setLiveZones(prev => prev.map(zone => zone.id === (payload.new as FieldZone).id ? { ...zone, ...payload.new } : zone));
@@ -170,7 +170,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
       .subscribe();
 
     const routesChannel = supabase
-      .channel('drone-routes-realtime-updates')
+      .channel(`drone-routes-realtime-updates-${Math.random().toString(36).slice(2)}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'drone_routes' }, (payload) => {
         if (payload.eventType === 'UPDATE') {
           setLiveRoutes(prev => prev.map(r => r.id === (payload.new as DroneRoute).id ? { ...r, ...payload.new } : r));

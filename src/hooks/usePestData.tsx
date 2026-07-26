@@ -304,7 +304,7 @@ export function usePestData() {
   // Setup realtime subscription
   useEffect(() => {
     const channel = supabase
-      .channel('pest-reports-realtime')
+      .channel(`pest-reports-realtime-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

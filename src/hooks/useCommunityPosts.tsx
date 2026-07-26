@@ -48,7 +48,7 @@ export function useCommunityPosts() {
 
     // Subscribe to realtime updates
     const channel = supabase
-      .channel('community-posts-changes')
+      .channel(`community-posts-changes-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'community_posts' },

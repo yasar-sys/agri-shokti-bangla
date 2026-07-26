@@ -218,7 +218,7 @@ export function useDroneRoutes(userId: string | null) {
 
     // Subscribe to real-time updates
     const channel = supabase
-      .channel('drone-routes-changes')
+      .channel(`drone-routes-changes-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {

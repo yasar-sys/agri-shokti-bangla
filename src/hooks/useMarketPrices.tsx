@@ -64,9 +64,10 @@ export function useMarketPrices() {
   useEffect(() => {
     fetchPrices();
 
-    // Subscribe to realtime updates
+    // Subscribe to realtime updates (unique channel name avoids re-subscribing
+    // an already-subscribed shared channel across mounts/consumers)
     const channel = supabase
-      .channel('market-prices-changes')
+      .channel(`market-prices-changes-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'market_prices' },
