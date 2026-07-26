@@ -43,7 +43,7 @@ export function useCalendarEvents() {
       
       // Subscribe to realtime updates
       const channel = supabase
-        .channel('calendar-events-changes')
+        .channel(`calendar-events-changes-${Math.random().toString(36).slice(2)}`)
         .on(
           'postgres_changes',
           { 

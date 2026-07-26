@@ -184,7 +184,7 @@ export function useNDVIData(userId: string | null) {
 
     // Subscribe to real-time updates
     const zonesChannel = supabase
-      .channel('field-zones-changes')
+      .channel(`field-zones-changes-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {
@@ -219,7 +219,7 @@ export function useNDVIData(userId: string | null) {
       .subscribe();
 
     const scansChannel = supabase
-      .channel('ndvi-scans-changes')
+      .channel(`ndvi-scans-changes-${Math.random().toString(36).slice(2)}`)
       .on(
         'postgres_changes',
         {
