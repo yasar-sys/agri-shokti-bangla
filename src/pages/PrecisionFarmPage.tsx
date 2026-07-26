@@ -137,7 +137,7 @@ export default function PrecisionFarmPage() {
                   <Label>ফসল</Label>
                   <select value={crop} onChange={(e) => setCrop(e.target.value)}
                     className="w-full mt-1 rounded-md bg-background border border-border px-2 py-2 text-sm">
-                    {CROPS.map(c => <option key={c} value={c}>{CROP_BN[c] || c}</option>)}
+                    <CropOptions />
                   </select>
                 </div>
                 <div>
@@ -196,7 +196,7 @@ export default function PrecisionFarmPage() {
                   <Label>ফসল</Label>
                   <select value={vrfCrop} onChange={(e) => setVrfCrop(e.target.value)}
                     className="w-full mt-1 rounded-md bg-background border border-border px-2 py-2 text-sm">
-                    {CROPS.map(c => <option key={c} value={c}>{CROP_BN[c] || c}</option>)}
+                    <CropOptions />
                   </select>
                 </div>
                 <div>
