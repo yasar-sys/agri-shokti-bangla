@@ -12,11 +12,27 @@ interface Body {
   days?: number;
 }
 
-// Crop water-use coefficient (Kc) rough averages
+// Crop water-use coefficient (Kc) rough averages (FAO-56 mid-season)
 const CROP_KC: Record<string, number> = {
-  rice: 1.15, wheat: 1.0, maize: 1.05, potato: 1.0,
-  jute: 1.05, tomato: 1.05, onion: 1.0, mustard: 0.95,
-  vegetable: 0.95, other: 1.0,
+  // cereals
+  rice: 1.15, wheat: 1.0, maize: 1.05, barley: 1.0,
+  // pulses & oilseeds
+  lentil: 0.95, chickpea: 0.95, mungbean: 1.0, mustard: 0.95,
+  groundnut: 1.0, sesame: 0.95, sunflower: 1.0,
+  // cash crops
+  jute: 1.05, sugarcane: 1.25, cotton: 1.15, tea: 1.0, tobacco: 1.1,
+  // vegetables
+  potato: 1.0, sweetpotato: 1.1, tomato: 1.05, brinjal: 1.05,
+  onion: 1.0, garlic: 1.0, chilli: 1.0, cabbage: 1.0, cauliflower: 1.0,
+  pumpkin: 1.0, cucumber: 1.0, okra: 1.05, bittergourd: 1.0,
+  bottlegourd: 1.0, radish: 0.9, carrot: 1.0, spinach: 1.0, beans: 1.05,
+  vegetable: 0.95,
+  // fruits
+  mango: 0.85, banana: 1.1, jackfruit: 0.9, litchi: 0.9, guava: 0.85,
+  papaya: 1.0, pineapple: 0.5, watermelon: 1.0, orange: 0.7, malta: 0.7,
+  lemon: 0.7, coconut: 0.9, betelnut: 0.9, dragonfruit: 0.6,
+  pomegranate: 0.85, sapota: 0.85, blackberry: 0.85, dates: 0.9, strawberry: 0.85,
+  other: 1.0,
 };
 
 const SOIL_CAPACITY: Record<string, { fc: number; wp: number; drain: number }> = {

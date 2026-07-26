@@ -11,11 +11,45 @@ import { useLocation } from '@/hooks/useLocation';
 import { useElevenLabsTTS } from '@/hooks/useElevenLabsTTS';
 import { toast } from 'sonner';
 
-const CROPS = ['rice', 'wheat', 'maize', 'potato', 'jute', 'tomato', 'vegetable'];
 const CROP_BN: Record<string, string> = {
-  rice: 'ধান', wheat: 'গম', maize: 'ভুট্টা', potato: 'আলু',
-  jute: 'পাট', tomato: 'টমেটো', vegetable: 'সবজি',
+  // দানাশস্য
+  rice: 'ধান', wheat: 'গম', maize: 'ভুট্টা', barley: 'যব',
+  // ডাল ও তেলবীজ
+  lentil: 'মসুর ডাল', chickpea: 'ছোলা', mungbean: 'মুগ ডাল',
+  mustard: 'সরিষা', groundnut: 'চিনাবাদাম', sesame: 'তিল', sunflower: 'সূর্যমুখী',
+  // অর্থকরী ফসল
+  jute: 'পাট', sugarcane: 'আখ', cotton: 'তুলা', tea: 'চা', tobacco: 'তামাক',
+  // সবজি
+  potato: 'আলু', sweetpotato: 'মিষ্টি আলু', tomato: 'টমেটো', brinjal: 'বেগুন',
+  onion: 'পেঁয়াজ', garlic: 'রসুন', chilli: 'মরিচ', cabbage: 'বাঁধাকপি',
+  cauliflower: 'ফুলকপি', pumpkin: 'কুমড়া', cucumber: 'শসা', okra: 'ঢেঁড়স',
+  bittergourd: 'করলা', bottlegourd: 'লাউ', radish: 'মুলা', carrot: 'গাজর',
+  spinach: 'পালং শাক', beans: 'শিম', vegetable: 'অন্যান্য সবজি',
+  // ফল
+  mango: 'আম', banana: 'কলা', jackfruit: 'কাঁঠাল', litchi: 'লিচু',
+  guava: 'পেয়ারা', papaya: 'পেঁপে', pineapple: 'আনারস', watermelon: 'তরমুজ',
+  orange: 'কমলা', malta: 'মাল্টা', lemon: 'লেবু', coconut: 'নারিকেল',
+  betelnut: 'সুপারি', dragonfruit: 'ড্রাগন ফল', pomegranate: 'ডালিম',
+  sapota: 'সফেদা', blackberry: 'জাম', dates: 'খেজুর', strawberry: 'স্ট্রবেরি',
 };
+
+const CROP_GROUPS: { label: string; items: string[] }[] = [
+  { label: 'দানাশস্য', items: ['rice', 'wheat', 'maize', 'barley'] },
+  { label: 'ডাল ও তেলবীজ', items: ['lentil', 'chickpea', 'mungbean', 'mustard', 'groundnut', 'sesame', 'sunflower'] },
+  { label: 'অর্থকরী ফসল', items: ['jute', 'sugarcane', 'cotton', 'tea', 'tobacco'] },
+  { label: 'সবজি', items: ['potato', 'sweetpotato', 'tomato', 'brinjal', 'onion', 'garlic', 'chilli', 'cabbage', 'cauliflower', 'pumpkin', 'cucumber', 'okra', 'bittergourd', 'bottlegourd', 'radish', 'carrot', 'spinach', 'beans', 'vegetable'] },
+  { label: 'ফল', items: ['mango', 'banana', 'jackfruit', 'litchi', 'guava', 'papaya', 'pineapple', 'watermelon', 'orange', 'malta', 'lemon', 'coconut', 'betelnut', 'dragonfruit', 'pomegranate', 'sapota', 'blackberry', 'dates', 'strawberry'] },
+];
+
+const CropOptions = () => (
+  <>
+    {CROP_GROUPS.map(g => (
+      <optgroup key={g.label} label={g.label}>
+        {g.items.map(c => <option key={c} value={c}>{CROP_BN[c] || c}</option>)}
+      </optgroup>
+    ))}
+  </>
+);
 
 export default function PrecisionFarmPage() {
   const nav = useNavigate();
@@ -103,7 +137,7 @@ export default function PrecisionFarmPage() {
                   <Label>ফসল</Label>
                   <select value={crop} onChange={(e) => setCrop(e.target.value)}
                     className="w-full mt-1 rounded-md bg-background border border-border px-2 py-2 text-sm">
-                    {CROPS.map(c => <option key={c} value={c}>{CROP_BN[c] || c}</option>)}
+                    <CropOptions />
                   </select>
                 </div>
                 <div>
@@ -162,7 +196,7 @@ export default function PrecisionFarmPage() {
                   <Label>ফসল</Label>
                   <select value={vrfCrop} onChange={(e) => setVrfCrop(e.target.value)}
                     className="w-full mt-1 rounded-md bg-background border border-border px-2 py-2 text-sm">
-                    {CROPS.map(c => <option key={c} value={c}>{CROP_BN[c] || c}</option>)}
+                    <CropOptions />
                   </select>
                 </div>
                 <div>
