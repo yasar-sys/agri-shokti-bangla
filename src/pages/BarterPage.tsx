@@ -118,6 +118,21 @@ export default function BarterPage() {
     fetchListings();
   }, []);
 
+  // Live updates: listings and trade requests refresh as soon as they change
+  useEffect(() => {
+    const channel = supabase
+      .channel("barter-live")
+      .on("postgres_changes", { event: "*", schema: "public", table: "crop_listings" }, () => {
+        fetchListings();
+        if (user) fetchMyListings(user.id);
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "trade_requests" }, () => {
+        if (user) fetchTradeRequests(user.id);
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
   const checkAuth = async () => {
     const { data: { user } } = await supabase.auth.getUser();
     setUser(user);
@@ -731,6 +746,23 @@ export default function BarterPage() {
                                 : "বাতিল"}
                             </Badge>
                           </div>
+
+                          {/* Exchange status chain */}
+                          <ol className="flex items-center gap-1 mb-3 text-[11px]" aria-label="বিনিময়ের ধাপ">
+                            {[
+                              { label: "প্রস্তাব পাঠানো", done: true },
+                              { label: request.status === "rejected" ? "বাতিল" : "গৃহীত", done: request.status !== "pending", bad: request.status === "rejected" },
+                              { label: "যোগাযোগ ও বিনিময়", done: request.status === "accepted" },
+                            ].map((step, i, arr) => (
+                              <li key={i} className="flex items-center gap-1 flex-1 min-w-0">
+                                <span className={`w-5 h-5 shrink-0 rounded-full flex items-center justify-center border transition-colors duration-500 ${step.bad ? "bg-destructive text-destructive-foreground border-destructive" : step.done ? "bg-primary text-primary-foreground border-primary" : "bg-muted text-muted-foreground border-border"}`}>
+                                  {step.bad ? <X className="w-3 h-3" /> : step.done ? <Check className="w-3 h-3" /> : i + 1}
+                                </span>
+                                <span className={`truncate ${step.done ? "text-foreground" : "text-muted-foreground"}`}>{step.label}</span>
+                                {i < arr.length - 1 && <span className={`h-px flex-1 min-w-2 ${arr[i + 1].done ? "bg-primary" : "bg-border"}`} />}
+                              </li>
+                            ))}
+                          </ol>
 
                           {request.message && (
                             <p className="text-sm text-muted-foreground mb-3 bg-muted/50 p-2 rounded">
