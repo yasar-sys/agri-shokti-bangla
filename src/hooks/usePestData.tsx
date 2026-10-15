@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { pestReportSummary } from '@/lib/pestReportSummary';
 
 export interface PestReport {
   id: string;
@@ -125,10 +126,11 @@ export function usePestData() {
           const response = await fetch(
             `https://api.open-meteo.com/v1/forecast?latitude=${district.lat}&longitude=${district.lng}&current=temperature_2m,relative_humidity_2m`
           );
+          if (!response.ok) throw new Error('Weather unavailable');
           const data = await response.json();
-          
-          const temp = data.current?.temperature_2m || 28;
-          const humidity = data.current?.relative_humidity_2m || 70;
+          const temp = data.current?.temperature_2m;
+          const humidity = data.current?.relative_humidity_2m;
+          if (!Number.isFinite(temp) || !Number.isFinite(humidity)) throw new Error('Missing weather');
           const { score, factors } = calculatePestRisk(temp, humidity);
           
           return {
@@ -141,21 +143,13 @@ export function usePestData() {
             }
           };
         } catch {
-          return {
-            name: district.name,
-            data: {
-              temperature: 28,
-              humidity: 70,
-              riskScore: 50,
-              riskFactors: ['আবহাওয়া তথ্য লোড হয়নি'],
-            }
-          };
+          return null;
         }
       });
 
       const results = await Promise.all(weatherPromises);
-      results.forEach(({ name, data }) => {
-        risks.set(name, data);
+      results.forEach(result => {
+        if (result) risks.set(result.name, result.data);
       });
       
       setWeatherRisks(risks);
@@ -195,33 +189,8 @@ export function usePestData() {
       const highRiskReports = districtReports.filter(r => r.severity === 'high');
       const weatherData = weatherRisks.get(district.name);
       
-      // Find most common pest or assign default based on district
-      const pestCounts: Record<string, number> = {};
-      districtReports.forEach(r => {
-        pestCounts[r.pest_name_bn] = (pestCounts[r.pest_name_bn] || 0) + 1;
-      });
-      
-      // Default pest assignment based on district for demo purposes when no reports
-      const defaultPests: Record<string, string> = {
-        'Dhaka': 'জাব পোকা',
-        'Mymensingh': 'ধানের মাজরা পোকা',
-        'Rajshahi': 'ফলছিদ্রকারী পোকা',
-        'Rangpur': 'বাদামী গাছ ফড়িং',
-        'Khulna': 'সাদা মাছি',
-        'Sylhet': 'লাল মাকড়',
-        'Chittagong': 'কাটুই পোকা',
-        'Barisal': 'ধানের মাজরা পোকা',
-        'Bogra': 'পড বোরার',
-        'Comilla': 'জাব পোকা',
-        'Dinajpur': 'বাদামী গাছ ফড়িং',
-        'Jessore': 'সাদা মাছি',
-        'Narayanganj': 'জাব পোকা',
-        'Gazipur': 'ফলছিদ্রকারী পোকা',
-        'Tangail': 'ধানের মাজরা পোকা',
-      };
-      
-      const mainPest = Object.entries(pestCounts).sort((a, b) => b[1] - a[1])[0]?.[0] || 
-        defaultPests[district.name] || commonPests[0].name_bn;
+      const summary = pestReportSummary(districtReports);
+      const mainPest = summary.mainPest;
 
       // Calculate trend based on recent vs older reports
       const twoDaysAgo = new Date();
@@ -234,7 +203,7 @@ export function usePestData() {
       else if (recentReports.length < olderReports.length * 0.5) trend = 'decreasing';
 
       // Calculate risk level - ensure some demo data shows risk even without reports
-      const weatherRiskScore = weatherData?.riskScore || 50;
+      const weatherRiskScore = weatherData?.riskScore ?? 0;
       const baseRisk = districtReports.length * 5 + highRiskReports.length * 10;
       const totalRisk = Math.max(baseRisk, weatherRiskScore * 0.7);
       
@@ -242,16 +211,12 @@ export function usePestData() {
       if (totalRisk >= 55 || highRiskReports.length >= 3) riskLevel = 'high';
       else if (totalRisk >= 35 || highRiskReports.length >= 1) riskLevel = 'medium';
 
-      // Simulate some demo reports for visualization when no actual reports
-      const demoReportsCount = districtReports.length > 0 ? districtReports.length : 
-        Math.floor(weatherRiskScore / 20) + 1;
-
       return {
         district: district.name,
         district_bn: district.name_bn,
         latitude: district.lat,
         longitude: district.lng,
-        reports: demoReportsCount,
+        reports: summary.reports,
         highRisk: highRiskReports.length,
         mainPest,
         riskLevel,
