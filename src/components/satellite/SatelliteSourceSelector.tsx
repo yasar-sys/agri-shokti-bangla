@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { TILE_LAYERS, getGIBSDate } from '@/lib/nasaDataSources';
 
-export type SatelliteSource = 'modis' | 'landsat' | 'sentinel' | 'agromonitoring';
+export type SatelliteSource = 'modis' | 'landsat' | 'agromonitoring';
 
 interface SatelliteInfo {
   id: SatelliteSource;
@@ -44,8 +44,8 @@ const SATELLITE_SOURCES: SatelliteInfo[] = [
   },
   {
     id: 'landsat',
-    name: 'Landsat 8/9',
-    nameBn: 'ল্যান্ডস্যাট ৮/৯',
+    name: 'Landsat archive',
+    nameBn: 'ল্যান্ডস্যাট আর্কাইভ',
     resolution: '30m',
     description: 'USGS/NASA - High resolution, ideal for field-level analysis',
     descriptionBn: 'USGS/NASA - উচ্চ রেজোলিউশন, মাঠ পর্যায়ের বিশ্লেষণের জন্য আদর্শ',
@@ -55,20 +55,6 @@ const SATELLITE_SOURCES: SatelliteInfo[] = [
     coverage: 'Global',
     coverageBn: 'বিশ্বব্যাপী',
     color: '#3b82f6'
-  },
-  {
-    id: 'sentinel',
-    name: 'Sentinel-2',
-    nameBn: 'সেন্টিনেল-২',
-    resolution: '10m',
-    description: 'ESA/NASA HLS - Highest resolution for detailed crop monitoring',
-    descriptionBn: 'ESA/NASA HLS - বিস্তারিত ফসল পর্যবেক্ষণের জন্য সর্বোচ্চ রেজোলিউশন',
-    updateFrequency: '5 days',
-    updateFrequencyBn: '৫ দিন',
-    dataDelay: 5,
-    coverage: 'Land only',
-    coverageBn: 'শুধু ভূমি',
-    color: '#22c55e'
   },
   {
     id: 'agromonitoring',
@@ -101,7 +87,6 @@ export function SatelliteSourceSelector({
   const [layerDates, setLayerDates] = useState<Record<SatelliteSource, string>>({
     modis: '',
     landsat: '',
-    sentinel: '',
     agromonitoring: '',
   });
 
@@ -109,12 +94,10 @@ export function SatelliteSourceSelector({
   useEffect(() => {
     const modisLayer = TILE_LAYERS.getMODISLayer();
     const landsatLayer = TILE_LAYERS.getLandsatLayer();
-    const sentinelLayer = TILE_LAYERS.getSentinelLayer();
 
     setLayerDates({
       modis: modisLayer.date || getGIBSDate(1),
       landsat: new Date().toISOString().split('T')[0], // Landsat uses current imagery composite
-      sentinel: sentinelLayer.date || getGIBSDate(5),
       agromonitoring: new Date().toISOString().split('T')[0], // Real-time data
     });
   }, []);
@@ -141,7 +124,7 @@ export function SatelliteSourceSelector({
           variant="outline"
           className={cn("h-10 gap-2 min-w-[160px]", className)}
         >
-          <Satellite className="w-4 h-4" style={{ color: selectedSatellite.color }} />
+          <Satellite className="w-4 h-4"  />
           <div className="flex flex-col items-start text-left">
             <span className="text-sm font-medium">{selectedSatellite.nameBn}</span>
             <span className="text-[10px] text-muted-foreground">{selectedSatellite.resolution}</span>
@@ -151,7 +134,7 @@ export function SatelliteSourceSelector({
 
       <PopoverContent
         align="end"
-        className="w-80 p-0"
+        className="w-80 max-w-[calc(100vw-24px)] p-0"
         sideOffset={8}
       >
         <div className="p-3 border-b bg-muted/30">
@@ -163,14 +146,14 @@ export function SatelliteSourceSelector({
 
         <div className="p-2 space-y-1">
           {SATELLITE_SOURCES.map((satellite) => (
-            <button
+            <Button variant="ghost"
               key={satellite.id}
               onClick={() => {
                 onSourceChange(satellite.id);
                 setIsOpen(false);
               }}
               className={cn(
-                "w-full p-3 rounded-lg text-left transition-all",
+                "w-full h-auto p-3 rounded-lg text-left whitespace-normal justify-start transition-all",
                 "hover:bg-accent hover:text-accent-foreground",
                 "focus:outline-none focus:ring-2 focus:ring-ring",
                 selectedSource === satellite.id && "bg-primary/10 ring-1 ring-primary/20"
@@ -180,9 +163,9 @@ export function SatelliteSourceSelector({
                 {/* Icon */}
                 <div
                   className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0"
-                  style={{ backgroundColor: `${satellite.color}20` }}
+                  
                 >
-                  <Satellite className="w-5 h-5" style={{ color: satellite.color }} />
+                  <Satellite className="w-5 h-5"  />
                 </div>
 
                 {/* Content */}
@@ -214,7 +197,7 @@ export function SatelliteSourceSelector({
                   </div>
                 </div>
               </div>
-            </button>
+            </Button>
           ))}
         </div>
 
@@ -239,18 +222,15 @@ export function MobileSatelliteSourceSelector({
   const [layerDates, setLayerDates] = useState<Record<SatelliteSource, string>>({
     modis: '',
     landsat: '',
-    sentinel: '',
     agromonitoring: '',
   });
 
   useEffect(() => {
     const modisLayer = TILE_LAYERS.getMODISLayer();
-    const sentinelLayer = TILE_LAYERS.getSentinelLayer();
 
     setLayerDates({
       modis: modisLayer.date || getGIBSDate(1),
       landsat: new Date().toISOString().split('T')[0],
-      sentinel: sentinelLayer.date || getGIBSDate(5),
       agromonitoring: new Date().toISOString().split('T')[0],
     });
   }, []);
@@ -272,7 +252,7 @@ export function MobileSatelliteSourceSelector({
       <h4 className="text-sm font-semibold">স্যাটেলাইট উৎস</h4>
       <div className="grid grid-cols-3 gap-2">
         {SATELLITE_SOURCES.map((satellite) => (
-          <button
+          <Button variant="ghost"
             key={satellite.id}
             onClick={() => onSourceChange(satellite.id)}
             className={cn(
@@ -284,14 +264,14 @@ export function MobileSatelliteSourceSelector({
           >
             <Satellite
               className="w-6 h-6 mb-1"
-              style={{ color: selectedSource === satellite.id ? satellite.color : undefined }}
+              
             />
             <span className="text-xs font-medium text-center">{satellite.nameBn}</span>
             <span className="text-[10px] text-muted-foreground">{satellite.resolution}</span>
             <span className="text-[9px] text-muted-foreground mt-1">
               {formatDate(layerDates[satellite.id])}
             </span>
-          </button>
+          </Button>
         ))}
       </div>
     </div>

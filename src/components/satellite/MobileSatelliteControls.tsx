@@ -89,17 +89,17 @@ export function MobileSatelliteControls({
   return (
     <>
       {/* Mobile Floating Button */}
-      <div className={cn('lg:hidden', className)}>
+      <div className={cn('lg:hidden px-4 py-3 flex justify-end', className)}>
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button
               size="icon"
-              className="fixed bottom-20 right-4 h-14 w-14 rounded-full shadow-lg z-[1001] active:scale-95 transition-transform"
-              style={{ backgroundColor: LAYERS.find(l => l.id === activeLayer)?.color || '#22c55e' }}
+              className="relative h-14 w-14 rounded-md shadow-soft z-10 active:scale-95 transition-transform"
+              aria-label="স্যাটেলাইট কন্ট্রোল"
             >
               {(() => {
                 const Icon = LAYERS.find(l => l.id === activeLayer)?.icon || Layers;
-                return <Icon className="w-6 h-6 text-white" />;
+                return <Icon className="w-6 h-6 text-primary-foreground" />;
               })()}
             </Button>
           </SheetTrigger>
@@ -251,7 +251,7 @@ export function MobileSatelliteControls({
       </div>
 
       {/* Desktop Controls */}
-      <div className="hidden lg:flex flex-col gap-2 absolute top-4 left-4 z-[1001]">
+      <div className="hidden">
         {LAYERS.map((layer) => {
           const Icon = layer.icon;
           return (
