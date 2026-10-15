@@ -1,158 +1,129 @@
 import React from 'react';
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import {
-    Thermometer,
-    CloudRain,
-    Droplets,
-    Sun,
-    Wind,
-    Info,
-    ArrowUpRight,
-    ArrowDownRight,
-    Minus,
-    Brain
-} from 'lucide-react';
-import { cn } from "@/lib/utils";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { Button } from "@/components/ui/button";
+import { Thermometer, CloudRain, Droplets, Sun, Wind, ArrowUpRight, ArrowDownRight, Minus, Download, Database } from 'lucide-react';
 
 interface NASAClimateDetailsProps {
-    data: any;
-    loading: boolean;
+  data: any;
+  loading: boolean;
 }
 
+const num = (v: unknown, digits = 1): string | null =>
+  typeof v === 'number' && Number.isFinite(v) && v !== -999 ? v.toFixed(digits) : null;
+
+const formatYmd = (d?: string | null) => d && /^\d{8}$/.test(d) ? `${d.slice(0, 4)}-${d.slice(4, 6)}-${d.slice(6, 8)}` : d || null;
+
 export const NASAClimateDetails: React.FC<NASAClimateDetailsProps> = ({ data, loading }) => {
-    const { t } = useLanguage();
-
-    if (loading) {
-        return (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mt-6">
-                {[1, 2, 3, 4, 5].map((i) => (
-                    <Card key={i} className="h-32 bg-card/40 backdrop-blur-md border-border/50 animate-pulse" />
-                ))}
-            </div>
-        );
-    }
-
-    if (!data) return null;
-
-    const metrics = [
-        {
-            label: t('temperature') || 'তাপমাত্রা',
-            value: `${data.temperature.current?.toFixed(1) || '--'}°C`,
-            subValue: `${data.temperature.min?.toFixed(1)}° - ${data.temperature.max?.toFixed(1)}°`,
-            icon: Thermometer,
-            color: "text-orange-500",
-            bg: "bg-orange-500/10",
-            trend: data.temperature.trend
-        },
-        {
-            label: t('precipitation') || 'বৃষ্টিপাত',
-            value: `${data.precipitation.total?.toFixed(1) || '0'} mm`,
-            subValue: t('lastRain') || 'শেষ বৃষ্টি: ' + (data.precipitation.last_rain_date || t('noData') || 'নেই'),
-            icon: CloudRain,
-            color: "text-blue-500",
-            bg: "bg-blue-500/10",
-            trend: data.precipitation.trend
-        },
-        {
-            label: t('humidity') || 'আর্দ্রতা',
-            value: `${data.humidity.current?.toFixed(0) || '--'}%`,
-            subValue: t('avg') || 'গড়: ' + data.humidity.average?.toFixed(0) + '%',
-            icon: Droplets,
-            color: "text-cyan-500",
-            bg: "bg-cyan-500/10"
-        },
-        {
-            label: t('solar') || 'সৌরশক্তি',
-            value: `${data.solar.current?.toFixed(1) || '--'}`,
-            subValue: 'MJ/m²/day',
-            icon: Sun,
-            color: "text-yellow-500",
-            bg: "bg-yellow-500/10"
-        },
-        {
-            label: t('wind') || 'বাতাস',
-            value: `${data.wind.current?.toFixed(1) || '--'} km/h`,
-            subValue: t('avg') || 'গড়: ' + data.wind.average?.toFixed(1) + ' km/h',
-            icon: Wind,
-            color: "text-slate-400",
-            bg: "bg-slate-500/10"
-        }
-    ];
-
-    const getTrendIcon = (trend: string) => {
-        if (trend === 'increasing') return <ArrowUpRight className="w-3 h-3 text-red-500" />;
-        if (trend === 'decreasing') return <ArrowDownRight className="w-3 h-3 text-blue-500" />;
-        return <Minus className="w-3 h-3 text-muted-foreground" />;
-    };
-
+  if (loading) {
     return (
-        <div className="space-y-6 mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <div className="w-2 h-8 bg-primary rounded-full" />
-                    <h2 className="text-xl font-bold">{t('climateInsights') || 'NASA জলবায়ু বিশ্লেষণ'}</h2>
-                    <Badge variant="outline" className="ml-2 bg-primary/5 text-[10px] uppercase tracking-wider">
-                        NASA POWER API
-                    </Badge>
-                    {data.metadata?.is_simulated && (
-                        <Badge variant="outline" className="ml-2 bg-orange-500/10 text-orange-600 border-orange-500/20 text-[10px] uppercase tracking-wider animate-pulse">
-                            Simulated Backup
-                        </Badge>
-                    )}
-                </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                {metrics.map((metric, idx) => (
-                    <Card key={idx} className="relative overflow-hidden group hover:shadow-lg hover:shadow-primary/5 transition-all duration-300 bg-card/40 backdrop-blur-md border-border/50">
-                        <div className="p-5">
-                            <div className="flex items-center justify-between mb-3">
-                                <div className={cn("p-2 rounded-xl", metric.bg)}>
-                                    <metric.icon className={cn("w-5 h-5", metric.color)} />
-                                </div>
-                                {metric.trend && getTrendIcon(metric.trend)}
-                            </div>
-                            <div className="space-y-1">
-                                <p className="text-xs font-medium text-muted-foreground">{metric.label}</p>
-                                <p className="text-2xl font-bold tracking-tight">{metric.value}</p>
-                                <p className="text-[10px] text-muted-foreground/70 truncate">{metric.subValue}</p>
-                            </div>
-                        </div>
-                        <div className={cn("absolute bottom-0 left-0 h-1 transition-all duration-500 w-0 group-hover:w-full", metric.bg.replace('/10', '/30'))} />
-                    </Card>
-                ))}
-            </div>
-
-            {data.recommendations && data.recommendations.length > 0 && (
-                <Card className="bg-gradient-to-br from-primary/5 via-card to-secondary/5 border-primary/10 overflow-hidden">
-                    <div className="p-6">
-                        <div className="flex items-center gap-3 mb-4">
-                            <div className="p-2.5 bg-primary/10 rounded-2xl relative">
-                                <Brain className="w-6 h-6 text-primary" />
-                                <div className="absolute top-0 right-0 w-2 h-2 bg-green-500 rounded-full border-2 border-background animate-pulse" />
-                            </div>
-                            <div>
-                                <h3 className="font-bold text-lg">{t('aiRecommendations') || 'কৃষি পরামর্শ'}</h3>
-                                <p className="text-xs text-muted-foreground">NASA ডেটা ভিত্তিক বিশ্লেষণ</p>
-                            </div>
-                        </div>
-
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            {data.recommendations.map((rec: string, i: number) => (
-                                <div
-                                    key={i}
-                                    className="flex items-start gap-3 p-4 rounded-2xl bg-background/40 border border-border/40 hover:border-primary/20 transition-colors group"
-                                >
-                                    <div className="mt-1 w-1.5 h-1.5 rounded-full bg-primary/40 group-hover:bg-primary transition-colors shrink-0" />
-                                    <p className="text-sm leading-relaxed text-foreground/90">{rec}</p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </Card>
-            )}
-        </div>
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3 mt-6">
+        {[1, 2, 3, 4, 5].map(i => <Card key={i} className="h-28 animate-pulse" />)}
+      </div>
     );
+  }
+
+  if (!data) {
+    return (
+      <Card className="mt-8 p-5 text-sm text-muted-foreground">
+        জলবায়ু তথ্য এখন পাওয়া যাচ্ছে না। কোনো অনুমানভিত্তিক মান দেখানো হচ্ছে না; পরে আবার চেষ্টা করুন।
+      </Card>
+    );
+  }
+
+  const windKmh = typeof data.wind?.current === 'number' ? data.wind.current * 3.6 : null;
+  const windAvgKmh = typeof data.wind?.average === 'number' ? data.wind.average * 3.6 : null;
+  const obsDate = formatYmd(data.temperature?.observation_date);
+
+  const metrics = [
+    { label: 'তাপমাত্রা', value: num(data.temperature?.current), unit: '°C', sub: num(data.temperature?.min) && num(data.temperature?.max) ? `সর্বনিম্ন ${num(data.temperature.min)}° · সর্বোচ্চ ${num(data.temperature.max)}°` : null, icon: Thermometer, trend: data.temperature?.trend },
+    { label: 'বৃষ্টিপাত (মোট)', value: num(data.precipitation?.total), unit: 'mm', sub: data.precipitation?.last_rain_date ? `শেষ বৃষ্টি: ${formatYmd(data.precipitation.last_rain_date)}` : 'এই সময়ে উল্লেখযোগ্য বৃষ্টি নেই', icon: CloudRain, trend: data.precipitation?.trend },
+    { label: 'আর্দ্রতা', value: num(data.humidity?.current, 0), unit: '%', sub: num(data.humidity?.average, 0) ? `গড়: ${num(data.humidity.average, 0)}%` : null, icon: Droplets },
+    { label: 'সৌর বিকিরণ', value: num(data.solar?.current), unit: 'MJ/m²/দিন', sub: num(data.solar?.average) ? `গড়: ${num(data.solar.average)}` : null, icon: Sun },
+    { label: 'বাতাস', value: num(windKmh), unit: 'km/h', sub: num(windAvgKmh) ? `গড়: ${num(windAvgKmh)} km/h` : null, icon: Wind },
+  ];
+
+  const trendIcon = (t?: string) => t === 'increasing' ? <ArrowUpRight className="w-3.5 h-3.5 text-destructive" /> : t === 'decreasing' ? <ArrowDownRight className="w-3.5 h-3.5 text-primary" /> : <Minus className="w-3.5 h-3.5 text-muted-foreground" />;
+
+  const provenance = data.provenance;
+  const downloadProvenance = () => {
+    const file = {
+      schema: 'agrishokti.climate-cache/v1',
+      exported_at: new Date().toISOString(),
+      location: { latitude: data.metadata?.latitude, longitude: data.metadata?.longitude, elevation_m: data.metadata?.elevation },
+      date_range: data.metadata?.date_range,
+      latest_observation_date: obsDate,
+      cache: data.cache ?? { hit: false, cached_at: data.metadata?.timestamp },
+      provenance,
+      units: { T2M: '°C', PRECTOTCORR: 'mm/day', RH2M: '%', WS2M: 'm/s', ALLSKY_SFC_SW_DWN: 'MJ/m²/day', T2MDEW: '°C', PS: 'kPa' },
+      summary: { temperature: data.temperature, precipitation: data.precipitation, humidity: data.humidity, wind: data.wind, solar: data.solar },
+      daily: data.raw_data,
+    };
+    const blob = new Blob([JSON.stringify(file, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `agrishokti-climate-provenance-${data.metadata?.date_range?.end ?? 'latest'}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="space-y-5 mt-8">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="font-display text-xl font-semibold">জলবায়ু বিশ্লেষণ · গত ৩০ দিন</h2>
+          <p className="text-xs text-muted-foreground">
+            উৎস: {data.metadata?.source || 'অজানা'}{obsDate ? ` · সর্বশেষ যাচাইকৃত দিন ${obsDate}` : ''}{data.cache?.hit ? ' · ডিভাইস ক্যাশ থেকে' : ''}
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={downloadProvenance} className="min-h-11">
+          <Download className="w-4 h-4 mr-2" /> প্রুভেন্যান্স JSON
+        </Button>
+      </div>
+
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-3">
+        {metrics.map(m => (
+          <Card key={m.label} className="p-4">
+            <div className="flex items-center justify-between mb-2">
+              <m.icon className="w-5 h-5 text-primary" />
+              {m.trend && trendIcon(m.trend)}
+            </div>
+            <p className="text-xs text-muted-foreground">{m.label}</p>
+            <p className="font-mono text-2xl font-semibold tracking-tight">
+              {m.value ?? '—'} {m.value && <span className="text-xs font-normal text-muted-foreground">{m.unit}</span>}
+            </p>
+            <p className="text-[11px] text-muted-foreground truncate">{m.value ? m.sub : 'তথ্য পাওয়া যায়নি'}</p>
+          </Card>
+        ))}
+      </div>
+
+      {provenance?.sources?.length > 0 && (
+        <Card className="p-4">
+          <div className="flex items-center gap-2 mb-2">
+            <Database className="w-4 h-4 text-primary" />
+            <h3 className="text-sm font-semibold">তথ্যের উৎস যাচাই</h3>
+          </div>
+          <ul className="space-y-1.5 text-xs">
+            {provenance.sources.map((s: any) => (
+              <li key={s.source} className="flex flex-wrap items-center gap-2">
+                <Badge variant={s.status === 'ok' ? 'default' : 'outline'} className="text-[10px]">{s.status === 'ok' ? 'ব্যবহৃত' : s.status === 'empty' ? 'খালি' : 'ব্যর্থ'}</Badge>
+                <span className="font-medium">{s.source}</span>
+                <span className="text-muted-foreground">— {s.attribution}</span>
+              </li>
+            ))}
+          </ul>
+        </Card>
+      )}
+
+      {data.recommendations?.length > 0 && (
+        <Card className="p-4">
+          <h3 className="text-sm font-semibold mb-2">তথ্যভিত্তিক সতর্কতা</h3>
+          <ul className="grid gap-2 md:grid-cols-2 text-sm">
+            {data.recommendations.map((r: string) => <li key={r} className="border-l-2 border-primary pl-3">{r}</li>)}
+          </ul>
+        </Card>
+      )}
+    </div>
+  );
 };
