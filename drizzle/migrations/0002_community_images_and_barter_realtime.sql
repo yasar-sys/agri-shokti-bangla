@@ -1,0 +1,4 @@
+CREATE POLICY "Anyone can view community images" ON storage.objects FOR SELECT TO anon, authenticated USING (bucket_id = 'community-images');
+CREATE POLICY "Users upload own community images" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'community-images' AND (storage.foldername(name))[1] = auth.uid()::text);
+CREATE POLICY "Users delete own community images" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'community-images' AND (storage.foldername(name))[1] = auth.uid()::text);
+ALTER PUBLICATION supabase_realtime ADD TABLE public.crop_listings, public.trade_requests;
