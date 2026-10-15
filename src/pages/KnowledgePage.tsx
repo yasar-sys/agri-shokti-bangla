@@ -412,11 +412,37 @@ export default function KnowledgePage() {
         </>
       )}
 
-      {/* Source Credit */}
-      <section className="px-4 mt-6">
-        <p className="text-xs text-muted-foreground text-center">
-          📚 তথ্যসূত্র: বাংলাদেশ কৃষি গবেষণা ইনস্টিটিউট (BARI) ও কৃষি সম্প্রসারণ অধিদপ্তর
-        </p>
+      {/* Data Sources */}
+      <section className="px-4 mt-6" aria-labelledby="data-sources">
+        <h2 id="data-sources" className="font-semibold text-foreground mb-3">অ্যাপের তথ্যসূত্র</h2>
+        <ul className="space-y-2">
+          {[
+            ["আবহাওয়া ও পূর্বাভাস", "Open-Meteo", "https://open-meteo.com"],
+            ["জলবায়ু, বৃষ্টি ও সৌর তথ্য", "NASA POWER", "https://power.larc.nasa.gov"],
+            ["স্যাটেলাইট চিত্র (MODIS/Landsat)", "NASA GIBS / Earthdata", "https://earthdata.nasa.gov"],
+            ["NDVI ও জমির স্বাস্থ্য", "AgroMonitoring (OpenWeather)", "https://agromonitoring.com"],
+            ["বাষ্পীভবন (ET)", "OpenET", "https://openetdata.org"],
+            ["মানচিত্র", "OpenStreetMap", "https://www.openstreetmap.org"],
+            ["ফসল ও সার নির্দেশিকা", "বাংলাদেশ কৃষি গবেষণা ইনস্টিটিউট (BARI)", "https://bari.gov.bd"],
+            ["ধান চাষ ও রোগবালাই", "বাংলাদেশ ধান গবেষণা ইনস্টিটিউট (BRRI)", "https://brri.gov.bd"],
+            ["মাটি ও সার সুপারিশ", "মৃত্তিকা সম্পদ উন্নয়ন ইনস্টিটিউট (SRDI)", "https://srdi.gov.bd"],
+            ["সম্প্রসারণ সেবা ও যোগাযোগ", "কৃষি সম্প্রসারণ অধিদপ্তর (DAE)", "https://dae.gov.bd"],
+            ["বাজারদর", "কৃষি বিপণন অধিদপ্তর (DAM)", "https://dam.gov.bd"],
+            ["ছবি বিশ্লেষণ ও চ্যাট উত্তর", "Google Gemini (AI) — পরামর্শমূলক, বিশেষজ্ঞ যাচাই প্রয়োজন", "https://ai.google.dev"],
+            ["পোকার মানচিত্র", "ব্যবহারকারীদের জমা দেওয়া রিপোর্ট", ""],
+          ].map(([topic, source, url]) => (
+            <li key={topic} className="rounded-lg border border-border bg-card p-3">
+              <p className="text-sm font-medium text-foreground">{topic}</p>
+              {url ? (
+                <a href={url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary inline-flex items-center gap-1 mt-1">
+                  {source} <ExternalLink className="w-3 h-3" />
+                </a>
+              ) : (
+                <p className="text-xs text-muted-foreground mt-1">{source}</p>
+              )}
+            </li>
+          ))}
+        </ul>
       </section>
     </div>
   );

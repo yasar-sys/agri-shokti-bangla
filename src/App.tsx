@@ -16,6 +16,7 @@ const HomePage = lazy(() => import("./pages/HomePage"));
 const PortalPage = lazy(() => import("./pages/PortalPage"));
 const AdminPanelPage = lazy(() => import("./pages/AdminPanelPage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 const CameraPage = lazy(() => import("./pages/CameraPage"));
 const DiagnosisPage = lazy(() => import("./pages/DiagnosisPage"));
 const ChatPage = lazy(() => import("./pages/ChatPage"));
@@ -132,7 +133,7 @@ const queryClient = new QueryClient({
 
 function AppContent() {
   const location = useLocation();
-  const hideNavRoutes = ["/", "/auth"];
+  const hideNavRoutes = ["/", "/auth", "/reset-password"];
   const showNav = !hideNavRoutes.includes(location.pathname);
 
   return (
@@ -144,6 +145,7 @@ function AppContent() {
           <Routes>
             <Route path="/" element={<SplashPage />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             <Route path="/home" element={<HomePage />} />
             <Route path="/camera" element={<CameraPage />} />
             <Route path="/diagnosis" element={<DiagnosisPage />} />
