@@ -15,7 +15,7 @@ export function PortalShell({ eyebrow, title, subtitle, children, action }: {
             <ArrowLeft className="w-4 h-4" /> হোম
           </Link>
           <CropLine className="absolute right-4 top-4 text-primary/15 hidden sm:block" />
-          <p className="mt-4 text-xs uppercase tracking-[0.18em] text-secondary-foreground/80 font-semibold">{eyebrow}</p>
+          <p className="mt-4 text-xs uppercase tracking-[0.18em] text-clay font-semibold">{eyebrow}</p>
           <div className="flex flex-wrap items-end justify-between gap-4">
             <div>
               <h1 className="font-display text-3xl md:text-5xl leading-tight tracking-tight">{title}</h1>
@@ -44,12 +44,12 @@ export function Section({ title, children, aside }: { title: string; children: R
 
 export function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
-    pending: { label: 'অপেক্ষমাণ', cls: 'bg-warning/15 text-warning-foreground border-warning/40' },
-    approved: { label: 'অনুমোদিত', cls: 'bg-success/15 text-success border-success/40' },
+    pending: { label: 'অপেক্ষমাণ', cls: 'bg-warning/15 text-foreground border-warning/50' },
+    approved: { label: 'অনুমোদিত', cls: 'bg-healthy/10 text-healthy border-healthy/40' },
     rejected: { label: 'বাতিল', cls: 'bg-destructive/10 text-destructive border-destructive/40' },
-    available: { label: 'বিক্রয়যোগ্য', cls: 'bg-success/15 text-success border-success/40' },
+    available: { label: 'বিক্রয়যোগ্য', cls: 'bg-healthy/10 text-healthy border-healthy/40' },
     sold: { label: 'বিক্রি হয়েছে', cls: 'bg-muted text-muted-foreground border-border' },
-    accepted: { label: 'গৃহীত', cls: 'bg-success/15 text-success border-success/40' },
+    accepted: { label: 'গৃহীত', cls: 'bg-healthy/10 text-healthy border-healthy/40' },
   };
   const s = map[status] ?? { label: status, cls: 'bg-muted text-muted-foreground border-border' };
   return <span className={`inline-flex items-center px-2.5 py-1 text-xs font-semibold rounded-sm border ${s.cls}`}>{s.label}</span>;
