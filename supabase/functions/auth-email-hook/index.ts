@@ -15,7 +15,7 @@ const corsHeaders = {
 }
 
 // Configuration
-const SITE_NAME = "AgriBrain Bangla"
+const SITE_NAME = "agriশক্তি"
 const SENDER_DOMAIN = "notify.agrishokti.aizanbd.com"
 const ROOT_DOMAIN = "agrishokti.aizanbd.com"
 const FROM_DOMAIN = "agrishokti.aizanbd.com"
