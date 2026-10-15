@@ -34,6 +34,7 @@ import {
   Compass,
   Map,
   Shield,
+  Store,
   BarChart3,
   ArrowLeftRight,
   Video,
@@ -307,7 +308,7 @@ export default function HomePage() {
               <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label={t('account')} className="overflow-hidden rounded-full border border-border"><img src={session && profile?.avatar_url ? profile.avatar_url : farmerAvatar} alt="" className="w-full h-full object-cover" /></Button></DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-56 shadow-elevated">
                 <div className="px-3 py-3 border-b border-border"><p className="text-xs text-muted-foreground">{session ? t('account') : t('welcome')}</p><p className="text-sm font-semibold truncate">{session ? profile?.full_name || session.user.email?.split('@')[0] : t('getStarted')}</p></div>
-                {session ? <><DropdownMenuItem asChild><Link to="/profile" className="gap-3 min-h-12"><User className="w-4 h-4" />{t('profile')}</Link></DropdownMenuItem>{isAdmin && <DropdownMenuItem asChild><Link to="/admin" className="gap-3 min-h-12"><Shield className="w-4 h-4" />{t('adminDashboard')}</Link></DropdownMenuItem>}</> : <DropdownMenuItem asChild><Link to="/auth" className="gap-3 min-h-12"><LogIn className="w-4 h-4" />{t('login')}</Link></DropdownMenuItem>}
+                {session ? <><DropdownMenuItem asChild><Link to="/profile" className="gap-3 min-h-12"><User className="w-4 h-4" />{t('profile')}</Link></DropdownMenuItem><DropdownMenuItem asChild><Link to="/portal" className="gap-3 min-h-12"><Store className="w-4 h-4" />{text('আমার পোর্টাল', 'My portal', 'मेरा पोर्टल')}</Link></DropdownMenuItem>{isAdmin && <DropdownMenuItem asChild><Link to="/admin-panel" className="gap-3 min-h-12"><Shield className="w-4 h-4" />{text('এডমিন প্যানেল', 'Admin panel', 'एडमिन पैनल')}</Link></DropdownMenuItem>}</> : <DropdownMenuItem asChild><Link to="/auth" className="gap-3 min-h-12"><LogIn className="w-4 h-4" />{t('login')}</Link></DropdownMenuItem>}
                 <DropdownMenuItem asChild><Link to="/settings" className="gap-3 min-h-12"><Settings className="w-4 h-4" />{t('settings')}</Link></DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <div className="flex justify-between px-2">{(['bn', 'en', 'hi'] as const).map(lang => <Button key={lang} variant="ghost" onClick={() => setLanguage(lang)} aria-pressed={language === lang}>{lang === 'bn' ? 'বাংলা' : lang === 'en' ? 'EN' : 'हिन्दी'}</Button>)}</div>

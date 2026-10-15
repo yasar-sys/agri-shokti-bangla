@@ -5,3 +5,5 @@
 - [x] Verify Home on mobile/desktop and check navigation, theme, notifications, installation and voice entry (install event simulated; native installation and live voice/audio not claimed).
 
 Scope: first Home-page review requested by the user. Other pages receive global tokens only; their individual redesigns and full-site Lighthouse audit are subsequent stages. No backend, API, route or data changes.
+- [x] Portals: farmer / merchant / trader + admin panel (approvals, price publishing)
+- [ ] Restyle every service page to match Home (next step, user chose portals first)

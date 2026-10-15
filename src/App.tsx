@@ -13,6 +13,8 @@ import { OfflineBanner } from "@/components/ui/OfflineBanner";
 // Lazy load pages for better performance
 const SplashPage = lazy(() => import("./pages/SplashPage"));
 const HomePage = lazy(() => import("./pages/HomePage"));
+const PortalPage = lazy(() => import("./pages/PortalPage"));
+const AdminPanelPage = lazy(() => import("./pages/AdminPanelPage"));
 const AuthPage = lazy(() => import("./pages/AuthPage"));
 const CameraPage = lazy(() => import("./pages/CameraPage"));
 const DiagnosisPage = lazy(() => import("./pages/DiagnosisPage"));
@@ -169,6 +171,8 @@ function AppContent() {
             <Route path="/storage" element={<StoragePage />} />
             <Route path="/land-calculator" element={<LandCalculatorPage />} />
             <Route path="/admin" element={<AdminAnalyticsPage />} />
+            <Route path="/portal" element={<PortalPage />} />
+            <Route path="/admin-panel" element={<AdminPanelPage />} />
             <Route path="/impact" element={<ImpactAnalyticsPage />} />
             <Route path="/knowledge-management" element={<KnowledgeManagementPage />} />
             <Route path="/rag-history" element={<RAGHistoryPage />} />

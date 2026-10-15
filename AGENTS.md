@@ -5,3 +5,4 @@
 - Shared editorial motion primitives live in `src/components/ui/editorial.tsx`; reduced-motion preferences govern all reveals and numeric animation.
 - Home retains existing hooks, queries, service destinations and account handlers; presentation changes never replace data or domain behavior.
 - Home opens the existing lazily loaded voice conversation through a body portal rather than introducing a second voice engine; this preserves its API/fallback and prevents page-motion stacking contexts from covering the microphone.
+- Role portals: `account_types` holds farmer/merchant/trader with status guarded by a DB trigger; merchant/trader prices reach `market_prices` only through the admin-only `review_price_submission` function so the public price list stays admin-controlled.
