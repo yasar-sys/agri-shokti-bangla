@@ -4,4 +4,4 @@
 - Display, UI and data typography use separate semantic font families so bilingual content and numeric tools stay consistent.
 - Shared editorial motion primitives live in `src/components/ui/editorial.tsx`; reduced-motion preferences govern all reveals and numeric animation.
 - Home retains existing hooks, queries, service destinations and account handlers; presentation changes never replace data or domain behavior.
-- Home opens the existing lazily loaded voice conversation rather than introducing a second voice engine, preserving its API and browser-TTS fallback.
+- Home opens the existing lazily loaded voice conversation through a body portal rather than introducing a second voice engine; this preserves its API/fallback and prevents page-motion stacking contexts from covering the microphone.

@@ -41,6 +41,7 @@ import {
   Droplets, Mic, Sun, Wind, Lightbulb, Leaf, Languages
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { createPortal } from "react-dom";
 import { motion, useReducedMotion } from "framer-motion";
 import { CountUp, Waveform, CropLine } from "@/components/ui/editorial";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -395,7 +396,7 @@ export default function HomePage() {
         </div>
         <footer className="mt-10 pt-6 border-t border-border flex flex-wrap justify-between gap-4 text-xs text-muted-foreground"><span>agriশক্তি · {t('taglineShort')}</span><p>কৃষকের হাতেই দেশের ভবিষ্যৎ, তাদের শ্রমেই আমাদের অন্ন।</p></footer>
       </main>
-      {voiceOpen && <Suspense fallback={<div className="fixed inset-0 z-[60] bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" aria-label={t('loading')} /></div>}><VoiceConversation isOpen={voiceOpen} onClose={() => setVoiceOpen(false)} /></Suspense>}
+      {voiceOpen && createPortal(<Suspense fallback={<div className="fixed inset-0 z-[70] bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" aria-label={t('loading')} /></div>}><VoiceConversation isOpen={voiceOpen} onClose={() => setVoiceOpen(false)} /></Suspense>, document.body)}
     </motion.div>
   );
 }
