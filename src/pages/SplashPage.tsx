@@ -1,143 +1,40 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { useNavigate } from "react-router-dom";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import agriLogo from "@/assets/agri-brain-logo.png";
-import { Sprout } from "lucide-react";
 
 export default function SplashPage() {
   const navigate = useNavigate();
-  const [fadeOut, setFadeOut] = useState(false);
-  const [showTagline, setShowTagline] = useState(false);
-  const [showMotto, setShowMotto] = useState(false);
+  const [leaving, setLeaving] = useState(false);
 
   useEffect(() => {
-    // Staggered animations
-    const taglineTimer = setTimeout(() => setShowTagline(true), 500);
-    const mottoTimer = setTimeout(() => setShowMotto(true), 1000);
-    
-    const timer = setTimeout(() => {
-      setFadeOut(true);
-      navigate("/home", { replace: true });
-    }, 3000);
-
+    const exitTimer = window.setTimeout(() => setLeaving(true), 2740);
+    const navigationTimer = window.setTimeout(() => navigate("/home", { replace: true }), 3000);
     return () => {
-      clearTimeout(taglineTimer);
-      clearTimeout(mottoTimer);
-      clearTimeout(timer);
+      window.clearTimeout(exitTimer);
+      window.clearTimeout(navigationTimer);
     };
   }, [navigate]);
 
-  return (
-    <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-300 ${
-        fadeOut ? "opacity-0" : "opacity-100"
-      }`}
-      style={{
-        backgroundImage: `url(${villageBg})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div className="absolute inset-0 bg-background/90" />
-      
-      {/* Logo and content */}
-      <div className="relative z-10 flex flex-col items-center gap-6">
-        {/* Logo with glow effect */}
-        <div className="relative animate-scale-in">
-          {/* Outer glow ring */}
-          
-          {/* Logo container */}
-          <div className="relative w-28 h-28 rounded-2xl overflow-hidden shadow-2xl border-2 border-secondary/50 transform hover:scale-105 transition-transform">
-            <img 
-              src={agriLogo} 
-              alt="agriশক্তি Logo" 
-              className="w-full h-full object-cover" 
-            />
-          </div>
-          
-          {/* Decorative corner elements */}
-          <div className="absolute -top-2 -left-2 w-4 h-4 border-t-2 border-l-2 border-secondary rounded-tl-lg" />
-          <div className="absolute -top-2 -right-2 w-4 h-4 border-t-2 border-r-2 border-secondary rounded-tr-lg" />
-          <div className="absolute -bottom-2 -left-2 w-4 h-4 border-b-2 border-l-2 border-secondary rounded-bl-lg" />
-          <div className="absolute -bottom-2 -right-2 w-4 h-4 border-b-2 border-r-2 border-secondary rounded-br-lg" />
+  return createPortal(
+    <main className={`splash-screen${leaving ? " splash-screen-leaving" : ""}`} aria-label="agriশক্তি">
+      <img src={villageBg} alt="" className="splash-landscape" aria-hidden="true" />
+      <div className="splash-shade" />
+      <div className="splash-identity">
+        <img src={agriLogo} alt="agriশক্তি লোগো" className="splash-logo" width={104} height={104} />
+        <div className="splash-wordmark">
+          <h1>agriশক্তি</h1>
+          <p className="splash-tagline">বাংলার কৃষকের AI সহকারী</p>
         </div>
-
-        {/* App name with gradient */}
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-primary animate-slide-up">
-            agriশক্তি
-          </h1>
-          
-          {/* Tagline */}
-          <p 
-            className={`text-sm text-secondary mt-2 transition-all duration-300 ${
-              showTagline ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
-            }`}
-          >
-            বাংলার কৃষকের AI সহকারী
-          </p>
-        </div>
-
-        {/* Motto with staggered animation */}
-        <div 
-          className={`text-center max-w-xs transition-all duration-300 ${
-            showMotto ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
-          }`}
-        >
-          <div className="px-4 py-3">
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি
-            </p>
-          </div>
+        <div className="splash-rule" aria-hidden="true" />
+        <p className="splash-motto">মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি</p>
+        <div className="splash-loading" role="status" aria-label="অ্যাপ খুলছে">
+          <span /><span /><span />
         </div>
       </div>
-
-      {/* Loading indicator - animated crops */}
-      <div className="relative z-10 mt-12 flex items-center gap-3">
-        {[0, 1, 2].map((_, i) => (
-          <div
-            key={i}
-            className="text-2xl"
-            style={{ animationDelay: `${i * 0.2}s` }}
-          >
-            <Sprout className="h-6 w-6 text-primary" />
-          </div>
-        ))}
-      </div>
-
-      {/* Progress bar */}
-      <div className="relative z-10 mt-6 w-48 h-1 bg-muted/50 rounded-full overflow-hidden">
-        <div 
-          className="h-full bg-gradient-to-r from-secondary to-primary rounded-full animate-progress"
-          style={{
-            animation: "progress 2.5s ease-out forwards"
-          }}
-        />
-      </div>
-
-      {/* Footer credit */}
-      <div className="absolute bottom-8 text-center z-10">
-        <div className="bg-card/30 backdrop-blur-sm rounded-full px-4 py-2 border border-border/30">
-          <p className="text-xs text-muted-foreground">
-            Created by <span className="text-secondary font-medium">TEAM_NEWBIES</span>
-          </p>
-        </div>
-      </div>
-
-      {/* Custom animation styles */}
-      <style>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0) rotate(0deg); opacity: 0.3; }
-          50% { transform: translateY(-20px) rotate(10deg); opacity: 0.6; }
-        }
-        .animate-float {
-          animation: float 6s ease-in-out infinite;
-        }
-        @keyframes progress {
-          0% { width: 0%; }
-          100% { width: 100%; }
-        }
-      `}</style>
-    </div>
+      <footer className="splash-credit">Created by <span>TEAM_NEWBIES</span></footer>
+    </main>,
+    document.body,
   );
 }
