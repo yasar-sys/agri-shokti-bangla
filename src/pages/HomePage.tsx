@@ -38,11 +38,15 @@ import {
   ArrowLeftRight,
   Video,
   Sprout,
-  Droplets
+  Droplets, Mic, Sun, Wind, Lightbulb, Leaf, Languages
 } from "lucide-react";
 import { Link } from "react-router-dom";
+import { motion, useReducedMotion } from "framer-motion";
+import { CountUp, Waveform, CropLine } from "@/components/ui/editorial";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
- import { useState, useEffect, useRef, useCallback } from "react";
+ import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
 import { Session } from "@supabase/supabase-js";
@@ -65,6 +69,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+const VoiceConversation = lazy(() => import("@/components/VoiceConversation").then(module => ({ default: module.VoiceConversation })));
+
 interface Profile {
   full_name: string | null;
   avatar_url: string | null;
@@ -85,7 +91,12 @@ export default function HomePage() {
   const weather = useWeather(location.latitude, location.longitude);
   const { prices: marketPrices, loading: marketLoading } = useMarketPrices();
   const { trackPageView, trackFeatureUse } = useAnalyticsTracker();
-  const { t, language } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+  const reducedMotion = useReducedMotion();
+  const [voiceOpen, setVoiceOpen] = useState(false);
+  const [voiceHover, setVoiceHover] = useState(false);
+  const text = (bn: string, en: string, hi: string) => language === "en" ? en : language === "hi" ? hi : bn;
 
    // Swipe handling for services carousel
    const touchStartX = useRef<number | null>(null);
@@ -122,32 +133,32 @@ export default function HomePage() {
 
   // Services array with translation keys
   const services = [
-    { icon: Scan, labelKey: "diseaseDetection", to: "/camera", gradient: "from-emerald-500/20 to-teal-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", descKey: "diseaseDesc" },
-    { icon: ScanSearch, labelKey: "fertilizerScan", to: "/fertilizer-scan", gradient: "from-rose-500/20 to-pink-500/20", iconColor: "text-rose-400", borderColor: "border-rose-500/30", descKey: "fertilizerDesc" },
-    { icon: Bug, labelKey: "pestMap", to: "/pest-map", gradient: "from-amber-500/20 to-orange-500/20", iconColor: "text-amber-400", borderColor: "border-amber-500/30", descKey: "pestDesc" },
-    { icon: MessageSquare, labelKey: "aiAssistant", to: "/chat", gradient: "from-cyan-500/20 to-sky-500/20", iconColor: "text-cyan-400", borderColor: "border-cyan-500/30", descKey: "aiDesc" },
-    { icon: TrendingUp, labelKey: "marketPrice", to: "/market", gradient: "from-green-500/20 to-emerald-500/20", iconColor: "text-green-400", borderColor: "border-green-500/30", descKey: "marketDesc" },
-    { icon: Cloud, labelKey: "weather", to: "/weather", gradient: "from-blue-500/20 to-indigo-500/20", iconColor: "text-blue-400", borderColor: "border-blue-500/30", descKey: "weatherDesc" },
-    { icon: Calendar, labelKey: "calendar", to: "/farmer-calendar", gradient: "from-fuchsia-500/20 to-pink-500/20", iconColor: "text-fuchsia-400", borderColor: "border-fuchsia-500/30", descKey: "calendarBanglaEng" },
-    { icon: Compass, labelKey: "compass", to: "/compass", gradient: "from-cyan-500/20 to-teal-500/20", iconColor: "text-cyan-400", borderColor: "border-cyan-500/30", descKey: "compassDesc" },
-    { icon: Map, labelKey: "landMap", to: "/map", gradient: "from-indigo-500/20 to-violet-500/20", iconColor: "text-indigo-400", borderColor: "border-indigo-500/30", descKey: "landMapDesc" },
-    { icon: Satellite, labelKey: "satellite", to: "/satellite", gradient: "from-violet-500/20 to-purple-500/20", iconColor: "text-violet-400", borderColor: "border-violet-500/30", descKey: "satelliteDesc" },
-     { icon: Calendar, labelKey: "myCalendar", to: "/calendar", gradient: "from-orange-500/20 to-amber-500/20", iconColor: "text-orange-400", borderColor: "border-orange-500/30", descKey: "myCalendarDesc" },
-    { icon: Tractor, labelKey: "machine", to: "/machine", gradient: "from-orange-500/20 to-red-500/20", iconColor: "text-orange-400", borderColor: "border-orange-500/30", descKey: "machineDesc" },
-    { icon: Calculator, labelKey: "npkCalculator", to: "/npk-calculator", gradient: "from-lime-500/20 to-green-500/20", iconColor: "text-lime-400", borderColor: "border-lime-500/30", descKey: "npkDesc" },
-    { icon: CloudLightning, labelKey: "climateAlert", to: "/climate-alert", gradient: "from-red-500/20 to-rose-500/20", iconColor: "text-red-400", borderColor: "border-red-500/30", descKey: "climateDesc" },
-    { icon: Landmark, labelKey: "govServices", to: "/gov-services", gradient: "from-teal-500/20 to-cyan-500/20", iconColor: "text-teal-400", borderColor: "border-teal-500/30", descKey: "govDesc" },
-    { icon: Warehouse, labelKey: "storage", to: "/storage", gradient: "from-slate-500/20 to-gray-500/20", iconColor: "text-slate-400", borderColor: "border-slate-500/30", descKey: "storageDesc" },
-    { icon: History, labelKey: "history", to: "/history", gradient: "from-zinc-500/20 to-stone-500/20", iconColor: "text-zinc-400", borderColor: "border-zinc-500/30", descKey: "historyDesc" },
-    { icon: Award, labelKey: "rewards", to: "/gamification", gradient: "from-yellow-500/20 to-amber-500/20", iconColor: "text-yellow-400", borderColor: "border-yellow-500/30", descKey: "rewardsDesc" },
-    { icon: GraduationCap, labelKey: "knowledge", to: "/knowledge", gradient: "from-purple-500/20 to-violet-500/20", iconColor: "text-purple-400", borderColor: "border-purple-500/30", descKey: "knowledgeDesc" },
-    { icon: UsersRound, labelKey: "community", to: "/community", gradient: "from-sky-500/20 to-blue-500/20", iconColor: "text-sky-400", borderColor: "border-sky-500/30", descKey: "communityDesc" },
-    { icon: PlayCircle, labelKey: "appGuide", to: "/demo", gradient: "from-pink-500/20 to-rose-500/20", iconColor: "text-pink-400", borderColor: "border-pink-500/30", descKey: "guideDesc" },
-    { icon: MapPin, labelKey: "landCalculator", to: "/land-calculator", gradient: "from-emerald-500/20 to-green-500/20", iconColor: "text-emerald-400", borderColor: "border-emerald-500/30", descKey: "landDesc" },
-    { icon: BarChart3, labelKey: "impactAnalytics", to: "/impact", gradient: "from-gradient-start/20 to-gradient-end/20", iconColor: "text-secondary", borderColor: "border-secondary/30", descKey: "impactDesc" },
-    { icon: ArrowLeftRight, labelKey: "cropBarter", to: "/barter", gradient: "from-yellow-500/20 to-orange-500/20", iconColor: "text-yellow-400", borderColor: "border-yellow-500/30", descKey: "barterDesc" },
-    { icon: Sprout, labelKey: "yieldMax", to: "/yieldmax", gradient: "from-green-500/20 to-lime-500/20", iconColor: "text-green-400", borderColor: "border-green-500/30", descKey: "yieldMaxDesc" },
-    { icon: Droplets, labelKey: "precisionFarm", to: "/precision-farm", gradient: "from-blue-500/20 to-cyan-500/20", iconColor: "text-blue-400", borderColor: "border-blue-500/30", descKey: "precisionFarmDesc" },
+    { icon: Scan, labelKey: "diseaseDetection", to: "/camera", descKey: "diseaseDesc" },
+    { icon: ScanSearch, labelKey: "fertilizerScan", to: "/fertilizer-scan", descKey: "fertilizerDesc" },
+    { icon: Bug, labelKey: "pestMap", to: "/pest-map", descKey: "pestDesc" },
+    { icon: MessageSquare, labelKey: "aiAssistant", to: "/chat", descKey: "aiDesc" },
+    { icon: TrendingUp, labelKey: "marketPrice", to: "/market", descKey: "marketDesc" },
+    { icon: Cloud, labelKey: "weather", to: "/weather", descKey: "weatherDesc" },
+    { icon: Calendar, labelKey: "calendar", to: "/farmer-calendar", descKey: "calendarBanglaEng" },
+    { icon: Compass, labelKey: "compass", to: "/compass", descKey: "compassDesc" },
+    { icon: Map, labelKey: "landMap", to: "/map", descKey: "landMapDesc" },
+    { icon: Satellite, labelKey: "satellite", to: "/satellite", descKey: "satelliteDesc" },
+     { icon: Calendar, labelKey: "myCalendar", to: "/calendar", descKey: "myCalendarDesc" },
+    { icon: Tractor, labelKey: "machine", to: "/machine", descKey: "machineDesc" },
+    { icon: Calculator, labelKey: "npkCalculator", to: "/npk-calculator", descKey: "npkDesc" },
+    { icon: CloudLightning, labelKey: "climateAlert", to: "/climate-alert", descKey: "climateDesc" },
+    { icon: Landmark, labelKey: "govServices", to: "/gov-services", descKey: "govDesc" },
+    { icon: Warehouse, labelKey: "storage", to: "/storage", descKey: "storageDesc" },
+    { icon: History, labelKey: "history", to: "/history", descKey: "historyDesc" },
+    { icon: Award, labelKey: "rewards", to: "/gamification", descKey: "rewardsDesc" },
+    { icon: GraduationCap, labelKey: "knowledge", to: "/knowledge", descKey: "knowledgeDesc" },
+    { icon: UsersRound, labelKey: "community", to: "/community", descKey: "communityDesc" },
+    { icon: PlayCircle, labelKey: "appGuide", to: "/demo", descKey: "guideDesc" },
+    { icon: MapPin, labelKey: "landCalculator", to: "/land-calculator", descKey: "landDesc" },
+    { icon: BarChart3, labelKey: "impactAnalytics", to: "/impact", descKey: "impactDesc" },
+    { icon: ArrowLeftRight, labelKey: "cropBarter", to: "/barter", descKey: "barterDesc" },
+    { icon: Sprout, labelKey: "yieldMax", to: "/yieldmax", descKey: "yieldMaxDesc" },
+    { icon: Droplets, labelKey: "precisionFarm", to: "/precision-farm", descKey: "precisionFarmDesc" },
   ];
 
   const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
@@ -278,464 +289,113 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen pb-28 relative overflow-hidden">
-      {/* Premium Background */}
-      <div className="fixed inset-0 -z-10">
-        <div 
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${villageBg})`,
-            backgroundSize: 'cover',
-            backgroundPosition: 'center',
-            backgroundRepeat: 'no-repeat',
-          }}
-        />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/95 via-background/90 to-background" />
-        {/* Animated orbs */}
-        <div className="absolute top-20 right-10 w-72 h-72 bg-secondary/10 rounded-full blur-3xl animate-float-slow" />
-        <div className="absolute bottom-40 left-10 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-float" />
-      </div>
-
-      {/* Premium Header */}
-      <header className="relative">
-        {/* Glass Header */}
-        <div className="relative px-5 pt-6 pb-5">
-          {/* Decorative gradient line */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent" />
-          
-          <div className="flex items-start justify-between">
-            {/* Left Side - Logo & Branding */}
-            <div className="flex items-center gap-4">
-              <div className="relative group">
-                <div className="absolute -inset-1 bg-gradient-to-br from-primary/50 to-secondary/50 rounded-2xl blur opacity-30 group-hover:opacity-50 transition-opacity" />
-                <div className="relative w-14 h-14 rounded-2xl bg-card/80 backdrop-blur-sm border border-border/50 flex items-center justify-center overflow-hidden shadow-premium">
-                  <img 
-                    src={agriBrainLogo} 
-                    alt="agriশক্তি Logo" 
-                    className="w-10 h-10 object-contain"
-                  />
-                </div>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-foreground">
-                  <span className="text-gradient-premium">{t('appName')}</span>
-                </h1>
-                <p className="text-xs text-muted-foreground mt-0.5 flex items-center gap-1">
-                  <Sparkles className="w-3 h-3 text-primary" />
-                  {t('taglineShort')}
-                </p>
-              </div>
+    <motion.div className="home-workspace" initial={reducedMotion ? false : { opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.28 }}>
+      <header className="home-header safe-area-top">
+        <div className="home-inner home-header-row">
+          <Link to="/home" className="flex items-center gap-3" aria-label={t('home')}>
+            <img src={agriBrainLogo} alt="" width="44" height="44" className="h-11 w-11 object-contain rounded-md" />
+            <div><div className="brand-name">agri<span className="text-primary">শক্তি</span></div><p className="text-xs text-muted-foreground hidden sm:block">{t('taglineShort')}</p></div>
+          </Link>
+          <div className="flex items-center gap-1 sm:gap-3">
+            <div className="hidden md:flex items-center gap-1 mr-3" aria-label={t('language')}>
+              {(['bn', 'en', 'hi'] as const).map(lang => <Button key={lang} variant="ghost" className={cn('px-3', language === lang && 'bg-muted text-primary')} onClick={() => setLanguage(lang)} aria-pressed={language === lang}>{lang === 'bn' ? 'বাংলা' : lang === 'en' ? 'EN' : 'हिन्दी'}</Button>)}
             </div>
-            
-            {/* Right Side - User Avatar */}
+            <InstallAppButton />
+            <NotificationCenter className="h-12 w-12 bg-transparent" />
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <button className="relative group focus:outline-none">
-                  <div className="absolute -inset-1 bg-gradient-to-br from-primary/40 to-secondary/40 rounded-2xl blur opacity-0 group-hover:opacity-50 transition-opacity" />
-                  <div className="relative w-14 h-14 rounded-2xl glass-card flex items-center justify-center border border-border/50 group-hover:border-primary/30 transition-all shadow-premium overflow-hidden">
-                    {session && profile?.avatar_url ? (
-                      <img 
-                        src={profile.avatar_url} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <img 
-                        src={farmerAvatar} 
-                        alt="Farmer" 
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-card rounded-full border border-border/50 flex items-center justify-center shadow-soft">
-                    <ChevronDown className="w-3 h-3 text-muted-foreground" />
-                  </div>
-                  {session && (
-                    <div className="absolute -top-1 -right-1 w-4 h-4 bg-gradient-to-br from-secondary to-secondary/80 rounded-full border-2 border-card shadow-glow animate-pulse" />
-                  )}
-                </button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-52 glass-strong border-border/50 shadow-elevated">
-                {session ? (
-                  <>
-                    <div className="px-3 py-3 border-b border-border/50">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('account')}</p>
-                      <p className="text-sm font-semibold text-foreground truncate mt-0.5">
-                        {profile?.full_name || session.user.email?.split('@')[0]}
-                      </p>
-                    </div>
-                    <DropdownMenuItem asChild>
-                      <Link to="/profile" className="cursor-pointer gap-3 py-2.5">
-                        <User className="w-4 h-4 text-muted-foreground" />
-                        <span>{t('profile')}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/settings" className="cursor-pointer gap-3 py-2.5">
-                        <Settings className="w-4 h-4 text-muted-foreground" />
-                        <span>{t('settings')}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    {isAdmin && (
-                      <DropdownMenuItem asChild>
-                        <Link to="/admin" className="cursor-pointer gap-3 py-2.5">
-                          <Shield className="w-4 h-4 text-primary" />
-                          <span>{t('adminDashboard')}</span>
-                        </Link>
-                      </DropdownMenuItem>
-                    )}
-                    <DropdownMenuSeparator className="bg-border/50" />
-                    <DropdownMenuItem 
-                      onClick={handleLogout}
-                      className="cursor-pointer gap-3 py-2.5 text-destructive focus:text-destructive"
-                    >
-                      <LogOut className="w-4 h-4" />
-                      <span>{t('logout')}</span>
-                    </DropdownMenuItem>
-                  </>
-                ) : (
-                  <>
-                    <div className="px-3 py-3 border-b border-border/50">
-                      <p className="text-[10px] text-muted-foreground uppercase tracking-wide">{t('welcome')}</p>
-                      <p className="text-sm font-semibold text-foreground mt-0.5">{t('getStarted')}</p>
-                    </div>
-                    <DropdownMenuItem asChild>
-                      <Link to="/auth" className="cursor-pointer gap-3 py-2.5">
-                        <LogIn className="w-4 h-4 text-muted-foreground" />
-                        <span>{t('login')}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem asChild>
-                      <Link to="/settings" className="cursor-pointer gap-3 py-2.5">
-                        <Settings className="w-4 h-4 text-muted-foreground" />
-                        <span>{t('settings')}</span>
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
+              <DropdownMenuTrigger asChild><Button variant="ghost" size="icon" aria-label={t('account')} className="overflow-hidden rounded-full border border-border"><img src={session && profile?.avatar_url ? profile.avatar_url : farmerAvatar} alt="" className="w-full h-full object-cover" /></Button></DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56 shadow-elevated">
+                <div className="px-3 py-3 border-b border-border"><p className="text-xs text-muted-foreground">{session ? t('account') : t('welcome')}</p><p className="text-sm font-semibold truncate">{session ? profile?.full_name || session.user.email?.split('@')[0] : t('getStarted')}</p></div>
+                {session ? <><DropdownMenuItem asChild><Link to="/profile" className="gap-3 min-h-12"><User className="w-4 h-4" />{t('profile')}</Link></DropdownMenuItem>{isAdmin && <DropdownMenuItem asChild><Link to="/admin" className="gap-3 min-h-12"><Shield className="w-4 h-4" />{t('adminDashboard')}</Link></DropdownMenuItem>}</> : <DropdownMenuItem asChild><Link to="/auth" className="gap-3 min-h-12"><LogIn className="w-4 h-4" />{t('login')}</Link></DropdownMenuItem>}
+                <DropdownMenuItem asChild><Link to="/settings" className="gap-3 min-h-12"><Settings className="w-4 h-4" />{t('settings')}</Link></DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <div className="flex justify-between px-2">{(['bn', 'en', 'hi'] as const).map(lang => <Button key={lang} variant="ghost" onClick={() => setLanguage(lang)} aria-pressed={language === lang}>{lang === 'bn' ? 'বাংলা' : lang === 'en' ? 'EN' : 'हिन्दी'}</Button>)}</div>
+                <DropdownMenuItem onClick={toggleTheme} className="gap-3 min-h-12"><Sun className="w-4 h-4" />{theme === 'light' ? text('ডার্ক মোড', 'Dark mode', 'डार्क मोड') : text('লাইট মোড', 'Light mode', 'लाइट मोड')}</DropdownMenuItem>
+                {session && <><DropdownMenuSeparator /><DropdownMenuItem onClick={handleLogout} className="gap-3 min-h-12 text-destructive"><LogOut className="w-4 h-4" />{t('logout')}</DropdownMenuItem></>}
               </DropdownMenuContent>
             </DropdownMenu>
-          </div>
-          
-          {/* Location & Weather Bar with Real-time Clock */}
-          <div className="mt-5 glass-card rounded-2xl px-4 py-3 border border-border/30">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2.5">
-                {location.loading ? (
-                  <div className="w-8 h-8 rounded-xl bg-muted/50 flex items-center justify-center">
-                    <Loader2 className="w-4 h-4 text-muted-foreground animate-spin" />
-                  </div>
-                ) : (
-                  <div className="w-8 h-8 rounded-xl bg-destructive/10 flex items-center justify-center">
-                    <MapPin className="w-4 h-4 text-destructive" />
-                  </div>
-                )}
-                <div>
-                  <span className="text-sm font-medium text-foreground block">
-                    {location.loading ? t('findingLocation') : location.city}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground">{location.country}</span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <InstallAppButton />
-                <NotificationCenter />
-                {weather.loading ? (
-                  <Loader2 className="w-5 h-5 text-muted-foreground animate-spin" />
-                ) : (
-                  <>
-                    <div className="text-right">
-                      <span className="text-lg font-bold text-foreground">{weather.temp}°</span>
-                      <span className="text-[10px] text-muted-foreground block">{weather.conditionBn}</span>
-                    </div>
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500/20 to-cyan-500/20 flex items-center justify-center text-2xl">
-                      {weather.icon}
-                    </div>
-                  </>
-                )}
-              </div>
-            </div>
-            {/* Real-time Clock */}
-            <div className="mt-3 pt-3 border-t border-border/30 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="text-2xl font-mono font-bold text-gradient-premium">
-                  {getLocalizedTime()}
-                </span>
-              </div>
-              <div className="text-right">
-                <span className="text-xs text-muted-foreground">
-                  {getLocalizedDate()}
-                </span>
-              </div>
-            </div>
           </div>
         </div>
       </header>
 
-      {/* Stats Row */}
-      <section className="px-5 mb-5 animate-slide-up">
-        <div className="grid grid-cols-3 gap-3">
-          {/* Scans */}
-          <div className="group relative overflow-hidden glass-card rounded-2xl p-4 text-center border border-border/30 hover:border-secondary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-glow">
-            <div className="absolute inset-0 bg-gradient-to-br from-secondary/0 to-secondary/0 group-hover:from-secondary/10 group-hover:to-transparent transition-all duration-500" />
-            <span className="relative text-2xl font-bold text-gradient-mint block">
-              {profile ? String(profile.total_scans).padStart(2, '0') : '00'}
-            </span>
-            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">{t('scans')}</p>
-          </div>
-          
-          {/* Level */}
-          <div className="group relative overflow-hidden glass-card rounded-2xl p-4 text-center border border-border/30 hover:border-primary/40 transition-all duration-300 hover:-translate-y-1 hover:shadow-glow-gold">
-            <div className="absolute inset-0 bg-gradient-to-br from-primary/0 to-primary/0 group-hover:from-primary/10 group-hover:to-transparent transition-all duration-500" />
-            <span className="relative text-2xl font-bold text-gradient-gold block">{getUserLevel()}</span>
-            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">{t('level')}</p>
-          </div>
-          
-          {/* Weather Quick */}
-          <div className="group relative overflow-hidden glass-card rounded-2xl p-4 text-center border border-border/30 hover:border-chart-3/40 transition-all duration-300 hover:-translate-y-1">
-            <div className="absolute inset-0 bg-gradient-to-br from-chart-3/0 to-chart-3/0 group-hover:from-chart-3/10 group-hover:to-transparent transition-all duration-500" />
-            <div className="relative flex items-center justify-center">
-              <span className="text-2xl group-hover:scale-125 transition-transform duration-300">{weather.icon}</span>
-            </div>
-            <p className="relative text-[11px] text-muted-foreground mt-1 font-medium">{weather.temp}°C</p>
-          </div>
+      <main className="home-inner">
+        <div className="home-date-strip">
+          <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-clay" />{location.loading ? t('findingLocation') : location.city}<span className="hidden sm:inline">· {location.country}</span></span>
+          <span className="flex gap-4 items-center"><span>{getLocalizedDate()}</span><span className="font-mono tabular-nums hidden sm:inline">{getLocalizedTime()}</span></span>
         </div>
-      </section>
+        <div className="home-introduction">
+          <div><p className="text-xs text-clay mb-1">{text('মাটি, মানুষ, প্রযুক্তি', 'SOIL. PEOPLE. POSSIBILITY.', 'मिट्टी, लोग, तकनीक')}</p><h1 className="home-greeting">{text('আসসালামু আলাইকুম,', 'Welcome to your field,', 'आपके खेत में स्वागत है,')}<br className="sm:hidden" /> <span className="text-primary">{profile?.full_name || text('কৃষক ভাই!', 'farmer.', 'किसान भाई!')}</span></h1></div>
+          <CropLine className="text-primary/60 hidden sm:block shrink-0" />
+        </div>
 
-      {/* AI CTA Banner */}
-      <section className="px-5 mb-5 animate-slide-up stagger-1">
-        <Link to="/camera">
-          <div className="relative overflow-hidden rounded-3xl p-5 group">
-            {/* Gradient background */}
-            <div className="absolute inset-0 bg-gradient-to-r from-secondary via-secondary/90 to-emerald-500 opacity-90" />
-            <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/20" />
-            
-            {/* Shimmer effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
-            
-            {/* Decorative circles */}
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-white/10 rounded-full blur-2xl" />
-            <div className="absolute -bottom-10 -left-10 w-24 h-24 bg-white/10 rounded-full blur-xl" />
-            
-            <div className="relative flex items-center justify-between">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 group-hover:rotate-6 transition-all duration-300 shadow-lg">
-                  <Scan className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h3 className="text-white font-bold text-base flex items-center gap-2">
-                    {t('aiDiseaseDiagnosis')}
-                    <Zap className="w-4 h-4 text-yellow-300 animate-pulse" />
-                  </h3>
-                  <p className="text-white/80 text-xs mt-0.5">
-                    {t('takeCropPhotoAI')}
-                  </p>
-                </div>
+        <div className="home-lead-grid">
+          <section aria-label={t('aiAssistant')}>
+            <div className="voice-feature">
+              <div>
+                <p className="text-xs text-clay flex items-center gap-2 mb-2"><span className="w-1.5 h-1.5 bg-clay rounded-full" />{t('aiAssistant')}</p>
+                <h2>{text('আপনার কথা,', 'Your voice.', 'आपकी आवाज़,')}<br /><span className="text-primary">{text('কৃষির নতুন শক্তি।', 'A stronger harvest.', 'खेती की नई ताकत।')}</span></h2>
+                <p className="text-sm text-muted-foreground mt-2 mb-4">{t('aiDesc')}</p>
+                <Button variant="link" asChild className="p-0 justify-start text-sm"><Link to="/chat">{t('aiChat')}<ArrowRight className="w-4 h-4" /></Link></Button>
               </div>
-              <ArrowRight className="w-6 h-6 text-white group-hover:translate-x-1 transition-transform" />
-            </div>
-          </div>
-        </Link>
-      </section>
-
-      {/* Today's Tip - Multiple rotating tips */}
-      <section className="px-5 mb-5 animate-slide-up stagger-2">
-        <div className="relative overflow-hidden glass-card rounded-2xl p-4 border border-primary/30">
-          {/* Animated gradient */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/5 via-transparent to-primary/5 animate-gradient" />
-          
-          <div className="relative flex items-start gap-4">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center text-2xl flex-shrink-0 shadow-soft animate-bounce-subtle">
-              💡
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-primary text-sm mb-1.5 flex items-center gap-2">
-                <span className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                {t('todayTip')}
-              </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {[
-                  "সকালে সেচ দিলে পানির অপচয় কম হয় এবং গাছ বেশি পানি শোষণ করে।",
-                  "মাটির pH ৬-৭ এর মধ্যে রাখলে বেশিরভাগ ফসল ভালো হয়।",
-                  "জৈব সার ব্যবহারে মাটির স্বাস্থ্য ভালো থাকে ও ফলন বাড়ে।",
-                  "ফসল ঘুরিয়ে চাষ করলে মাটির উর্বরতা বজায় থাকে।",
-                  "পোকা দমনে প্রথমে জৈব পদ্ধতি ব্যবহার করুন।",
-                  "বীজ বপনের আগে বীজ শোধন করলে রোগ কম হয়।",
-                  "সঠিক সময়ে সার দিলে ফলন ২০-৩০% বাড়ে।"
-                ][new Date().getDate() % 7]}
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Farmer Quote */}
-      <section className="px-5 mb-5">
-        <div className="glass-card rounded-2xl p-4 border border-secondary/20 text-center">
-          <p className="text-sm text-muted-foreground italic leading-relaxed">
-            "কৃষকের হাতেই দেশের ভবিষ্যৎ, তাদের শ্রমেই আমাদের অন্ন।"
-          </p>
-        </div>
-      </section>
-
-      {/* Services Grid */}
-      <section className="px-5 mb-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-primary" />
-            {t('services')}
-          </h2>
-          <div className="flex items-center gap-3">
-            <span className="text-xs text-muted-foreground font-medium bg-muted/50 px-2 py-1 rounded-full">
-              {currentPage + 1}/{totalPages}
-            </span>
-            <div className="flex gap-1">
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 rounded-xl glass-card border border-border/30 hover:border-secondary/50"
-                onClick={prevPage}
-              >
-                <ChevronLeft className="w-4 h-4" />
-              </Button>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="h-8 w-8 rounded-xl glass-card border border-border/30 hover:border-secondary/50"
-                onClick={nextPage}
-              >
-                <ChevronRight className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-         <div 
-           className="grid grid-cols-3 gap-3"
-           onTouchStart={handleTouchStart}
-           onTouchMove={handleTouchMove}
-           onTouchEnd={handleTouchEnd}
-         >
-          {currentServices.map((service, index) => (
-            <Link
-              key={service.to}
-              to={service.to}
-              className={cn(
-                "group relative overflow-hidden rounded-2xl p-4 flex flex-col items-center gap-3",
-                "glass-card border transition-all duration-300",
-                "active:scale-95 hover:-translate-y-1",
-                service.borderColor,
-                "hover:shadow-lg"
-              )}
-              style={{ 
-                animationDelay: `${index * 60}ms`,
-              }}
-            >
-              {/* Gradient background on hover */}
-              <div className={cn(
-                "absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300",
-                service.gradient
-              )} />
-              
-              {/* Icon container */}
-              <div className={cn(
-                "relative w-14 h-14 rounded-2xl flex items-center justify-center",
-                "bg-gradient-to-br transition-all duration-300",
-                service.gradient,
-                "group-hover:scale-110 group-hover:shadow-lg"
-              )}>
-                <service.icon className={cn(
-                  "w-7 h-7 transition-all duration-300",
-                  service.iconColor,
-                  "group-hover:scale-110"
-                )} />
-              </div>
-              
-              {/* Label */}
-              <span className="relative text-xs text-foreground text-center font-semibold leading-tight group-hover:text-primary transition-colors">
-                {t(service.labelKey)}
-              </span>
-            </Link>
-          ))}
-        </div>
-
-        {/* Pagination Dots */}
-        <div className="flex justify-center gap-2 mt-4">
-          {Array.from({ length: totalPages }).map((_, i) => (
-            <button
-              key={i}
-              onClick={() => setCurrentPage(i)}
-              className={cn(
-                "h-2 rounded-full transition-all duration-300",
-                i === currentPage 
-                  ? "w-6 bg-gradient-to-r from-primary to-secondary" 
-                  : "w-2 bg-muted-foreground/30 hover:bg-muted-foreground/50"
-              )}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Market Prices */}
-      <section className="px-5 mb-5">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-            <TrendingUp className="w-4 h-4 text-secondary" />
-            {t('todayMarketPrice')}
-            {marketLoading && <Loader2 className="w-3 h-3 animate-spin" />}
-          </h2>
-          <Link to="/market" className="text-xs text-secondary font-medium flex items-center gap-1 hover:underline">
-            {t('viewAll')}
-            <ArrowRight className="w-3 h-3" />
-          </Link>
-        </div>
-        <div className="space-y-3">
-          {topMarketPrices.length > 0 ? topMarketPrices.map((item, index) => (
-            <div 
-              key={index}
-              className={cn(
-                "group flex items-center justify-between",
-                "glass-card rounded-2xl px-4 py-4 border border-border/30",
-                "hover:border-primary/30 hover:shadow-soft",
-                "transition-all duration-300 hover:-translate-y-0.5",
-                "animate-slide-up"
-              )}
-              style={{ animationDelay: `${(index + 1) * 80}ms` }}
-            >
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex items-center justify-center text-3xl group-hover:scale-110 transition-transform duration-300 shadow-soft">
-                  {item.emoji}
-                </div>
-                <div>
-                  <span className="text-sm font-bold text-foreground block group-hover:text-primary transition-colors">
-                    {item.name}
-                  </span>
-                  <span className="text-[11px] text-muted-foreground">
-                    {item.weeklyAvg ? `${t('weeklyAvg')}: ${item.weeklyAvg}` : item.unit}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <span className="text-lg font-bold text-foreground">{item.price}</span>
-                <div className={cn(
-                  "flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-xl font-bold",
-                  item.positive 
-                    ? "text-secondary bg-secondary/15 border border-secondary/30" 
-                    : "text-destructive bg-destructive/15 border border-destructive/30"
-                )}>
-                  {item.positive ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                  {item.change >= 0 ? '+' : ''}{item.change}
-                </div>
+              <div className="voice-orbit">
+                <motion.div whileTap={reducedMotion ? undefined : { scale: 0.95 }} transition={{ type: 'spring', duration: 0.24, bounce: 0.2 }}>
+                  <Button className="voice-mic" aria-label={t('speakBengali')} onClick={() => setVoiceOpen(true)} onMouseEnter={() => setVoiceHover(true)} onMouseLeave={() => setVoiceHover(false)} onFocus={() => setVoiceHover(true)} onBlur={() => setVoiceHover(false)}><Mic /></Button>
+                </motion.div>
+                <Waveform active={voiceHover} />
+                <span className="text-xs text-muted-foreground">{t('speakBengali')}</span>
               </div>
             </div>
-          )) : (
-            <div className="glass-card rounded-2xl p-6 text-center border border-border/30">
-              <p className="text-muted-foreground text-sm">{t('loading')}</p>
-            </div>
-          )}
-        </div>
-      </section>
+            <figure className="field-photo"><img src={villageBg} alt={text('বাংলাদেশের ধানের মাঠ ও গ্রাম', 'Rice fields and village in Bangladesh', 'बांग्लादेश के धान के खेत और गाँव')} width="1366" height="768" fetchPriority="high" /><figcaption>{t('tagline')}</figcaption></figure>
+          </section>
 
-    </div>
+          <section className="weather-feature" aria-label={t('weather')}>
+            <div className="flex items-center justify-between mb-3"><h2 className="text-lg font-medium">{t('weather')}</h2><Cloud className="w-7 h-7 text-clay" /></div>
+            <div>
+              {weather.loading ? <Skeleton className="h-20 w-36" /> : weather.error ? <p className="text-sm text-danger">{weather.error}</p> : <><div className="weather-number"><CountUp value={weather.temp} suffix="°" /></div><p className="text-sm text-muted-foreground mb-4">{weather.conditionBn}</p></>}
+            </div>
+            <div className="weather-details">
+              <div className="grid grid-cols-2 gap-4 border-y border-border py-4 text-xs">
+                <div className="flex items-center gap-2"><Droplets className="w-4 h-4 text-info" /><div><span className="text-muted-foreground block">{t('humidity')}</span><span className="font-mono">{weather.loading || weather.error ? '—' : weather.humidity + '%'}</span></div></div>
+                <div className="flex items-center gap-2"><Wind className="w-4 h-4 text-primary" /><div><span className="text-muted-foreground block">{t('wind')}</span><span className="font-mono">{weather.loading || weather.error ? '—' : weather.wind + ' km/h'}</span></div></div>
+              </div>
+              <div className="flex items-center justify-between py-3 text-xs"><span className="text-muted-foreground">{t('scans')} <span className="font-mono text-foreground ml-1">{profile ? String(profile.total_scans).padStart(2, '0') : '00'}</span></span><span className="text-muted-foreground">{t('level')} <span className="font-mono text-foreground ml-1">{getUserLevel()}</span></span></div>
+              <Button variant="link" asChild className="px-0"><Link to="/weather">{t('weatherDesc')}<ArrowRight /></Link></Button>
+            </div>
+          </section>
+        </div>
+
+        <section className="home-services" aria-labelledby="services-heading">
+          <div className="flex items-center justify-between gap-2 mb-4"><h2 id="services-heading" className="home-section-title">{t('services')}</h2><div className="flex items-center gap-1"><span className="font-mono text-xs text-muted-foreground mr-2">{String(currentPage + 1).padStart(2, '0')} / {String(totalPages).padStart(2, '0')}</span><Button variant="ghost" size="icon" onClick={prevPage} aria-label={text('আগের সেবাসমূহ', 'Previous services', 'पिछली सेवाएँ')}><ChevronLeft /></Button><Button variant="outline" size="icon" onClick={nextPage} aria-label={text('পরের সেবাসমূহ', 'Next services', 'अगली सेवाएँ')}><ChevronRight /></Button></div></div>
+          <div className="service-editorial-grid" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
+            {currentServices.map((service, index) => <motion.div key={service.to} initial={reducedMotion ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: index * 0.025 }} className="service-editorial-item">
+              <Link to={service.to} className="flex items-center gap-3 w-full min-h-16 group"><service.icon className={cn('w-7 h-7 shrink-0', index % 3 === 1 ? 'text-clay' : 'text-primary')} strokeWidth={1.5} /><div className="min-w-0"><span className="text-sm font-semibold block">{t(service.labelKey)}</span><span className="text-xs text-muted-foreground block mt-1">{t(service.descKey)}</span></div><ArrowRight className="w-4 h-4 ml-auto shrink-0 text-muted-foreground hidden sm:block group-hover:text-primary" /></Link>
+            </motion.div>)}
+          </div>
+          <div className="flex justify-center mt-2">{Array.from({ length: totalPages }).map((_, i) => <Button key={i} variant="ghost" size="icon" onClick={() => setCurrentPage(i)} aria-label={text(`সেবার পৃষ্ঠা ${i + 1}`, `Services page ${i + 1}`, `सेवा पृष्ठ ${i + 1}`)} aria-current={i === currentPage ? 'true' : undefined}><span className={cn('h-1 rounded-full', i === currentPage ? 'w-6 bg-primary' : 'w-2 bg-border')} /></Button>)}</div>
+        </section>
+
+        <div className="home-bottom-grid">
+          <section aria-labelledby="market-heading">
+            <div className="flex items-center justify-between gap-4 mb-2"><h2 id="market-heading" className="home-section-title">{t('todayMarketPrice')}</h2><Button asChild variant="link" className="px-0"><Link to="/market">{t('viewAll')}<ArrowRight /></Link></Button></div>
+            {marketLoading ? <div className="space-y-4 py-4" role="status" aria-label={t('loading')}>{[0, 1, 2].map(i => <Skeleton key={i} className="h-16 w-full" />)}</div> : topMarketPrices.length ? topMarketPrices.map((item, index) => <div key={index} className="market-table-row"><div className="flex items-center gap-3"><Sprout className="w-5 h-5 text-primary shrink-0" /><div><p className="text-sm font-semibold">{item.name}</p><p className="text-xs text-muted-foreground">{item.weeklyAvg ? `${t('weeklyAvg')}: ${item.weeklyAvg}` : item.unit}</p></div></div><span className="font-mono text-lg tabular-nums">{item.price}</span><span className={cn('flex items-center gap-1 text-xs font-mono min-w-12 justify-end', item.positive ? 'text-healthy' : 'text-danger')}>{item.positive ? <TrendingUp className="w-4 h-4" /> : <TrendingDown className="w-4 h-4" />}{item.change >= 0 ? '+' : ''}{item.change}</span></div>) : <div className="py-8 border-b border-border flex gap-4 items-start"><TrendingUp className="text-muted-foreground w-6 h-6" /><div><p className="text-sm">{text('বাজারদর এখন পাওয়া যাচ্ছে না', 'Market prices are unavailable right now', 'बाजार भाव अभी उपलब्ध नहीं हैं')}</p><Button asChild variant="link" className="px-0"><Link to="/market">{t('marketPrice')}<ArrowRight /></Link></Button></div></div>}
+          </section>
+          <aside className="tip-editorial">
+            <p className="text-xs text-clay flex items-center gap-2 mb-3"><Lightbulb className="w-4 h-4" />{t('todayTip')}</p>
+            <p className="font-display text-lg leading-relaxed">{[
+              "সকালে সেচ দিলে পানির অপচয় কম হয় এবং গাছ বেশি পানি শোষণ করে।",
+              "মাটির pH ৬-৭ এর মধ্যে রাখলে বেশিরভাগ ফসল ভালো হয়।",
+              "জৈব সার ব্যবহারে মাটির স্বাস্থ্য ভালো থাকে ও ফলন বাড়ে।",
+              "ফসল ঘুরিয়ে চাষ করলে মাটির উর্বরতা বজায় থাকে।",
+              "পোকা দমনে প্রথমে জৈব পদ্ধতি ব্যবহার করুন।",
+              "বীজ বপনের আগে বীজ শোধন করলে রোগ কম হয়।",
+              "সঠিক সময়ে সার দিলে ফলন ২০-৩০% বাড়ে।"
+            ][new Date().getDate() % 7]}</p>
+            <Button asChild variant="outline" className="mt-5 w-full justify-between"><Link to="/camera"><Scan />{t('aiDiseaseDiagnosis')}<ArrowRight /></Link></Button>
+          </aside>
+        </div>
+        <footer className="mt-10 pt-6 border-t border-border flex flex-wrap justify-between gap-4 text-xs text-muted-foreground"><span>agriশক্তি · {t('taglineShort')}</span><p>কৃষকের হাতেই দেশের ভবিষ্যৎ, তাদের শ্রমেই আমাদের অন্ন।</p></footer>
+      </main>
+      {voiceOpen && <Suspense fallback={<div className="fixed inset-0 z-[60] bg-background flex items-center justify-center"><Loader2 className="w-8 h-8 animate-spin text-primary" aria-label={t('loading')} /></div>}><VoiceConversation isOpen={voiceOpen} onClose={() => setVoiceOpen(false)} /></Suspense>}
+    </motion.div>
   );
 }
