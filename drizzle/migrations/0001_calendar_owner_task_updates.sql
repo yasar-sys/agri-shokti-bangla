@@ -1,0 +1,2 @@
+GRANT UPDATE ON public.user_calendars TO authenticated;
+CREATE POLICY "Owners can update calendar tasks" ON public.user_calendars FOR UPDATE TO authenticated USING ((SELECT auth.uid()) = user_id) WITH CHECK ((SELECT auth.uid()) = user_id);

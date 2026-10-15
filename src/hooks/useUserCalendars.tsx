@@ -142,13 +142,16 @@ export function useUserCalendars() {
     try {
       const tasksJson = JSON.parse(JSON.stringify(tasks)) as Json;
       
-      const { error } = await supabase
+      const { data, error } = await supabase
         .from("user_calendars")
         .update({ tasks: tasksJson })
         .eq("id", calendarId)
-        .eq("user_id", userId);
+        .eq("user_id", userId)
+        .select('id')
+        .single();
 
       if (error) throw error;
+      if (!data) throw new Error('Calendar task update was not saved');
 
       setCalendars(prev =>
         prev.map(cal =>

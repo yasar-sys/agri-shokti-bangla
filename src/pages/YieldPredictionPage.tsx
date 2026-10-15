@@ -85,6 +85,7 @@ export default function YieldPredictionPage() {
   const [crop, setCrop] = useState("rice");
   const [fieldName, setFieldName] = useState("");
   const [area, setArea] = useState<number>(1);
+  const [rainfallInput, setRainfallInput] = useState('');
   const [scenarioA, setScenarioA] = useState<ScenarioInputs>(defaultScenario());
   const [scenarioB, setScenarioB] = useState<ScenarioInputs>({
     ...defaultScenario(),
@@ -118,11 +119,19 @@ export default function YieldPredictionPage() {
       .then(({ data }: any) => setHistory(data || []));
   }, [userId]);
 
-  const rainfallMm = 800;
-  const avgTempC = weather?.temp ?? 28;
-  const humidity = weather?.humidity ?? 70;
+  const rainfallMm = Number(rainfallInput);
+  const avgTempC = weather.temp;
+  const humidity = weather.humidity;
 
   const runPrediction = async () => {
+    if (weather.loading || weather.error) {
+      toast.error('প্রকৃত আবহাওয়ার তথ্য পাওয়ার পর আবার চেষ্টা করুন');
+      return;
+    }
+    if (!rainfallInput.trim() || !Number.isFinite(rainfallMm) || rainfallMm < 0 || !Number.isFinite(area) || area <= 0) {
+      toast.error('জমির সঠিক আয়তন ও মৌসুমি বৃষ্টির পরিমাণ দিন');
+      return;
+    }
     setLoading(true);
     try {
       const common = {
@@ -253,9 +262,12 @@ export default function YieldPredictionPage() {
             </div>
           </div>
 
-          <div className="text-xs text-muted-foreground bg-muted/40 rounded-lg p-2">
-            🌤️ বর্তমান আবহাওয়া: {avgTempC.toFixed(1)}°C, আর্দ্রতা {humidity}% •
-            মৌসুমি বৃষ্টি (আনুমানিক): {rainfallMm} মিমি
+          <div>
+            <label htmlFor="season-rainfall" className="text-sm text-muted-foreground">মৌসুমি বৃষ্টির পরিমাণ (মিমি)</label>
+            <input id="season-rainfall" type="number" min="0" value={rainfallInput} onChange={event => setRainfallInput(event.target.value)} className="w-full mt-1 rounded-md border border-border bg-background p-2" />
+          </div>
+          <div className="text-xs text-muted-foreground bg-muted/40 rounded-md p-2">
+            {weather.loading ? 'আবহাওয়ার তথ্য আসছে…' : weather.error ? weather.error : `বর্তমান আবহাওয়া: ${avgTempC.toFixed(1)}°C, আর্দ্রতা ${humidity}%`}
           </div>
         </div>
 

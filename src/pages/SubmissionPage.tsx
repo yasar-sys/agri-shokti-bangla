@@ -143,10 +143,7 @@ User Input (Voice/Text/Image)
 
 | Item | Link |
 |------|------|
-| **Live Application** | https://agri-shokti-ai.vercel.app |
-| **Google Drive Folder** | [To be added] |
-| **YouTube Demo (≤4 min)** | [To be added] |
-| **GitHub Repository** | https://github.com/team_newbies/agri-shokti-ai |
+| **Live Application** | https://agrishokti.aizanbd.com |
 
 ---
 
@@ -469,10 +466,7 @@ User Input (Voice/Text/Image)
             <h2 className="text-xl font-bold border-b pb-2 mb-4">8. Demo & Proof of Work</h2>
             <table className="w-full text-sm">
               <tbody>
-                <tr className="border-b"><td className="py-2 font-medium w-1/3">Live Application</td><td>https://agri-shokti-ai.vercel.app</td></tr>
-                <tr className="border-b"><td className="py-2 font-medium">Google Drive Folder</td><td>[To be added]</td></tr>
-                <tr className="border-b"><td className="py-2 font-medium">YouTube Demo</td><td>[To be added]</td></tr>
-                <tr><td className="py-2 font-medium">GitHub Repository</td><td>https://github.com/team_newbies/agri-shokti-ai</td></tr>
+                <tr className="border-b"><td className="py-2 font-medium w-1/3">Live Application</td><td><a href="https://agrishokti.aizanbd.com" className="text-primary underline">https://agrishokti.aizanbd.com</a></td></tr>
               </tbody>
             </table>
           </section>
@@ -564,12 +558,10 @@ User Input (Voice/Text/Image)
             <h2 className="text-xl font-bold border-b pb-2 mb-4">16. Final Checklist</h2>
             <ul className="list-none space-y-1 text-sm">
               <li>☑️ Naming convention correct (MXB2026-Mymensingh-TEAM_NEWBIES-AgriShokti)</li>
-              <li>☑️ Demo accessible (https://agri-shokti-ai.vercel.app)</li>
+              <li>☑️ Demo accessible (https://agrishokti.aizanbd.com)</li>
               <li>☑️ AI logic explained (RAG pipeline with Gemini 2.5 Flash)</li>
               <li>☑️ Full technical documentation available</li>
               <li>☑️ Live working prototype deployed</li>
-              <li>⬜ Drive public [To be confirmed]</li>
-              <li>⬜ YouTube demo [To be added]</li>
             </ul>
           </section>
 

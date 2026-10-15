@@ -17,7 +17,6 @@ import { MobileSatelliteControls } from "@/components/satellite/MobileSatelliteC
 import { useSatelliteServiceWorker } from "@/hooks/useSatelliteServiceWorker";
 import { nasaApiClient } from "@/lib/nasaApiClient";
 import { ComponentErrorBoundary } from "@/components/ui/component-error-boundary";
-import { SatelliteAIInsight } from "@/components/satellite/SatelliteAIInsight";
 import { SatelliteSourceSelector, type SatelliteSource } from "@/components/satellite/SatelliteSourceSelector";
 import { useNASAPowerClimate } from "@/hooks/useNASAPowerClimate";
 import { NASAClimateDetails } from "@/components/satellite/NASAClimateDetails";
@@ -325,14 +324,6 @@ export default function SatellitePage() {
                     </div>
                   )}
 
-                  {/* AI Insight Placeholder for Agro */}
-                  {activePolygonId && (
-                    <SatelliteAIInsight
-                      ndviValue={0.75}
-                      moistureValue={0.6}
-                      trend="improving"
-                    />
-                  )}
                 </div>
               </div>
             </div>
@@ -361,14 +352,6 @@ export default function SatellitePage() {
                 archiveDate={currentDate.toISOString().slice(0, 10)}
               />
 
-              {/* AI Insight Overlay */}
-              <div className="container mx-auto px-4 py-4 max-w-lg">
-                <SatelliteAIInsight
-                  ndviValue={nasaHealthData?.history?.[nasaHealthData.history.length - 1]?.ndvi ?? 0.7}
-                  moistureValue={nasaHealthData?.history?.[nasaHealthData.history.length - 1]?.moisture_index ?? 0.5}
-                  trend={(nasaHealthData?.trend as any) || "stable"}
-                />
-              </div>
 
               {/* Mobile Controls */}
               <MobileSatelliteControls

@@ -113,211 +113,9 @@ export function useNASAWeatherData(userId: string | null) {
   const [forecastUpdating, setForecastUpdating] = useState(false);
   const { toast } = useToast();
 
-  // Generate realistic NASA weather demo data
-  const generateDemoWeatherData = useCallback((): WeatherAnalysis => {
-    const today = new Date();
-    const historicalData: WeatherData[] = [];
-    
-    // Generate 30 days of historical weather data
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      
-      // Simulate realistic Bangladesh weather patterns
-      const baseTemp = 25 + Math.sin((date.getMonth() + 1) * Math.PI / 6) * 5; // Seasonal variation
-      const dailyVariation = Math.random() * 8 - 4;
-      const maxTemp = baseTemp + 5 + dailyVariation + Math.random() * 3;
-      const minTemp = baseTemp - 3 + dailyVariation + Math.random() * 2;
-      
-      historicalData.push({
-        date: date.toISOString().split('T')[0],
-        temperature_max: Number(maxTemp.toFixed(1)),
-        temperature_min: Number(minTemp.toFixed(1)),
-        temperature_avg: Number(((maxTemp + minTemp) / 2).toFixed(1)),
-        humidity: Number((60 + Math.random() * 30).toFixed(0)),
-        precipitation: Math.random() > 0.7 ? Number((Math.random() * 15).toFixed(1)) : 0,
-        wind_speed: Number((5 + Math.random() * 15).toFixed(1)),
-        wind_direction: Math.floor(Math.random() * 360),
-        solar_radiation: Number((15 + Math.random() * 10).toFixed(1)),
-        evapotranspiration: Number((3 + Math.random() * 4).toFixed(2)),
-        cloud_cover: Number((Math.random() * 100).toFixed(0)),
-        pressure: Number((1008 + Math.random() * 20).toFixed(0)),
-        dew_point: Number((minTemp + 2 + Math.random() * 3).toFixed(1))
-      });
-    }
-
-    const currentConditions = historicalData[historicalData.length - 1];
-
-    // Generate 7-day forecast
-    const forecast7day: ClimateForecast[] = [];
-    for (let i = 1; i <= 7; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() + i);
-      
-      const conditions: Array<'sunny' | 'partly_cloudy' | 'cloudy' | 'rainy' | 'stormy'> = 
-        ['sunny', 'partly_cloudy', 'cloudy', 'rainy', 'stormy'];
-      const condition = conditions[Math.floor(Math.random() * conditions.length)];
-      
-      forecast7day.push({
-        forecast_date: date.toISOString().split('T')[0],
-        temperature_max: Number((currentConditions.temperature_max + (Math.random() - 0.5) * 5).toFixed(1)),
-        temperature_min: Number((currentConditions.temperature_min + (Math.random() - 0.5) * 4).toFixed(1)),
-        precipitation_probability: condition === 'rainy' || condition === 'stormy' ? 
-          Number((60 + Math.random() * 35).toFixed(0)) : Number((Math.random() * 30).toFixed(0)),
-        precipitation_amount: condition === 'rainy' || condition === 'stormy' ? 
-          Number((Math.random() * 12).toFixed(1)) : Number((Math.random() * 2).toFixed(1)),
-        humidity: Number((50 + Math.random() * 40).toFixed(0)),
-        wind_speed: Number((5 + Math.random() * 20).toFixed(1)),
-        conditions: condition,
-        confidence: Number((0.7 + Math.random() * 0.25).toFixed(3)),
-        agricultural_suitability: condition === 'sunny' ? 'excellent' : 
-                                 condition === 'partly_cloudy' ? 'good' :
-                                 condition === 'cloudy' ? 'moderate' : 'poor',
-        pest_disease_risk: condition === 'rainy' || condition === 'stormy' ? 'high' : 'medium',
-        field_work_suitability: condition === 'sunny' || condition === 'partly_cloudy' ? 'excellent' : 
-                              condition === 'cloudy' ? 'moderate' : 'poor'
-      });
-    }
-
-    // Generate 14-day forecast (extended with lower confidence)
-    const forecast14day = [...forecast7day];
-    for (let i = 8; i <= 14; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() + i);
-      
-      forecast14day.push({
-        forecast_date: date.toISOString().split('T')[0],
-        temperature_max: Number((currentConditions.temperature_max + (Math.random() - 0.5) * 8).toFixed(1)),
-        temperature_min: Number((currentConditions.temperature_min + (Math.random() - 0.5) * 6).toFixed(1)),
-        precipitation_probability: Number((Math.random() * 100).toFixed(0)),
-        precipitation_amount: Number((Math.random() * 15).toFixed(1)),
-        humidity: Number((40 + Math.random() * 50).toFixed(0)),
-        wind_speed: Number((5 + Math.random() * 25).toFixed(1)),
-        conditions: (['sunny', 'partly_cloudy', 'cloudy', 'rainy'] as const)[Math.floor(Math.random() * 4)],
-        confidence: Number((0.5 + Math.random() * 0.3).toFixed(3)),
-        agricultural_suitability: 'moderate',
-        pest_disease_risk: 'medium',
-        field_work_suitability: 'moderate'
-      });
-    }
-
-    // Generate seasonal outlook
-    const seasonalOutlook: SeasonalOutlook = {
-      season_name: 'Boro Season',
-      season_name_bn: 'বোরো মৌসুম',
-      start_date: '2024-11-01',
-      end_date: '2025-05-31',
-      temperature_trend: Math.random() > 0.5 ? 'above_normal' : 'normal',
-      precipitation_trend: Math.random() > 0.6 ? 'below_normal' : 'normal',
-      drought_probability: Number((Math.random() * 30).toFixed(0)),
-      flood_probability: Number((Math.random() * 20).toFixed(0)),
-      el_nino_impact: Math.random() > 0.7 ? 'positive' : 'neutral',
-      overall_outlook: Math.random() > 0.6 ? 'favorable' : 'normal',
-      recommendations: [
-        'সময়মতো বোরো ধান চাষ শুরু করুন',
-        'সেচ ব্যবস্থাপনায় গুরুত্ব দিন',
-        'উন্নত মানের বীজ ব্যবহার করুন',
-        'সার ব্যবস্থাপনায় সতর্ক থাকুন'
-      ],
-      recommendations_bn: [
-        'সময়মতো বোরো ধান চাষ শুরু করুন',
-        'সেচ ব্যবস্থাপনায় গুরুত্ব দিন',
-        'উন্নত মানের বীজ ব্যবহার করুন',
-        'সার ব্যবস্থাপনায় সতর্ক থাকুন'
-      ]
-    };
-
-    // Generate weather alerts
-    const activeAlerts: WeatherAlert[] = [];
-    if (currentConditions.temperature_max > 35) {
-      activeAlerts.push({
-        id: 'heat-001',
-        type: 'heat_wave',
-        severity: 'warning',
-        title: 'তাপপ্রবাহ সতর্কতা',
-        title_bn: 'তাপপ্রবাহ সতর্কতা',
-        description: `High temperature of ${currentConditions.temperature_max}°C detected. Heat stress warning for crops.`,
-        description_bn: `${currentConditions.temperature_max}°C তাপমাত্রা সনাক্ত হয়েছে। ফসলের জন্য তাপপ্রবাহ সতর্কতা।`,
-        affected_areas: ['ঢাকা', 'রাজশাহী', 'খুলনা'],
-        start_time: new Date().toISOString(),
-        end_time: new Date(Date.now() + 48 * 60 * 60 * 1000).toISOString(),
-        confidence: 0.85,
-        recommendations: [
-          'Increase irrigation frequency',
-          'Provide shade for sensitive crops',
-          'Monitor for heat stress symptoms',
-          'Avoid field work during peak hours'
-        ],
-        recommendations_bn: [
-          'সেচের ফ্রিকোয়েন্সি বাড়ান',
-          'স্পর্শকাতর ফসলের জন্য ছায়া প্রদান করুন',
-          'তাপপ্রবাহের লক্ষণগুলি পর্যবেক্ষণ করুন',
-          'শীর্ষ সময়ে ক্ষেতকাজ এড়িয়ে চলুন'
-        ],
-        agricultural_impact: 'Heat stress can reduce crop yield and affect pollination',
-        agricultural_impact_bn: 'তাপপ্রবাহ ফসলের ফলন কমাতে পারে এবং পরাগায়নকে প্রভাবিত করতে পারে'
-      });
-    }
-
-    // Calculate agricultural summary
-    const growingDegreeDays = historicalData.reduce((sum, day) => {
-      const gdd = Math.max(0, (day.temperature_max + day.temperature_min) / 2 - 10); // Base temp 10°C
-      return sum + gdd;
-    }, 0);
-
-    const totalPrecip30d = historicalData.reduce((sum, day) => sum + day.precipitation, 0);
-    const avgTemp30d = historicalData.reduce((sum, day) => sum + day.temperature_avg, 0) / 30;
-    const precipitationDeficit = Math.max(0, (100 - totalPrecip30d)); // Assume 100mm needed
-
-    return {
-      location_name: 'Mymensingh Division',
-      location_name_bn: 'ময়মনসিংহ বিভাগ',
-      latitude: 24.7471,
-      longitude: 90.4203,
-      current_conditions: currentConditions,
-      historical_data: historicalData,
-      forecast_7day: forecast7day,
-      forecast_14day: forecast14day,
-      seasonal_outlook: seasonalOutlook,
-      active_alerts: activeAlerts,
-      agricultural_summary: {
-        growing_degree_days: Math.round(growingDegreeDays),
-        frost_free_days: 365, // Bangladesh doesn't have frost
-        total_precipitation_30d: Number(totalPrecip30d.toFixed(1)),
-        avg_temperature_30d: Number(avgTemp30d.toFixed(1)),
-        precipitation_deficit: Number(precipitationDeficit.toFixed(1)),
-        soil_moisture_outlook: precipitationDeficit > 50 ? 'শুষ্ক' : precipitationDeficit > 20 ? 'মাঝারি' : 'ভালো',
-        soil_moisture_outlook_bn: precipitationDeficit > 50 ? 'শুষ্ক' : precipitationDeficit > 20 ? 'মাঝারি' : 'ভালো'
-      },
-      crop_advisory: {
-        planting_suitability: currentConditions.precipitation > 5 ? 'moderate' : 
-                             currentConditions.temperature_avg > 20 ? 'excellent' : 'good',
-        irrigation_need: precipitationDeficit > 50 ? 'heavy' : 
-                        precipitationDeficit > 20 ? 'moderate' : 
-                        precipitationDeficit > 5 ? 'light' : 'none',
-        pest_monitoring_priority: currentConditions.humidity > 80 ? 'high' : 
-                                  currentConditions.humidity > 60 ? 'medium' : 'low',
-        disease_risk: currentConditions.humidity > 85 && currentConditions.temperature_avg > 25 ? 'high' : 
-                     currentConditions.humidity > 70 ? 'medium' : 'low',
-        field_operations: currentConditions.precipitation < 2 && currentConditions.wind_speed < 15 ? 
-          ['চাষা', 'সার প্রয়োগ', 'সেচ', 'ফসল পরিচর্যা'] : 
-          ['পরিকল্পনা পর্যালোচনা', 'সরঞ্জাম প্রস্তুতি'],
-        field_operations_bn: currentConditions.precipitation < 2 && currentConditions.wind_speed < 15 ? 
-          ['চাষা', 'সার প্রয়োগ', 'সেচ', 'ফসল পরিচর্যা'] : 
-          ['পরিকল্পনা পর্যালোচনা', 'সরঞ্জাম প্রস্তুতি']
-      },
-      data_sources: {
-        primary_source: 'NASA POWER',
-        supporting_sources: ['GMAO GEOS-FP', 'MODIS', 'TRMM'],
-        last_updated: new Date().toISOString(),
-        next_update: new Date(Date.now() + 6 * 60 * 60 * 1000).toISOString()
-      }
-    };
-  }, []);
-
   // Fetch NASA weather data
   const fetchWeatherData = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) { setLoading(false); return; }
 
     try {
       setLoading(true);
@@ -328,11 +126,9 @@ export function useNASAWeatherData(userId: string | null) {
       });
 
       if (error || !data?.success) {
-        console.log('NASA Weather edge function not available, using demo data');
-        
-        const demoData = generateDemoWeatherData();
-        setWeatherData(demoData);
-        setAlerts(demoData.active_alerts);
+        setWeatherData(null);
+        setAlerts([]);
+        throw new Error('NASA-এর প্রকৃত তথ্য এখন পাওয়া যাচ্ছে না');
       } else {
         setWeatherData(data.weather_data);
         setAlerts(data.active_alerts || []);
@@ -347,7 +143,7 @@ export function useNASAWeatherData(userId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [userId, generateDemoWeatherData, toast]);
+  }, [userId, toast]);
 
   // Refresh weather forecast
   const refreshForecast = useCallback(async () => {
@@ -360,10 +156,7 @@ export function useNASAWeatherData(userId: string | null) {
       });
 
       if (error || !data?.success) {
-        // Update with refreshed demo data
-        const refreshedData = generateDemoWeatherData();
-        setWeatherData(refreshedData);
-        setAlerts(refreshedData.active_alerts);
+        throw new Error('NASA-এর প্রকৃত তথ্য আপডেট করা যায়নি');
       } else {
         setWeatherData(data.weather_data);
         setAlerts(data.active_alerts || []);
@@ -383,7 +176,7 @@ export function useNASAWeatherData(userId: string | null) {
     } finally {
       setForecastUpdating(false);
     }
-  }, [userId, generateDemoWeatherData, toast]);
+  }, [userId, toast]);
 
   // Get agricultural weather summary
   const getAgriculturalSummary = useCallback(() => {
@@ -445,9 +238,7 @@ export function useNASAWeatherData(userId: string | null) {
 
   // Initial data fetch
   useEffect(() => {
-    if (userId) {
-      fetchWeatherData();
-    }
+    fetchWeatherData();
   }, [userId, fetchWeatherData]);
 
   return {

@@ -140,6 +140,7 @@ function AppContent() {
       <div className="font-bengali">
         <Suspense fallback={<PageLoader />}>
           <div className="app-pages">
+          <div key={location.pathname} className={location.pathname === '/home' ? undefined : 'service-page-arrival'}>
           <Routes>
             <Route path="/" element={<SplashPage />} />
             <Route path="/auth" element={<AuthPage />} />
@@ -184,6 +185,7 @@ function AppContent() {
             <Route path="/precision-farm" element={<PrecisionFarmPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </div>
           </div>
         </Suspense>
         {showNav && <BottomNav />}

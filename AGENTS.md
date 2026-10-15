@@ -9,3 +9,6 @@
 
 - Archive imagery uses a date-filtered MODIS/Landsat grid layer with URL-keyed local tile caching, separate from pure archive policy helpers; this keeps time selection real and independently testable.
 - Service map widgets isolate their stacking contexts and keep shared navigation outside map layers; this prevents map controls from covering app navigation.
+- Service route arrivals use a keyed CSS animation wrapper without transforms after completion; this provides shared reduced-motion-safe transitions without trapping fixed map or voice controls.
+- Service swipe pagination uses a pure tested helper and the actual service count; this keeps every service reachable as the catalogue changes.
+- Missing NASA/OpenET/Crop-CASMA responses must produce unavailable states, never generated measurements; real providers remain the source of agricultural results.

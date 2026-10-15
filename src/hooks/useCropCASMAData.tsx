@@ -68,151 +68,9 @@ export function useCropCASMAData(userId: string | null) {
   const [droughtAlerts, setDroughtAlerts] = useState<DroughtAlert[]>([]);
   const { toast } = useToast();
 
-  // Generate realistic Crop-CASMA demo data based on NASA research
-  const generateDemoSoilData = useCallback((fieldId: string, fieldName: string, fieldNameBn: string): FieldSoilAnalysis => {
-    const today = new Date();
-    const historicalData: SoilMoistureData[] = [];
-    
-    // Generate 30 days of historical soil moisture data
-    for (let i = 29; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      
-      // Simulate realistic soil moisture patterns
-      const baseMoisture = 0.4 + Math.random() * 0.3; // 40-70% base
-      const recentRain = Math.random() > 0.8 ? 0.2 : 0; // 20% chance of recent rain
-      const surfaceMoisture = Math.min(1, baseMoisture + recentRain);
-      const rootZoneMoisture = surfaceMoisture * (0.8 + Math.random() * 0.2); // Root zone slightly drier
-      
-      const precipitationDeficit = Math.max(0, (5 - Math.random() * 8)); // Can be negative (surplus)
-      const droughtIndex = Math.max(0, Math.min(1, (0.3 - surfaceMoisture + precipitationDeficit / 10)));
-      
-      historicalData.push({
-        date: date.toISOString().split('T')[0],
-        surface_moisture: Number(surfaceMoisture.toFixed(3)),
-        root_zone_moisture: Number(rootZoneMoisture.toFixed(3)),
-        soil_temperature: Number((20 + Math.random() * 15).toFixed(1)), // 20-35°C
-        drought_index: Number(droughtIndex.toFixed(3)),
-        precipitation_deficit: Number(precipitationDeficit.toFixed(2)),
-        field_capacity: Number((0.35 + Math.random() * 0.15).toFixed(3)), // 35-50%
-        wilting_point: Number((0.10 + Math.random() * 0.10).toFixed(3)), // 10-20%
-        available_water: Number(Math.max(0, rootZoneMoisture - 0.15).toFixed(3)),
-        data_quality: Math.random() > 0.3 ? 'excellent' : Math.random() > 0.5 ? 'good' : 'fair'
-      });
-    }
-
-    const currentData = historicalData[historicalData.length - 1];
-    
-    // Determine drought trend
-    const recentWeek = historicalData.slice(-7);
-    const olderWeek = historicalData.slice(-14, -7);
-    const recentAvg = recentWeek.reduce((sum, d) => sum + d.drought_index, 0) / 7;
-    const olderAvg = olderWeek.reduce((sum, d) => sum + d.drought_index, 0) / 7;
-    const droughtTrend = recentAvg < olderAvg - 0.1 ? 'improving' : 
-                        recentAvg > olderAvg + 0.1 ? 'worsening' : 'stable';
-
-    // Generate drought alerts if needed
-    const alerts: DroughtAlert[] = [];
-    if (currentData.drought_index > 0.7) {
-      alerts.push({
-        severity: 'emergency',
-        title: 'তীব্র খরা সতর্কতা',
-        title_bn: 'তীব্র খরা সতর্কতা',
-        description: `Field ${fieldName} is experiencing extreme drought conditions with critical soil moisture levels.`,
-        description_bn: `${fieldNameBn} ক্ষেতে তীব্র খরার শর্ত বিরাজ করছে, মাটির আর্দ্রতা বিপজ্জনকভাবে কম।`,
-        affected_areas: [fieldName],
-        recommendations: [
-          'Immediate irrigation required',
-          'Consider drought-resistant crops',
-          'Apply mulch to conserve moisture',
-          'Monitor crop health daily'
-        ],
-        recommendations_bn: [
-          'তাৎক্ষণিক সেচ প্রয়োজন',
-          'খরা-সহনশীল ফসল বিবেচনা করুন',
-          'আর্দ্রতা সংরক্ষণের জন্য মাল্চ প্রয়োগ করুন',
-          'ফসলের স্বাস্থ্য প্রতিদিন পর্যবেক্ষণ করুন'
-        ],
-        valid_from: new Date().toISOString(),
-        valid_until: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString()
-      });
-    } else if (currentData.drought_index > 0.5) {
-      alerts.push({
-        severity: 'warning',
-        title: 'খরা সতর্কতা',
-        title_bn: 'খরা সতর্কতা',
-        description: `Field ${fieldName} is experiencing moderate drought conditions.`,
-        description_bn: `${fieldNameBn} ক্ষেতে মাঝারি খরার শর্ত বিরাজ করছে।`,
-        affected_areas: [fieldName],
-        recommendations: [
-          'Increase irrigation frequency',
-          'Monitor soil moisture daily',
-          'Consider water conservation measures'
-        ],
-        recommendations_bn: [
-          'সেচের ফ্রিকোয়েন্সি বাড়ান',
-          'প্রতিদিন মাটির আর্দ্রতা পর্যবেক্ষণ করুন',
-          'পানি সংরক্ষণের ব্যবস্থা বিবেচনা করুন'
-        ],
-        valid_from: new Date().toISOString(),
-        valid_until: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000).toISOString()
-      });
-    }
-
-    // Generate crop stress indicators
-    const vegetationHealth = Math.max(0.3, 1 - currentData.drought_index * 1.5);
-    const waterRequirement = currentData.available_water < 0.1 ? 'critical' :
-                            currentData.available_water < 0.2 ? 'high' :
-                            currentData.available_water < 0.3 ? 'medium' : 'low';
-    const yieldImpactRisk = currentData.drought_index > 0.7 ? 'high' :
-                           currentData.drought_index > 0.5 ? 'medium' :
-                           currentData.drought_index > 0.3 ? 'low' : 'none';
-
-    return {
-      field_id: fieldId,
-      field_name: fieldName,
-      field_name_bn: fieldNameBn,
-      latitude: 23.8103 + Math.random() * 0.1,
-      longitude: 90.4125 + Math.random() * 0.1,
-      area_acres: 1 + Math.random() * 4,
-      soil_type: ['দোআঁশ মাটি', 'এঁটেল মাটি', 'বেলে দোআঁশ', 'পলি মাটি'][Math.floor(Math.random() * 4)],
-      current_data: currentData,
-      historical_data: historicalData,
-      drought_trend: droughtTrend,
-      drought_alerts: alerts,
-      recommendations: {
-        irrigation: waterRequirement === 'critical' ? 'আজই তীব্র সেচ দিন' :
-                   waterRequirement === 'high' ? '২৪ ঘন্টার মধ্যে সেচ দিন' :
-                   waterRequirement === 'medium' ? '৩-৪ দিনের মধ্যে সেচ দিন' : 'নিয়মিত পর্যবেক্ষণ করুন',
-        irrigation_bn: waterRequirement === 'critical' ? 'আজই তীব্র সেচ দিন' :
-                      waterRequirement === 'high' ? '২৪ ঘন্টার মধ্যে সেচ দিন' :
-                      waterRequirement === 'medium' ? '৩-৪ দিনের মধ্যে সেচ দিন' : 'নিয়মিত পর্যবেক্ষণ করুন',
-        conservation: [
-          'মাটির আর্দ্রতা সংরক্ষণের জন্য আবরণ ফসল লাগান',
-          'সরাসরি বাষ্পীভবন কমাতে মাল্চিং করুন',
-          'পানির অপচয় রোধে ড্রিপ ইরিগেশন ব্যবহার করুন'
-        ],
-        conservation_bn: [
-          'মাটির আর্দ্রতা সংরক্ষণের জন্য আবরণ ফসল লাগান',
-          'সরাসরি বাষ্পীভবন কমাতে মাল্চিং করুন',
-          'পানির অপচয় রোধে ড্রিপ ইরিগেশন ব্যবহার করুন'
-        ],
-        monitoring: 'প্রতি ৩ দিন অন্তর মাটির আর্দ্রতা পরীক্ষা করুন এবং ফসলের অবস্থা পর্যবেক্ষণ করুন',
-        monitoring_bn: 'প্রতি ৩ দিন অন্তর মাটির আর্দ্রতা পরীক্ষা করুন এবং ফসলের অবস্থা পর্যবেক্ষণ করুন'
-      },
-      crop_stress_indicators: {
-        vegetation_health: Number(vegetationHealth.toFixed(3)),
-        growth_stage: ['বীজতলা', 'চারা', 'বৃদ্ধি', 'ফুলন্ধ', 'ফলন্ধ'][Math.floor(Math.random() * 5)],
-        water_requirement: waterRequirement,
-        yield_impact_risk: yieldImpactRisk
-      },
-      last_updated: new Date().toISOString()
-    };
-  }, []);
-
   // Fetch Crop-CASMA data for all fields
   const fetchSoilData = useCallback(async () => {
-    if (!userId) return;
+    if (!userId) { setLoading(false); setFields([]); setSelectedField(null); return; }
 
     try {
       setLoading(true);
@@ -223,24 +81,10 @@ export function useCropCASMAData(userId: string | null) {
       });
 
       if (error || !data?.success) {
-        console.log('Crop-CASMA edge function not available, using demo data');
-        
-        // Use demo data with realistic field information
-        const demoFields = [
-          generateDemoSoilData('field-1', 'East Block', 'পূর্ব ব্লক'),
-          generateDemoSoilData('field-2', 'West Block', 'পশ্চিম ব্লক'),
-          generateDemoSoilData('field-3', 'North Block', 'উত্তর ব্লক'),
-          generateDemoSoilData('field-4', 'South Block', 'দক্ষিণ ব্লক')
-        ];
-        
-        setFields(demoFields);
-        if (demoFields.length > 0) {
-          setSelectedField(demoFields[0]);
-        }
-
-        // Collect all alerts
-        const allAlerts = demoFields.flatMap(field => field.drought_alerts);
-        setDroughtAlerts(allAlerts);
+        setFields([]);
+        setSelectedField(null);
+        setDroughtAlerts([]);
+        throw new Error('মাটির আর্দ্রতার প্রকৃত তথ্য এখন পাওয়া যাচ্ছে না');
       } else {
         setFields(data.fields || []);
         if (data.fields?.length > 0) {
@@ -258,7 +102,7 @@ export function useCropCASMAData(userId: string | null) {
     } finally {
       setLoading(false);
     }
-  }, [userId, generateDemoSoilData, toast]);
+  }, [userId, toast]);
 
   // Refresh soil data for a specific field
   const refreshFieldSoil = useCallback(async (fieldId: string) => {
@@ -271,13 +115,7 @@ export function useCropCASMAData(userId: string | null) {
       });
 
       if (error || !data?.success) {
-        // Update with refreshed demo data
-        const field = fields.find(f => f.field_id === fieldId);
-        if (field) {
-          const updatedField = generateDemoSoilData(field.field_id, field.field_name, field.field_name_bn);
-          setFields(prev => prev.map(f => f.field_id === fieldId ? updatedField : f));
-          setSelectedField(updatedField);
-        }
+        throw new Error('মাটির আর্দ্রতার প্রকৃত তথ্য এখন পাওয়া যাচ্ছে না');
       } else {
         setFields(prev => prev.map(f => f.field_id === fieldId ? data.field : f));
         if (selectedField?.field_id === fieldId) {
@@ -299,7 +137,7 @@ export function useCropCASMAData(userId: string | null) {
     } finally {
       setRefreshing(false);
     }
-  }, [userId, fields, selectedField, generateDemoSoilData, toast]);
+  }, [userId, selectedField, toast]);
 
   // Get regional drought analysis
   const getRegionalDroughtAnalysis = useCallback(() => {
@@ -353,9 +191,7 @@ export function useCropCASMAData(userId: string | null) {
 
   // Initial data fetch
   useEffect(() => {
-    if (userId) {
-      fetchSoilData();
-    }
+    fetchSoilData();
   }, [userId, fetchSoilData]);
 
   return {

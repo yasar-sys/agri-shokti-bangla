@@ -1,5 +1,11 @@
 # AgriShokti visual redesign — first review
 
+## Formal interactive refresh
+- [ ] Make Home more formal and visually substantial while preserving existing services and real data.
+- [ ] Add shared reduced-motion-safe page and control interactions; correct service pagination.
+- [ ] Audit inactive actions and simulated results; remove or clearly identify unsupported results.
+- [ ] Verify Home interactions and reachable services on desktop/mobile; report unavailable external or device checks honestly.
+
 ## Current corrections
 - [x] Prevent pest district/zoom and legend/scale overlap; wrap shared service tabs and isolate map layers.
 - [x] Keep AgroMonitoring; remove selectable Sentinel-2; date-filtered MODIS/Landsat archive browsing 2000–2026 with fetched-tile caching and unavailable-image feedback.

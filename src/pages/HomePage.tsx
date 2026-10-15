@@ -44,10 +44,11 @@ import {
 import { Link } from "react-router-dom";
 import { createPortal } from "react-dom";
 import { motion, useReducedMotion } from "framer-motion";
-import { CountUp, Waveform, CropLine } from "@/components/ui/editorial";
+import { CountUp, Waveform } from "@/components/ui/editorial";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { cn } from "@/lib/utils";
+import { serviceSwipePage } from "@/lib/servicePagination";
  import { useState, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAnalyticsTracker } from "@/hooks/useAnalyticsTracker";
@@ -103,7 +104,6 @@ export default function HomePage() {
    // Swipe handling for services carousel
    const touchStartX = useRef<number | null>(null);
    const touchEndX = useRef<number | null>(null);
-   const minSwipeDistance = 50;
 
    const handleTouchStart = useCallback((e: React.TouchEvent) => {
      touchEndX.current = null;
@@ -112,25 +112,6 @@ export default function HomePage() {
 
    const handleTouchMove = useCallback((e: React.TouchEvent) => {
      touchEndX.current = e.targetTouches[0].clientX;
-   }, []);
-
-   const handleTouchEnd = useCallback(() => {
-     if (!touchStartX.current || !touchEndX.current) return;
-     
-     const distance = touchStartX.current - touchEndX.current;
-     const isLeftSwipe = distance > minSwipeDistance;
-     const isRightSwipe = distance < -minSwipeDistance;
-     
-     const numPages = Math.ceil(24 / SERVICES_PER_PAGE); // 24 services
-     if (isLeftSwipe) {
-       setCurrentPage((prev) => (prev + 1) % numPages);
-     }
-     if (isRightSwipe) {
-       setCurrentPage((prev) => (prev - 1 + numPages) % numPages);
-     }
-     
-     touchStartX.current = null;
-     touchEndX.current = null;
    }, []);
 
   // Services array with translation keys
@@ -164,6 +145,13 @@ export default function HomePage() {
   ];
 
   const totalPages = Math.ceil(services.length / SERVICES_PER_PAGE);
+  const handleTouchEnd = useCallback(() => {
+    const start = touchStartX.current;
+    const end = touchEndX.current;
+    touchStartX.current = null;
+    touchEndX.current = null;
+    setCurrentPage(prev => serviceSwipePage(prev, start, end, totalPages));
+  }, [totalPages]);
   const currentServices = services.slice(
     currentPage * SERVICES_PER_PAGE,
     (currentPage + 1) * SERVICES_PER_PAGE
@@ -183,7 +171,6 @@ export default function HomePage() {
   // Get top 3 market prices for display
   const topMarketPrices = marketPrices && marketPrices.length > 0 
     ? marketPrices.slice(0, 3).map(p => ({
-        emoji: p.crop_emoji || '🌾',
         name: p.crop_name,
         price: `৳${p.today_price?.toLocaleString('bn-BD') || '0'}`,
         weeklyAvg: p.weekly_avg ? `৳${p.weekly_avg.toLocaleString('bn-BD')}` : null,
@@ -325,10 +312,27 @@ export default function HomePage() {
           <span className="flex items-center gap-2"><MapPin className="w-4 h-4 text-clay" />{location.loading ? t('findingLocation') : location.city}<span className="hidden sm:inline">· {location.country}</span></span>
           <span className="flex gap-4 items-center"><span>{getLocalizedDate()}</span><span className="font-mono tabular-nums hidden sm:inline">{getLocalizedTime()}</span></span>
         </div>
-        <div className="home-introduction">
-          <div><p className="text-xs text-clay mb-1">{text('মাটি, মানুষ, প্রযুক্তি', 'SOIL. PEOPLE. POSSIBILITY.', 'मिट्टी, लोग, तकनीक')}</p><h1 className="home-greeting">{text('আসসালামু আলাইকুম,', 'Welcome to your field,', 'आपके खेत में स्वागत है,')}<br className="sm:hidden" /> <span className="text-primary">{profile?.full_name || text('কৃষক ভাই!', 'farmer.', 'किसान भाई!')}</span></h1></div>
-          <CropLine className="text-primary/60 hidden sm:block shrink-0" />
-        </div>
+        <section className="home-introduction" aria-labelledby="home-title">
+          <img src={villageBg} alt={text('বাংলাদেশের ধানের মাঠ ও গ্রাম', 'Rice fields and village in Bangladesh', 'बांग्लादेश के धान के खेत और गाँव')} width="1366" height="768" fetchPriority="high" className="home-cover-photo" />
+          <motion.div className="home-cover-content" initial={reducedMotion ? false : { opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.32 }}>
+            <p className="text-sm mb-2">{text('মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি', 'Soil, people, technology — a new strength for agriculture', 'मिट्टी, लोग, तकनीक — कृषि की नई ताकत')}</p>
+            <h1 id="home-title" className="home-greeting">agriশক্তি</h1>
+            <p className="home-welcome">{text('আসসালামু আলাইকুম,', 'Welcome,', 'स्वागत है,')} {profile?.full_name || text('কৃষক ভাই!', 'farmer.', 'किसान भाई!')}</p>
+            <div className="flex flex-wrap gap-3 mt-5">
+              <Button onClick={() => setVoiceOpen(true)} variant="secondary"><Mic className="w-5 h-5" />{t('speakBengali')}</Button>
+              <Button asChild variant="outline" className="home-cover-link"><Link to="/portal"><Store className="w-5 h-5" />{text('আমার পোর্টাল', 'My portal', 'मेरा पोर्टल')}<ArrowRight className="w-4 h-4" /></Link></Button>
+            </div>
+          </motion.div>
+        </section>
+
+        <nav className="home-quick-nav" aria-label={text('প্রধান সেবাসমূহ', 'Essential services', 'प्रमुख सेवाएँ')}>
+          {[
+            { to: '/camera', icon: Scan, title: t('diseaseDetection') },
+            { to: '/market', icon: TrendingUp, title: t('marketPrice') },
+            { to: '/weather', icon: Cloud, title: t('weather') },
+            { to: '/precision-farm', icon: Droplets, title: t('precisionFarm') },
+          ].map(item => <Button key={item.to} asChild variant="ghost" className="justify-start gap-3 h-auto min-h-16"><Link to={item.to}><item.icon className="w-5 h-5 text-primary shrink-0" /><span className="whitespace-normal text-left">{item.title}</span><ArrowRight className="w-4 h-4 ml-auto shrink-0" /></Link></Button>)}
+        </nav>
 
         <div className="home-lead-grid">
           <section aria-label={t('aiAssistant')}>
@@ -347,7 +351,6 @@ export default function HomePage() {
                 <span className="text-xs text-muted-foreground">{t('speakBengali')}</span>
               </div>
             </div>
-            <figure className="field-photo"><img src={villageBg} alt={text('বাংলাদেশের ধানের মাঠ ও গ্রাম', 'Rice fields and village in Bangladesh', 'बांग्लादेश के धान के खेत और गाँव')} width="1366" height="768" fetchPriority="high" /><figcaption>{t('tagline')}</figcaption></figure>
           </section>
 
           <section className="weather-feature" aria-label={t('weather')}>
@@ -360,7 +363,7 @@ export default function HomePage() {
                 <div className="flex items-center gap-2"><Droplets className="w-4 h-4 text-info" /><div><span className="text-muted-foreground block">{t('humidity')}</span><span className="font-mono">{weather.loading || weather.error ? '—' : weather.humidity + '%'}</span></div></div>
                 <div className="flex items-center gap-2"><Wind className="w-4 h-4 text-primary" /><div><span className="text-muted-foreground block">{t('wind')}</span><span className="font-mono">{weather.loading || weather.error ? '—' : weather.wind + ' km/h'}</span></div></div>
               </div>
-              <div className="flex items-center justify-between py-3 text-xs"><span className="text-muted-foreground">{t('scans')} <span className="font-mono text-foreground ml-1">{profile ? String(profile.total_scans).padStart(2, '0') : '00'}</span></span><span className="text-muted-foreground">{t('level')} <span className="font-mono text-foreground ml-1">{getUserLevel()}</span></span></div>
+              {profile && <div className="flex items-center justify-between py-3 text-xs"><span className="text-muted-foreground">{t('scans')} <span className="font-mono text-foreground ml-1">{String(profile.total_scans).padStart(2, '0')}</span></span><span className="text-muted-foreground">{t('level')} <span className="font-mono text-foreground ml-1">{getUserLevel()}</span></span></div>}
               <Button variant="link" asChild className="px-0"><Link to="/weather">{t('weatherDesc')}<ArrowRight /></Link></Button>
             </div>
           </section>
@@ -369,8 +372,8 @@ export default function HomePage() {
         <section className="home-services" aria-labelledby="services-heading">
           <div className="flex items-center justify-between gap-2 mb-4"><h2 id="services-heading" className="home-section-title">{t('services')}</h2><div className="flex items-center gap-1"><span className="font-mono text-xs text-muted-foreground mr-2">{String(currentPage + 1).padStart(2, '0')} / {String(totalPages).padStart(2, '0')}</span><Button variant="ghost" size="icon" onClick={prevPage} aria-label={text('আগের সেবাসমূহ', 'Previous services', 'पिछली सेवाएँ')}><ChevronLeft /></Button><Button variant="outline" size="icon" onClick={nextPage} aria-label={text('পরের সেবাসমূহ', 'Next services', 'अगली सेवाएँ')}><ChevronRight /></Button></div></div>
           <div className="service-editorial-grid" onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-            {currentServices.map((service, index) => <motion.div key={service.to} initial={reducedMotion ? false : { opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2, delay: index * 0.025 }} className="service-editorial-item">
-              <Link to={service.to} className="flex items-center gap-3 w-full min-h-16 group"><service.icon className={cn('w-7 h-7 shrink-0', index % 3 === 1 ? 'text-clay' : 'text-primary')} strokeWidth={1.5} /><div className="min-w-0"><span className="text-sm font-semibold block">{t(service.labelKey)}</span><span className="text-xs text-muted-foreground block mt-1">{t(service.descKey)}</span></div><ArrowRight className="w-4 h-4 ml-auto shrink-0 text-muted-foreground hidden sm:block group-hover:text-primary" /></Link>
+            {currentServices.map((service, index) => <motion.div key={service.to} initial={reducedMotion ? false : { opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} whileHover={reducedMotion ? undefined : { y: -3 }} whileTap={reducedMotion ? undefined : { scale: 0.98 }} transition={{ duration: 0.2, delay: index * 0.025 }} className="service-editorial-item">
+              <Link to={service.to} className="flex items-center gap-3 w-full min-h-16 group"><span className={cn('service-icon', index % 3 === 1 ? 'text-clay' : 'text-primary')}><service.icon className="w-7 h-7 shrink-0" strokeWidth={1.5} /></span><div className="min-w-0"><span className="text-sm font-semibold block">{t(service.labelKey)}</span><span className="text-xs text-muted-foreground block mt-1">{t(service.descKey)}</span></div><ArrowRight className="w-4 h-4 ml-auto shrink-0 text-muted-foreground hidden sm:block group-hover:text-primary" /></Link>
             </motion.div>)}
           </div>
           <div className="flex justify-center mt-2">{Array.from({ length: totalPages }).map((_, i) => <Button key={i} variant="ghost" size="icon" onClick={() => setCurrentPage(i)} aria-label={text(`সেবার পৃষ্ঠা ${i + 1}`, `Services page ${i + 1}`, `सेवा पृष्ठ ${i + 1}`)} aria-current={i === currentPage ? 'true' : undefined}><span className={cn('h-1 rounded-full', i === currentPage ? 'w-6 bg-primary' : 'w-2 bg-border')} /></Button>)}</div>
