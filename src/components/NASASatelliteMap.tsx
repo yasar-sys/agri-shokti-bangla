@@ -25,6 +25,7 @@ import { cn } from '@/lib/utils';
 import { TILE_LAYERS, getNDVIColor, getSoilMoistureColor, FALLBACK_TILE_PROVIDERS, getTileErrorReason, TileLoadError } from '@/lib/nasaDataSources';
 import { AppEEARSPanel } from './AppEEARSPanel';
 import { Badge } from '@/components/ui/badge';
+import { createArchiveLayer, type ArchiveSource } from '@/lib/satelliteArchive';
 
 interface FieldZone {
   id: string;
@@ -64,6 +65,8 @@ interface ComparisonMode {
 }
 
 interface NASASatelliteMapProps {
+  archiveSource?: ArchiveSource;
+  archiveDate?: string;
   latitude?: number;
   longitude?: number;
   zones?: FieldZone[];
@@ -98,6 +101,8 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   comparisonMode = null,
   selectedLayer,
   onLayerChange,
+  archiveSource,
+  archiveDate,
 }: NASASatelliteMapProps) {
   const mapContainer = useRef<HTMLDivElement>(null);
   const map = useRef<L.Map | null>(null);
@@ -123,6 +128,14 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   const [usingFallback, setUsingFallback] = useState(false);
   const [fallbackProvider, setFallbackProvider] = useState<string | null>(null);
   const tileErrorCount = useRef(0);
+
+  useEffect(() => {
+    if (!map.current || !isMapReady || !archiveSource || !archiveDate) return;
+    setTileError(null);
+    const archive = createArchiveLayer(archiveSource, archiveDate, () => setTileError({ messageBn: 'এই তারিখ বা এলাকায় ছবি পাওয়া যায়নি; অন্য তারিখ নির্বাচন করুন', provider: archiveSource } as TileLoadError));
+    archive.addTo(map.current);
+    return () => { archive.remove(); };
+  }, [archiveSource, archiveDate, isMapReady]);
 
   // Keep internal layer in sync with page-level selection
   useEffect(() => {
@@ -204,7 +217,9 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
       baseLayerRef.current = L.tileLayer(TILE_LAYERS.light.url, { maxZoom: 18 }).addTo(map.current);
 
       const initialLayerConfig = tileLayers[activeLayer];
-      if (activeLayer !== 'satellite') {
+      if (archiveSource) {
+        // Archive layer is attached after the map becomes ready.
+      } else if (activeLayer !== 'satellite') {
         overlayLayerRef.current = L.tileLayer(initialLayerConfig.url, {
           maxZoom: initialLayerConfig.maxZoom || 18,
           opacity: initialLayerConfig.opacity || 0.85,
@@ -295,7 +310,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
 
   // Switch layers and handle comparison (avoid clearing the whole map to prevent "shaking")
   useEffect(() => {
-    if (!map.current || !isMapReady) return;
+    if (!map.current || !isMapReady || archiveSource) return;
 
     const m = map.current;
 
@@ -509,11 +524,11 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   }, []);
 
   return (
-    <div className="relative rounded-xl overflow-hidden border border-border bg-background h-full min-h-[400px]">
+    <div className="relative isolate rounded-lg overflow-hidden border border-border bg-background h-[520px] sm:h-[600px]">
       <div
         ref={mapContainer}
         className={cn("absolute inset-0 z-0 leaflet-container", (loading || mapError) && "invisible")}
-        style={{ background: '#000' }}
+
       />
 
       {mapError && (
@@ -575,7 +590,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
             </div>
           )}
           {/* Main Controls - Clean Dropdown Menu */}
-          <div className="absolute top-3 left-3 z-[1000] hidden sm:flex gap-2">
+          <div className={cn("absolute top-3 left-3 z-[1000] hidden sm:flex gap-2", archiveSource && "!hidden")}>
             {/* Layer Selector Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -649,7 +664,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
           <div className="absolute top-3 right-3 z-[1000] hidden sm:flex items-center gap-2">
             <div className="flex items-center gap-1.5 bg-background/95 backdrop-blur-md rounded-lg px-2.5 py-1.5 shadow-lg border border-border">
               <Radio className="w-3 h-3 text-green-500 animate-pulse" />
-              <span className="text-[10px] font-medium text-green-500">NASA LIVE</span>
+              <span className="text-[10px] font-medium text-green-500">আর্কাইভ</span>
             </div>
             <Button
               variant="secondary"
@@ -692,7 +707,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
           )}
 
           {/* Layer Legend - Bottom Right */}
-          <div className="absolute bottom-3 right-3 z-[1000] bg-background/95 backdrop-blur-md rounded-lg px-3 py-2 shadow-lg border border-border">
+          <div className="absolute bottom-28 right-3 z-[400] bg-background/95 backdrop-blur-md rounded-lg px-3 py-2 shadow-lg border border-border">
             <div className="flex items-center gap-2 text-xs">
               <ActiveLayerIcon className="w-3.5 h-3.5" style={{ color: LAYER_INFO[activeLayer].color }} />
               <span className="text-muted-foreground">{LAYER_INFO[activeLayer].nameBn}</span>

@@ -22,7 +22,7 @@ import { SatelliteSourceSelector, type SatelliteSource } from "@/components/sate
 import { useNASAPowerClimate } from "@/hooks/useNASAPowerClimate";
 import { NASAClimateDetails } from "@/components/satellite/NASAClimateDetails";
 import { NDVITimeSeriesChart } from "@/components/satellite/NDVITimeSeriesChart";
-import { getPolygonById } from "@/lib/agroMonitoringService";
+import { ARCHIVE_START, ARCHIVE_END } from "@/lib/satelliteArchive";
 
 type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
 
@@ -40,7 +40,7 @@ export default function SatellitePage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showTimeline, setShowTimeline] = useState(false);
   const [showComparison, setShowComparison] = useState(false);
-  const [activeLayer, setActiveLayer] = useState<TileLayer>('ndvi');
+  const [activeLayer, setActiveLayer] = useState<TileLayer>('satellite');
   const [apiHealth, setApiHealth] = useState<'healthy' | 'degraded' | 'down'>('healthy');
   const [nasaHealthData, setNasaHealthData] = useState<any>(null);
 
@@ -197,11 +197,11 @@ export default function SatellitePage() {
 
   return (
     <ComponentErrorBoundary componentName="Satellite Map">
-      <div className="min-h-screen bg-background flex flex-col">
+      <div className="min-h-screen bg-background flex flex-col pb-24">
         {/* Header */}
         <header className="border-b border-border bg-background/95 backdrop-blur-md sticky top-0 z-50">
           <div className="container mx-auto px-4 py-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-wrap items-center justify-between gap-3">
               {/* Left Section */}
               <div className="flex items-center gap-3">
                 <Link to="/">
@@ -232,7 +232,7 @@ export default function SatellitePage() {
                 <SatelliteSourceSelector
                   selectedSource={selectedSatellite}
                   onSourceChange={setSelectedSatellite}
-                  className="hidden sm:flex"
+                  className="flex"
                 />
 
                 {/* NASA-Specific Controls */}
@@ -295,7 +295,7 @@ export default function SatellitePage() {
                     onPolygonClick={setActivePolygonId}
                     className="h-[500px] lg:h-[600px] shadow-sm"
                   />
-                  <div className="flex items-center justify-between text-sm text-muted-foreground px-1">
+                  <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-muted-foreground px-1">
                     <div className="flex items-center gap-2">
                       <Wifi className="w-3 h-3 text-green-500" />
                       <span>লাইভ হাই-রেজোলিউশন স্যাটেলাইট সক্রিয়</span>
@@ -304,7 +304,7 @@ export default function SatellitePage() {
                       <Badge variant="outline" className="text-[10px] px-1.5 py-0 bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/30">
                         Real Data
                       </Badge>
-                      <span>উৎস: Sentinel-2 & Landsat-8 (AgroMonitoring API)</span>
+                      <span>উৎস: AgroMonitoring API</span>
                     </div>
                   </div>
                 </div>
@@ -341,15 +341,13 @@ export default function SatellitePage() {
             // NASA VIEW (Demo Data)
             // =========================
             <>
-              {/* Demo Data Notice */}
-              <div className="bg-amber-500/10 border-b border-amber-500/20 px-4 py-2">
-                <div className="container mx-auto flex items-center gap-2 text-amber-700 dark:text-amber-400 text-sm">
-                  <span className="font-semibold">⚠️ ডেমো ডেটা:</span>
-                  <span>
-                    এই ভিউ NASA GIBS/MODIS সিমুলেটেড ডেটা ব্যবহার করছে। বাস্তব NDVI বিশ্লেষণের জন্য AgroMonitoring সোর্স নির্বাচন করুন।
-                  </span>
+              <section className="container mx-auto px-4 py-4 space-y-3">
+                <div className="flex flex-wrap items-center gap-3">
+                  <label htmlFor="archive-date" className="text-sm font-medium">আর্কাইভের তারিখ · ২০০০–২০২৬</label>
+                  <input id="archive-date" aria-label="আর্কাইভের তারিখ" type="date" min={ARCHIVE_START} max={ARCHIVE_END} value={currentDate.toISOString().slice(0, 10)} onChange={event => { if (event.target.value && event.target.validity.valid) setCurrentDate(new Date(`${event.target.value}T12:00:00Z`)); }} className="min-h-12 rounded-md border border-input bg-background px-3 text-foreground" />
                 </div>
-              </div>
+                <p className="text-sm text-muted-foreground">{selectedSatellite === 'modis' ? 'MODIS: ২৪ ফেব্রুয়ারি ২০০০ থেকে উপলব্ধ ছবি; কিছু দিনের ছবি নেই।' : 'Landsat: নির্বাচিত তারিখের ±১৬ দিনের কম-মেঘযুক্ত ছবি। কিছু এলাকায় ছবি নাও থাকতে পারে।'} দেখা ছবিগুলো এই ডিভাইসে ক্যাশে থাকে; এটি সম্পূর্ণ আর্কাইভ ডাউনলোড নয়।</p>
+              </section>
 
               <NASASatelliteMap
                 latitude={location?.latitude ?? 23.8103}
@@ -359,10 +357,12 @@ export default function SatellitePage() {
                 selectedLayer={activeLayer}
                 onLayerChange={setActiveLayer}
                 comparisonMode={comparisonMode}
+                archiveSource={selectedSatellite}
+                archiveDate={currentDate.toISOString().slice(0, 10)}
               />
 
               {/* AI Insight Overlay */}
-              <div className="absolute bottom-4 right-4 z-[1001] hidden lg:block w-80">
+              <div className="container mx-auto px-4 py-4 max-w-lg">
                 <SatelliteAIInsight
                   ndviValue={nasaHealthData?.history?.[nasaHealthData.history.length - 1]?.ndvi ?? 0.7}
                   moistureValue={nasaHealthData?.history?.[nasaHealthData.history.length - 1]?.moisture_index ?? 0.5}
@@ -391,7 +391,7 @@ export default function SatellitePage() {
 
               {/* Timeline UI */}
               {showTimeline && (
-                <div className="absolute bottom-4 left-4 right-4 lg:bottom-8 lg:left-8 lg:right-8 z-[1002]">
+                <div className="container mx-auto px-4 py-4">
                   <TimelapseControls
                     dates={dates}
                     currentIndex={currentDateIndex >= 0 ? currentDateIndex : 0}
