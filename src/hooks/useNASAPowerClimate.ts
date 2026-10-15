@@ -44,6 +44,8 @@ interface ClimateData {
   };
   recommendations: string[];
   raw_data: any;
+  provenance?: any;
+  cache?: { hit: boolean; cached_at: string };
   metadata: {
     latitude: number;
     longitude: number;
@@ -78,6 +80,15 @@ export function useNASAPowerClimate(options: UseNASAPowerOptions = {}) {
   const fetchClimateData = useCallback(async () => {
     setLoading(true);
     setError(null);
+    const cacheKey = `agri-climate-cache:${latitude.toFixed(2)},${longitude.toFixed(2)}:${days}`;
+    try {
+      const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+      if (cached?.data && Date.now() - cached.cached_at < 6 * 60 * 60 * 1000) {
+        setData({ ...cached.data, cache: { hit: true, cached_at: new Date(cached.cached_at).toISOString() } });
+        setLoading(false);
+        return cached.data;
+      }
+    } catch { /* ignore corrupt cache */ }
 
     try {
       console.log(`Fetching NASA POWER data for lat=${latitude}, lng=${longitude}`);
@@ -102,6 +113,7 @@ export function useNASAPowerClimate(options: UseNASAPowerOptions = {}) {
       }
 
       setData(result.data);
+      try { localStorage.setItem(cacheKey, JSON.stringify({ cached_at: Date.now(), data: result.data })); } catch { /* quota */ }
       console.log('NASA POWER data fetched successfully');
 
       return result.data;

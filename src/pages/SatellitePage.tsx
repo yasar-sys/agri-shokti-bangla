@@ -21,7 +21,7 @@ import { SatelliteSourceSelector, type SatelliteSource } from "@/components/sate
 import { useNASAPowerClimate } from "@/hooks/useNASAPowerClimate";
 import { NASAClimateDetails } from "@/components/satellite/NASAClimateDetails";
 import { NDVITimeSeriesChart } from "@/components/satellite/NDVITimeSeriesChart";
-import { ARCHIVE_START, ARCHIVE_END } from "@/lib/satelliteArchive";
+import { ARCHIVE_START, archiveMaxDate, clampArchiveDate } from "@/lib/satelliteArchive";
 
 type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
 
@@ -334,10 +334,10 @@ export default function SatellitePage() {
             <>
               <section className="container mx-auto px-4 py-4 space-y-3">
                 <div className="flex flex-wrap items-center gap-3">
-                  <label htmlFor="archive-date" className="text-sm font-medium">আর্কাইভের তারিখ · ২০০০–২০২৬</label>
-                  <input id="archive-date" aria-label="আর্কাইভের তারিখ" type="date" min={ARCHIVE_START} max={ARCHIVE_END} value={currentDate.toISOString().slice(0, 10)} onChange={event => { if (event.target.value && event.target.validity.valid) setCurrentDate(new Date(`${event.target.value}T12:00:00Z`)); }} className="min-h-12 rounded-md border border-input bg-background px-3 text-foreground" />
+                  <label htmlFor="archive-date" className="text-sm font-medium">আর্কাইভের তারিখ · ২০০০–আজ</label>
+                  <input id="archive-date" aria-label="আর্কাইভের তারিখ" type="date" min={ARCHIVE_START} max={archiveMaxDate()} value={clampArchiveDate(currentDate.toISOString().slice(0, 10))} onChange={event => { if (event.target.value && event.target.validity.valid) setCurrentDate(new Date(`${clampArchiveDate(event.target.value)}T12:00:00Z`)); }} className="min-h-12 rounded-md border border-input bg-background px-3 text-foreground" />
                 </div>
-                <p className="text-sm text-muted-foreground">{selectedSatellite === 'modis' ? 'MODIS: ২৪ ফেব্রুয়ারি ২০০০ থেকে উপলব্ধ ছবি; কিছু দিনের ছবি নেই।' : 'Landsat: নির্বাচিত তারিখের ±১৬ দিনের কম-মেঘযুক্ত ছবি। কিছু এলাকায় ছবি নাও থাকতে পারে।'} দেখা ছবিগুলো এই ডিভাইসে ক্যাশে থাকে; এটি সম্পূর্ণ আর্কাইভ ডাউনলোড নয়।</p>
+                <p className="text-sm text-muted-foreground">{selectedSatellite === 'modis' ? 'MODIS: ২৪ ফেব্রুয়ারি ২০০০ থেকে প্রতিদিনের ছবি (২৫০ মি.); মেঘ বা কক্ষপথের ফাঁকে কিছু অংশ খালি থাকতে পারে।' : 'Landsat: নির্বাচিত তারিখের সবচেয়ে কাছের কম-মেঘযুক্ত ছবি (৩০ মি.; ২০০০–২০১২ সালে GLS যুগের ছবি)।'} দেখা ছবিগুলো এই ডিভাইসে ক্যাশে থাকে।</p>
               </section>
 
               <NASASatelliteMap
@@ -349,7 +349,7 @@ export default function SatellitePage() {
                 onLayerChange={setActiveLayer}
                 comparisonMode={comparisonMode}
                 archiveSource={selectedSatellite}
-                archiveDate={currentDate.toISOString().slice(0, 10)}
+                archiveDate={clampArchiveDate(currentDate.toISOString().slice(0, 10))}
               />
 
 
