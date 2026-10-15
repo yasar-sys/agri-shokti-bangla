@@ -3,8 +3,8 @@ import { satelliteTileCache } from './satelliteTileCache';
 import { archiveTileUrl, type ArchiveSource } from './satelliteArchive';
 
 export function createArchiveLayer(source: ArchiveSource, date: string, onUnavailable: () => void): L.GridLayer {
-  const layer = L.gridLayer({ maxZoom: 19, maxNativeZoom: source === 'modis' ? 9 : 12, attribution: source === 'modis' ? 'NASA GIBS / MODIS' : 'USGS Landsat / Esri' });
-  layer.createTile = (coords, done) => {
+  class ArchiveLayer extends L.GridLayer {
+  createTile(coords: L.Coords, done: L.DoneCallback): HTMLElement {
     const image = document.createElement('img');
     image.width = 256; image.height = 256; image.alt = '';
     const url = archiveTileUrl(source, date, coords.x, coords.y, coords.z);
@@ -22,6 +22,7 @@ export function createArchiveLayer(source: ArchiveSource, date: string, onUnavai
       objectUrl = URL.createObjectURL(blob); image.src = objectUrl;
     })().catch(() => { onUnavailable(); done(new Error('Archive imagery unavailable'), image); });
     return image;
-  };
-  return layer;
+  }
+  }
+  return new ArchiveLayer({ maxZoom: 19, maxNativeZoom: source === 'modis' ? 9 : 12, attribution: source === 'modis' ? 'NASA GIBS / MODIS' : 'USGS Landsat / Esri' });
 }
