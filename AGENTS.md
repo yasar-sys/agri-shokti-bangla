@@ -12,3 +12,4 @@
 - Service route arrivals use a keyed CSS animation wrapper without transforms after completion; this provides shared reduced-motion-safe transitions without trapping fixed map or voice controls.
 - Service swipe pagination uses a pure tested helper and the actual service count; this keeps every service reachable as the catalogue changes.
 - Missing NASA/OpenET/Crop-CASMA responses must produce unavailable states, never generated measurements; real providers remain the source of agricultural results.
+- Pest report counts and dominant pests use a pure tested summary of submitted reports, separate from weather-derived risk estimates, to prevent fabricated observations.
