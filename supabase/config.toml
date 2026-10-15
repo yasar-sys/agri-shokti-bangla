@@ -1,58 +1,43 @@
 project_id = "yojlbxpbxfskcfzfoghs"
 
-[functions.chat]
-verify_jwt = false
-
-[functions.scan-fertilizer]
-verify_jwt = false
-
-[functions.detect-disease]
-verify_jwt = false
-
-[functions.rag-answer]
-verify_jwt = false
-
-[functions.get-mapbox-token]
-verify_jwt = false
-
-[functions.embed-document]
-verify_jwt = false
-
-[functions.ndvi-scan]
-verify_jwt = false
-
-[functions.optimize-drone-route]
-verify_jwt = false
-
-[functions.nasa-ndvi]
-verify_jwt = false
-
-[functions.satellite-tiles]
-verify_jwt = false
-
-[functions.send-push-notification]
-verify_jwt = false
-
-[functions.agromonitoring-ndvi]
-verify_jwt = false
-
-[functions.nasa-power-climate]
-verify_jwt = false
-
-[functions.groq-chat]
-verify_jwt = false
-
-[functions.market-ai]
-verify_jwt = false
-
-[functions.elevenlabs-tts]
-verify_jwt = false
-
-[functions.predict-yield]
-verify_jwt = false
-
-[functions.irrigation-forecast]
-verify_jwt = false
-
-[functions.vrf-map]
-verify_jwt = false
+[functions]
+  [functions.agromonitoring-ndvi]
+    verify_jwt = false
+  [functions.auth-email-hook]
+    verify_jwt = false
+  [functions.chat]
+    verify_jwt = false
+  [functions.detect-disease]
+    verify_jwt = false
+  [functions.elevenlabs-tts]
+    verify_jwt = false
+  [functions.embed-document]
+    verify_jwt = false
+  [functions.get-mapbox-token]
+    verify_jwt = false
+  [functions.groq-chat]
+    verify_jwt = false
+  [functions.irrigation-forecast]
+    verify_jwt = false
+  [functions.market-ai]
+    verify_jwt = false
+  [functions.nasa-ndvi]
+    verify_jwt = false
+  [functions.nasa-power-climate]
+    verify_jwt = false
+  [functions.ndvi-scan]
+    verify_jwt = false
+  [functions.optimize-drone-route]
+    verify_jwt = false
+  [functions.predict-yield]
+    verify_jwt = false
+  [functions.rag-answer]
+    verify_jwt = false
+  [functions.satellite-tiles]
+    verify_jwt = false
+  [functions.scan-fertilizer]
+    verify_jwt = false
+  [functions.send-push-notification]
+    verify_jwt = false
+  [functions.vrf-map]
+    verify_jwt = false
