@@ -25,10 +25,10 @@ const optimizationTips = [
     icon: Fuel,
     color: "text-chart-2",
     tips: [
-      "২.৫ একরে ৮ লিটার ডিজেল যথেষ্ট",
-      "সকাল ৬-৮টায় কাজ করলে ১৫% কম জ্বালানি লাগে",
+      "জ্বালানি খরচের হিসাব নিয়মিত লিখে রাখুন",
+      "যন্ত্রের নির্দেশনা অনুযায়ী উপযুক্ত সময়ে কাজ করুন",
       "RPM ১৮০০-২০০০ রাখুন",
-      "এয়ার ফিল্টার পরিষ্কার রাখলে ১০% সাশ্রয়",
+      "এয়ার ফিল্টার পরিষ্কার রাখুন",
     ]
   },
   {
@@ -66,17 +66,20 @@ const optimizationTips = [
   },
 ];
 
-const DIESEL_PRICE = 107; // BDT per liter
 
 export default function MachineOptimizerPage() {
   const [dieselLiters, setDieselLiters] = useState("");
+  const [dieselPrice, setDieselPrice] = useState("");
   const [calculatedCost, setCalculatedCost] = useState<number | null>(null);
   const [calculatedArea, setCalculatedArea] = useState<number | null>(null);
 
   const handleCalculate = () => {
     const liters = parseFloat(dieselLiters);
-    if (!isNaN(liters) && liters > 0) {
-      setCalculatedCost(liters * DIESEL_PRICE);
+    const price = Number(dieselPrice);
+    setCalculatedCost(null);
+    setCalculatedArea(null);
+    if (Number.isFinite(liters) && liters > 0 && Number.isFinite(price) && price > 0) {
+      setCalculatedCost(liters * price);
       // Approximately 3.2 liters per acre for standard tractor
       setCalculatedArea(liters / 3.2);
     }
@@ -118,7 +121,7 @@ export default function MachineOptimizerPage() {
       <section className="px-4 py-4">
         <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
           <Settings className="w-4 h-4 text-primary" />
-          আমার যন্ত্রপাতি ({machines.length}টি)
+          যন্ত্রপাতির ধরন ({machines.length}টি)
         </h2>
         <div className="grid grid-cols-1 gap-2 max-h-[300px] overflow-y-auto pr-1">
           {machines.map((machine) => (
@@ -128,18 +131,6 @@ export default function MachineOptimizerPage() {
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground truncate">{machine.name}</p>
-                <p className="text-xs text-muted-foreground">শেষ সার্ভিস: {machine.lastService}</p>
-              </div>
-              <div className={cn(
-                "flex items-center gap-1 text-xs px-2 py-1 rounded-full whitespace-nowrap",
-                machine.status === "ভালো" ? "bg-secondary/20 text-secondary" : "bg-destructive/20 text-destructive"
-              )}>
-                {machine.status === "ভালো" ? (
-                  <CheckCircle2 className="w-3 h-3" />
-                ) : (
-                  <AlertCircle className="w-3 h-3" />
-                )}
-                {machine.status}
               </div>
             </div>
           ))}
@@ -154,6 +145,10 @@ export default function MachineOptimizerPage() {
             দ্রুত ডিজেল হিসাব
           </h3>
           
+          <div className="mb-3">
+            <label htmlFor="dieselPrice" className="text-xs text-muted-foreground mb-1 block">ডিজেলের ক্রয়মূল্য (টাকা/লিটার)</label>
+            <Input id="dieselPrice" type="number" min="0.1" step="0.1" value={dieselPrice} onChange={(e) => { setDieselPrice(e.target.value); setCalculatedCost(null); setCalculatedArea(null); }} />
+          </div>
           {/* Input for liters */}
           <div className="mb-3">
             <label className="text-xs text-muted-foreground mb-1 block">ডিজেলের পরিমাণ (লিটার)</label>
@@ -161,7 +156,7 @@ export default function MachineOptimizerPage() {
               <Input
                 type="number"
                 value={dieselLiters}
-                onChange={(e) => setDieselLiters(e.target.value)}
+                onChange={(e) => { setDieselLiters(e.target.value); setCalculatedCost(null); setCalculatedArea(null); }}
                 placeholder="যেমন: ৮"
                 className="flex-1"
                 min="0.1"
@@ -169,6 +164,7 @@ export default function MachineOptimizerPage() {
               />
               <Button 
                 onClick={handleCalculate}
+                disabled={!(Number(dieselLiters) > 0 && Number(dieselPrice) > 0)}
                 className="bg-secondary text-secondary-foreground"
               >
                 হিসাব করুন
@@ -190,21 +186,8 @@ export default function MachineOptimizerPage() {
             </div>
           )}
 
-          {calculatedCost === null && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="bg-card/50 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-foreground">৮ লিটার</p>
-                <p className="text-xs text-muted-foreground">২.৫ একর জমির জন্য</p>
-              </div>
-              <div className="bg-card/50 rounded-lg p-3 text-center">
-                <p className="text-2xl font-bold text-foreground">৳{(8 * DIESEL_PRICE).toFixed(0)}</p>
-                <p className="text-xs text-muted-foreground">আনুমানিক খরচ</p>
-              </div>
-            </div>
-          )}
-          
           <p className="text-xs text-muted-foreground mt-2 text-center">
-            * বর্তমান ডিজেলের দাম: ৳{DIESEL_PRICE}/লিটার
+            জমির হিসাব আনুমানিক ৩.২ লিটার/একর ধরে; প্রকৃত খরচ যন্ত্র ও মাটিভেদে পরিবর্তিত হয়।
           </p>
         </div>
       </section>
@@ -213,7 +196,7 @@ export default function MachineOptimizerPage() {
       <section className="px-4 mb-4">
         <h2 className="text-base font-semibold text-foreground mb-3 flex items-center gap-2">
           <Zap className="w-4 h-4 text-chart-2" />
-          AI অপ্টিমাইজেশন টিপস
+          সাধারণ রক্ষণাবেক্ষণ পরামর্শ
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {optimizationTips.map((section, idx) => (
@@ -269,10 +252,9 @@ export default function MachineOptimizerPage() {
           <div className="flex items-start gap-2">
             <span className="text-xl">🌍</span>
             <div>
-              <h3 className="font-semibold text-primary text-sm mb-1">আজকের মাটির অবস্থা</h3>
+              <h3 className="font-semibold text-primary text-sm mb-1">মাটির অবস্থা ও কাজের প্রস্তুতি</h3>
               <p className="text-xs text-muted-foreground leading-relaxed">
-                মাটি <span className="text-secondary font-medium">নরম</span> আছে। গতকাল বৃষ্টি হয়েছে। 
-                আজ চাষ করলে ২০% কম জ্বালানি লাগবে। বিকেল ৪টার আগে কাজ শেষ করুন।
+                জমির প্রকৃত আর্দ্রতা পরীক্ষা করুন। অতিরিক্ত ভেজা মাটিতে চাষ এড়িয়ে চলুন এবং যন্ত্রের ব্যবহারবিধি অনুসরণ করুন।
               </p>
             </div>
           </div>
