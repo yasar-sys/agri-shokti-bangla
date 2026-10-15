@@ -14,6 +14,42 @@ export type Database = {
   }
   public: {
     Tables: {
+      account_types: {
+        Row: {
+          account_type: string
+          business_name: string | null
+          created_at: string
+          display_name: string | null
+          location: string | null
+          phone: string | null
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          account_type: string
+          business_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          location?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          account_type?: string
+          business_name?: string | null
+          created_at?: string
+          display_name?: string | null
+          location?: string | null
+          phone?: string | null
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       agriculture_contacts: {
         Row: {
           address: string | null
@@ -873,6 +909,140 @@ export type Database = {
           },
         ]
       }
+      price_submissions: {
+        Row: {
+          created_at: string
+          crop_name: string
+          id: string
+          market_location: string | null
+          note: string | null
+          price: number
+          reviewed_at: string | null
+          status: string
+          submitter_name: string | null
+          unit: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          crop_name: string
+          id?: string
+          market_location?: string | null
+          note?: string | null
+          price: number
+          reviewed_at?: string | null
+          status?: string
+          submitter_name?: string | null
+          unit?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          crop_name?: string
+          id?: string
+          market_location?: string | null
+          note?: string | null
+          price?: number
+          reviewed_at?: string | null
+          status?: string
+          submitter_name?: string | null
+          unit?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      produce_listings: {
+        Row: {
+          asking_price: number
+          created_at: string
+          crop_name: string
+          description: string | null
+          id: string
+          location: string | null
+          quantity: number
+          seller_name: string
+          seller_phone: string | null
+          status: string
+          unit: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          asking_price: number
+          created_at?: string
+          crop_name: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          quantity: number
+          seller_name: string
+          seller_phone?: string | null
+          status?: string
+          unit?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          asking_price?: number
+          created_at?: string
+          crop_name?: string
+          description?: string | null
+          id?: string
+          location?: string | null
+          quantity?: number
+          seller_name?: string
+          seller_phone?: string | null
+          status?: string
+          unit?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      produce_offers: {
+        Row: {
+          buyer_id: string
+          buyer_name: string
+          buyer_phone: string | null
+          created_at: string
+          id: string
+          listing_id: string
+          message: string | null
+          offer_price: number
+          status: string
+        }
+        Insert: {
+          buyer_id: string
+          buyer_name: string
+          buyer_phone?: string | null
+          created_at?: string
+          id?: string
+          listing_id: string
+          message?: string | null
+          offer_price: number
+          status?: string
+        }
+        Update: {
+          buyer_id?: string
+          buyer_name?: string
+          buyer_phone?: string | null
+          created_at?: string
+          id?: string
+          listing_id?: string
+          message?: string | null
+          offer_price?: number
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "produce_offers_listing_id_fkey"
+            columns: ["listing_id"]
+            isOneToOne: false
+            referencedRelation: "produce_listings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1439,6 +1609,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_approved_buyer: { Args: { _uid: string }; Returns: boolean }
       match_documents: {
         Args: {
           match_count?: number
@@ -1455,6 +1626,10 @@ export type Database = {
           source: string
           title: string
         }[]
+      }
+      review_price_submission: {
+        Args: { _approve: boolean; _id: string }
+        Returns: undefined
       }
       update_document_embedding: {
         Args: { doc_id: string; new_embedding: string }
