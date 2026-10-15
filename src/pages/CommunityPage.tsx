@@ -75,7 +75,7 @@ export default function CommunityPage() {
     const text = newPostContent.trim() || 'ছবি শেয়ার';
     const success = await createPost({
       title: text.substring(0, 50),
-      content: newPostContent.trim(),
+      content: newPostContent.trim() || text,
       post_type: 'story',
       image_url,
     });
