@@ -25,7 +25,8 @@ import { cn } from '@/lib/utils';
 import { TILE_LAYERS, getNDVIColor, getSoilMoistureColor, FALLBACK_TILE_PROVIDERS, getTileErrorReason, TileLoadError } from '@/lib/nasaDataSources';
 import { AppEEARSPanel } from './AppEEARSPanel';
 import { Badge } from '@/components/ui/badge';
-import { createArchiveLayer, type ArchiveSource } from '@/lib/satelliteArchive';
+import { type ArchiveSource } from '@/lib/satelliteArchive';
+import { createArchiveLayer } from '@/lib/satelliteArchiveLayer';
 
 interface FieldZone {
   id: string;

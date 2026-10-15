@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 import agriLogo from "@/assets/agri-brain-logo.png";
-import { Leaf, Sprout, Sun, Droplets } from "lucide-react";
+import { Sprout } from "lucide-react";
 
 export default function SplashPage() {
   const navigate = useNavigate();
@@ -17,7 +17,7 @@ export default function SplashPage() {
     
     const timer = setTimeout(() => {
       setFadeOut(true);
-      setTimeout(() => navigate("/home"), 500);
+      navigate("/home", { replace: true });
     }, 3000);
 
     return () => {
@@ -38,13 +38,11 @@ export default function SplashPage() {
         backgroundPosition: "center",
       }}
     >
-      {/* Animated gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/90 to-background animate-pulse" 
-           style={{ animationDuration: '4s' }} />
+      <div className="absolute inset-0 bg-background/90" />
       
       {/* Floating particles */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(12)].map((_, i) => (
+        {[...Array(0)].map((_, i) => (
           <div
             key={i}
             className="absolute animate-float"
@@ -55,23 +53,21 @@ export default function SplashPage() {
               animationDuration: `${4 + Math.random() * 4}s`,
             }}
           >
-            {i % 4 === 0 && <Leaf className="w-6 h-6 text-secondary/30" />}
+            {i % 4 === 0 && <Sprout className="w-6 h-6 text-secondary/30" />}
             {i % 4 === 1 && <Sprout className="w-5 h-5 text-primary/30" />}
-            {i % 4 === 2 && <Sun className="w-4 h-4 text-chart-2/30" />}
-            {i % 4 === 3 && <Droplets className="w-5 h-5 text-chart-3/30" />}
+            {i % 4 === 2 && <Sprout className="w-4 h-4 text-chart-2/30" />}
+            {i % 4 === 3 && <Sprout className="w-5 h-5 text-chart-3/30" />}
           </div>
         ))}
       </div>
 
       {/* Radial glow behind logo */}
-      <div className="absolute w-64 h-64 rounded-full bg-secondary/20 blur-3xl animate-pulse" />
 
       {/* Logo and content */}
       <div className="relative z-10 flex flex-col items-center gap-6">
         {/* Logo with glow effect */}
         <div className="relative animate-scale-in">
           {/* Outer glow ring */}
-          <div className="absolute inset-0 w-32 h-32 rounded-2xl bg-gradient-to-br from-secondary to-primary blur-xl opacity-60 animate-pulse" />
           
           {/* Logo container */}
           <div className="relative w-28 h-28 rounded-2xl overflow-hidden shadow-2xl border-2 border-secondary/50 transform hover:scale-105 transition-transform">
@@ -91,7 +87,7 @@ export default function SplashPage() {
 
         {/* App name with gradient */}
         <div className="text-center">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-secondary via-primary to-chart-2 bg-clip-text text-transparent animate-slide-up">
+          <h1 className="text-4xl font-bold text-primary animate-slide-up">
             agriশক্তি
           </h1>
           
@@ -111,9 +107,9 @@ export default function SplashPage() {
             showMotto ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
-          <div className="bg-card/50 backdrop-blur-sm rounded-xl px-4 py-3 border border-border/50">
+          <div className="px-4 py-3">
             <p className="text-xs text-muted-foreground leading-relaxed">
-              🌾 মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি 🌾
+              মাটি, মানুষ, প্রযুক্তি – কৃষির নতুন শক্তি
             </p>
           </div>
         </div>
@@ -121,13 +117,13 @@ export default function SplashPage() {
 
       {/* Loading indicator - animated crops */}
       <div className="relative z-10 mt-12 flex items-center gap-3">
-        {["🌱", "🌿", "🌾"].map((emoji, i) => (
+        {[0, 1, 2].map((_, i) => (
           <div
             key={i}
             className="text-2xl animate-bounce"
             style={{ animationDelay: `${i * 0.2}s` }}
           >
-            {emoji}
+            <Sprout className="h-6 w-6 text-primary" />
           </div>
         ))}
       </div>

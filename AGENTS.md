@@ -6,3 +6,6 @@
 - Home retains existing hooks, queries, service destinations and account handlers; presentation changes never replace data or domain behavior.
 - Home opens the existing lazily loaded voice conversation through a body portal rather than introducing a second voice engine; this preserves its API/fallback and prevents page-motion stacking contexts from covering the microphone.
 - Role portals: `account_types` holds farmer/merchant/trader with status guarded by a DB trigger; merchant/trader prices reach `market_prices` only through the admin-only `review_price_submission` function so the public price list stays admin-controlled.
+
+- Archive imagery uses a date-filtered MODIS/Landsat grid layer with URL-keyed local tile caching, separate from pure archive policy helpers; this keeps time selection real and independently testable.
+- Service map widgets isolate their stacking contexts and keep shared navigation outside map layers; this prevents map controls from covering app navigation.
