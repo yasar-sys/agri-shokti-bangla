@@ -1,5 +1,11 @@
 # AgriShokti visual redesign — first review
 
+## Current corrections
+- [ ] Prevent service/map control overlap, including pest district count.
+- [ ] Keep AgroMonitoring; remove selectable Sentinel-2; support honest cached MODIS/Landsat archive browsing for 2000–2026.
+- [ ] Restore laptop splash and global night-mode controls.
+- [ ] Verify affected flows on small and large screens.
+
 - [x] Establish editorial light/dark tokens, bilingual typography, accessible shared controls and reduced-motion support.
 - [x] Redesign Home with prominent voice entry, live weather/market data, editorial services, preserved swipe and account/install flows.
 - [x] Verify Home on mobile/desktop and check navigation, theme, notifications, installation and voice entry (install event simulated; native installation and live voice/audio not claimed).
