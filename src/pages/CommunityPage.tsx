@@ -1,13 +1,16 @@
-import { UsersRound, MessageCircle, Heart, Share2, Send, ArrowLeft, Plus, Image, Loader2, CheckCircle, Sparkles } from "lucide-react";
+import { UsersRound, MessageCircle, Heart, Share2, Send, ArrowLeft, Plus, Image, Loader2, CheckCircle, Sparkles, X } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useCommunityPosts } from "@/hooks/useCommunityPosts";
 import { CommentSection } from "@/components/community/CommentSection";
+import { CommunityImage, COMMUNITY_BUCKET } from "@/components/community/CommunityImage";
 import { SEOHead, createFAQSchema } from "@/components/seo/SEOHead";
 import { formatDistanceToNow } from "date-fns";
 import { bn } from "date-fns/locale";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 import villageBg from "@/assets/bangladesh-village-bg.jpg";
 
 const getAvatarEmoji = (name: string) => {
@@ -35,18 +38,53 @@ export default function CommunityPage() {
   const [isPosting, setIsPosting] = useState(false);
   const [showPostForm, setShowPostForm] = useState(false);
   const [openComments, setOpenComments] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const clearImage = () => {
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImageFile(null);
+    setImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
+
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) { toast.error('শুধু ছবি নির্বাচন করুন'); return; }
+    if (file.size > 5 * 1024 * 1024) { toast.error('ছবির আকার ৫ MB এর কম হতে হবে'); return; }
+    if (imagePreview) URL.revokeObjectURL(imagePreview);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
+  };
 
   const handleCreatePost = async () => {
-    if (!newPostContent.trim()) return;
+    if (!newPostContent.trim() && !imageFile) return;
     setIsPosting(true);
+    let image_url: string | undefined;
+    if (imageFile) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) { toast.error('পোস্ট করতে লগইন করুন'); setIsPosting(false); return; }
+      const ext = imageFile.name.split('.').pop()?.toLowerCase() || 'jpg';
+      const path = `${user.id}/${Date.now()}.${ext}`;
+      const { error } = await supabase.storage.from(COMMUNITY_BUCKET).upload(path, imageFile, { contentType: imageFile.type });
+      if (error) { toast.error('ছবি আপলোড করতে সমস্যা হয়েছে'); setIsPosting(false); return; }
+      image_url = path;
+    }
+    const text = newPostContent.trim() || 'ছবি শেয়ার';
     const success = await createPost({
-      title: newPostContent.substring(0, 50),
-      content: newPostContent,
-      post_type: 'story'
+      title: text.substring(0, 50),
+      content: newPostContent.trim(),
+      post_type: 'story',
+      image_url,
     });
     if (success) {
       setNewPostContent('');
+      clearImage();
       setShowPostForm(false);
+    } else if (image_url) {
+      await supabase.storage.from(COMMUNITY_BUCKET).remove([image_url]);
     }
     setIsPosting(false);
   };
@@ -149,15 +187,29 @@ export default function CommunityPage() {
                     className="w-full bg-muted/50 rounded-xl p-3 text-sm text-foreground placeholder:text-muted-foreground outline-none resize-none min-h-[100px] focus:ring-2 focus:ring-secondary/50"
                     disabled={isPosting}
                   />
+                  {imagePreview && (
+                    <div className="relative mt-3 rounded-xl overflow-hidden border border-border">
+                      <img src={imagePreview} alt="নির্বাচিত ছবি" className="w-full max-h-64 object-cover" />
+                      <button
+                        type="button"
+                        onClick={clearImage}
+                        aria-label="ছবি সরান"
+                        className="absolute top-2 right-2 w-8 h-8 rounded-full bg-background/90 flex items-center justify-center border border-border"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex gap-2">
-                      <Button variant="ghost" size="sm" className="text-muted-foreground">
-                        <Image className="w-4 h-4 mr-1" /> ছবি
+                      <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+                      <Button type="button" variant="ghost" size="sm" className="text-muted-foreground" onClick={() => fileInputRef.current?.click()} disabled={isPosting}>
+                        <Image className="w-4 h-4 mr-1" /> {imageFile ? 'ছবি বদলান' : 'ছবি'}
                       </Button>
                     </div>
                     <Button 
                       onClick={handleCreatePost}
-                      disabled={!newPostContent.trim() || isPosting}
+                      disabled={(!newPostContent.trim() && !imageFile) || isPosting}
                       className="bg-secondary text-secondary-foreground hover:bg-secondary/90"
                       size="sm"
                     >
@@ -253,12 +305,7 @@ export default function CommunityPage() {
               {/* Post Image */}
               {post.image_url && (
                 <div className="mb-3 rounded-xl overflow-hidden">
-                  <img 
-                    src={post.image_url} 
-                    alt={post.title}
-                    className="w-full h-48 object-cover"
-                    loading="lazy"
-                  />
+                  <CommunityImage src={post.image_url} alt={post.title} />
                 </div>
               )}
 
