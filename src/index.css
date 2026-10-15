@@ -238,3 +238,6 @@
 .dark .leaflet-popup-content [style*="color:"] { color: hsl(var(--foreground)) !important; }
 .leaflet-control-scale-line { background: hsl(var(--card)) !important; color: hsl(var(--foreground)) !important; }
 .leaflet-control-zoom a { width: 48px !important; height: 48px !important; line-height: 48px !important; background: hsl(var(--card)) !important; color: hsl(var(--foreground)) !important; }
+
+/* Dim only street tiles in night mode; preserve satellite imagery and risk markers. */
+.dark .osm-base-tiles { filter: brightness(0.65) saturate(0.7); }

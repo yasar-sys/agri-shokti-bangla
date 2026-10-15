@@ -133,7 +133,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
   useEffect(() => {
     if (!map.current || !isMapReady || !archiveSource || !archiveDate) return;
     setTileError(null);
-    const archive = createArchiveLayer(archiveSource, archiveDate, () => setTileError({ messageBn: 'এই তারিখ বা এলাকায় ছবি পাওয়া যায়নি; অন্য তারিখ নির্বাচন করুন', provider: archiveSource } as TileLoadError));
+    const archive = createArchiveLayer(archiveSource, archiveDate, () => setTileError({ reason: 'not_found', message: 'Archive imagery unavailable', messageBn: 'এই তারিখ বা এলাকায় ছবি পাওয়া যায়নি; অন্য তারিখ নির্বাচন করুন', provider: archiveSource }));
     archive.addTo(map.current);
     return () => { archive.remove(); };
   }, [archiveSource, archiveDate, isMapReady]);
@@ -211,7 +211,7 @@ export const NASASatelliteMap = memo(function NASASatelliteMap({
         center: [latitude, longitude],
         zoom: 10,
         zoomControl: false,
-        attributionControl: false,
+        attributionControl: true,
       });
 
       // Keep a stable base layer to avoid "shaking" when switching overlays.

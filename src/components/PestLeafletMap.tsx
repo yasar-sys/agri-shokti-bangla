@@ -29,7 +29,7 @@ const PestLeafletMap: React.FC<PestLeafletMapProps> = ({
       center: [23.8103, 90.4125], // Bangladesh center
       zoom: 7,
       zoomControl: false,
-      attributionControl: false,
+      attributionControl: true,
     });
 
     // Add zoom control to top-right
@@ -38,6 +38,8 @@ const PestLeafletMap: React.FC<PestLeafletMapProps> = ({
     // Add dark-themed tile layer (CartoDB Dark Matter)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
+      className: 'osm-base-tiles',
+      attribution: '&copy; OpenStreetMap contributors',
     }).addTo(map.current);
 
     // Create markers layer group
