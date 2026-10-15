@@ -17,6 +17,20 @@ export function createArchiveLayer(source: ArchiveSource, date: string, onUnavai
         const response = await fetch(url);
         if (!response.ok || !response.headers.get('content-type')?.startsWith('image/')) throw new Error('No archive image');
         blob = await response.blob();
+        // Transparent Landsat export means no acquisition covers this tile/time.
+        if (source === 'landsat') {
+          const bitmap = await createImageBitmap(blob);
+          const canvas = document.createElement('canvas'); canvas.width = bitmap.width; canvas.height = bitmap.height;
+          const context = canvas.getContext('2d');
+          if (context) {
+            context.drawImage(bitmap, 0, 0);
+            const pixels = context.getImageData(0, 0, canvas.width, canvas.height).data;
+            let hasPixel = false;
+            for (let i = 3; i < pixels.length; i += 4) { if (pixels[i] > 0) { hasPixel = true; break; } }
+            if (!hasPixel) { bitmap.close(); throw new Error('No acquisition'); }
+          }
+          bitmap.close();
+        }
         await satelliteTileCache.cacheTile(url, blob, source, date);
       }
       objectUrl = URL.createObjectURL(blob); image.src = objectUrl;

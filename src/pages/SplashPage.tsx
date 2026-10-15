@@ -29,7 +29,7 @@ export default function SplashPage() {
 
   return (
     <div
-      className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-700 ${
+      className={`fixed inset-0 z-50 flex flex-col items-center justify-center transition-opacity duration-300 ${
         fadeOut ? "opacity-0" : "opacity-100"
       }`}
       style={{
@@ -40,29 +40,6 @@ export default function SplashPage() {
     >
       <div className="absolute inset-0 bg-background/90" />
       
-      {/* Floating particles */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(0)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 3}s`,
-              animationDuration: `${4 + Math.random() * 4}s`,
-            }}
-          >
-            {i % 4 === 0 && <Sprout className="w-6 h-6 text-secondary/30" />}
-            {i % 4 === 1 && <Sprout className="w-5 h-5 text-primary/30" />}
-            {i % 4 === 2 && <Sprout className="w-4 h-4 text-chart-2/30" />}
-            {i % 4 === 3 && <Sprout className="w-5 h-5 text-chart-3/30" />}
-          </div>
-        ))}
-      </div>
-
-      {/* Radial glow behind logo */}
-
       {/* Logo and content */}
       <div className="relative z-10 flex flex-col items-center gap-6">
         {/* Logo with glow effect */}
@@ -93,7 +70,7 @@ export default function SplashPage() {
           
           {/* Tagline */}
           <p 
-            className={`text-sm text-secondary mt-2 transition-all duration-700 ${
+            className={`text-sm text-secondary mt-2 transition-all duration-300 ${
               showTagline ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2"
             }`}
           >
@@ -103,7 +80,7 @@ export default function SplashPage() {
 
         {/* Motto with staggered animation */}
         <div 
-          className={`text-center max-w-xs transition-all duration-700 ${
+          className={`text-center max-w-xs transition-all duration-300 ${
             showMotto ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"
           }`}
         >
@@ -120,7 +97,7 @@ export default function SplashPage() {
         {[0, 1, 2].map((_, i) => (
           <div
             key={i}
-            className="text-2xl animate-bounce"
+            className="text-2xl"
             style={{ animationDelay: `${i * 0.2}s` }}
           >
             <Sprout className="h-6 w-6 text-primary" />

@@ -89,12 +89,12 @@ export function MobileSatelliteControls({
   return (
     <>
       {/* Mobile Floating Button */}
-      <div className={cn('lg:hidden', className)}>
+      <div className={cn('lg:hidden px-4 py-3 flex justify-end', className)}>
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
           <SheetTrigger asChild>
             <Button
               size="icon"
-              className="fixed bottom-24 right-4 h-14 w-14 rounded-full shadow-lg z-30 active:scale-95 transition-transform"
+              className="relative h-14 w-14 rounded-md shadow-soft z-10 active:scale-95 transition-transform"
               aria-label="স্যাটেলাইট কন্ট্রোল"
             >
               {(() => {
