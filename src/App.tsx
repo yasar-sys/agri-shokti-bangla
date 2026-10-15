@@ -139,6 +139,7 @@ function AppContent() {
     <ErrorBoundary>
       <div className="font-bengali">
         <Suspense fallback={<PageLoader />}>
+          <div className="app-pages">
           <Routes>
             <Route path="/" element={<SplashPage />} />
             <Route path="/auth" element={<AuthPage />} />
@@ -183,6 +184,7 @@ function AppContent() {
             <Route path="/precision-farm" element={<PrecisionFarmPage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
+          </div>
         </Suspense>
         {showNav && <BottomNav />}
       </div>

@@ -224,14 +224,14 @@ export const FALLBACK_TILE_PROVIDERS = {
     nameBn: 'এসরি স্যাটেলাইট'
   },
   carto_light: {
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OSM &copy; CARTO',
     maxZoom: 19,
     name: 'Carto Light',
     nameBn: 'কার্টো লাইট'
   },
   stadia: {
-    url: 'https://tiles.stadiamaps.com/tiles/alidade_smooth/{z}/{x}/{y}{r}.png',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; Stadia Maps',
     maxZoom: 20,
     name: 'Stadia',
@@ -291,7 +291,7 @@ export const TILE_LAYERS = {
 
   // Light base map for overlays
   light: {
-    url: 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+    url: 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
     attribution: '&copy; OSM &copy; CARTO',
     maxZoom: 19
   },

@@ -36,7 +36,7 @@ const PestLeafletMap: React.FC<PestLeafletMapProps> = ({
     L.control.zoom({ position: 'topright' }).addTo(map.current);
 
     // Add dark-themed tile layer (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       maxZoom: 19,
     }).addTo(map.current);
 

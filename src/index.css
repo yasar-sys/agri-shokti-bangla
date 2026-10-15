@@ -123,7 +123,8 @@
   .text-glow, .text-glow-gold { text-shadow: none; }
   .text-gradient, .text-gradient-mint, .text-gradient-gold, .text-gradient-premium { color: hsl(var(--primary)); background: none; -webkit-text-fill-color: currentColor; animation: none; }
   .btn-premium { background: hsl(var(--primary)); color: hsl(var(--primary-foreground)); box-shadow: var(--shadow-soft); }
-  .mobile-container { max-width: 430px; margin-inline: auto; min-height: 100vh; }
+  .mobile-container { max-width: 480px; margin-inline: auto; min-height: 100vh; background: hsl(var(--background)); }
+  @media (min-width: 768px) { .mobile-container { max-width: 880px; } }
   .safe-area-top { padding-top: env(safe-area-inset-top, 0px); }
   .safe-area-bottom { padding-bottom: max(8px, env(safe-area-inset-bottom, 0px)); }
   .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
@@ -213,3 +214,12 @@
 /* Keep accessible icon sizing above the shared control defaults. */
 .voice-mic svg { width: 36px; height: 36px; }
 .voice-mic { padding: 0; }
+
+/* Legacy service pages: replace old dark photo/gradient page backgrounds with the paper theme */
+.app-pages .min-h-screen[style*="background"],
+.app-pages .mobile-container[style*="background"] {
+  background: hsl(var(--background)) !important;
+}
+.app-pages .fixed.inset-0[style*="background-image"],
+.app-pages .fixed.inset-0.-z-10 { display: none !important; }
+.app-pages .bg-gradient-to-b.from-black\/60, .app-pages .bg-gradient-to-t.from-black\/80 { background: transparent; }
