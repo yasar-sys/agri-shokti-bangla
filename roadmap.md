@@ -1,5 +1,10 @@
 # AgriShokti visual redesign — first review
 
+## All-service verification
+- [ ] Audit every registered service route and its visible controls in an authenticated session.
+- [ ] Exercise calculators and representative live-data/service workflows; inspect failed requests and unavailable states.
+- [ ] Correct verified defects and repeat affected flows; report device/provider blockers without claiming full verification.
+
 ## Formal interactive refresh
 - [x] Make Home more formal and visually substantial while preserving existing services and real data.
 - [x] Add shared reduced-motion-safe page and control interactions; correct service pagination (6 regression tests pass with archive tests).
