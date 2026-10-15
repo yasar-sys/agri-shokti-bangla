@@ -1,53 +1,10 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 
-// Type declarations for Web Speech API
-interface SpeechRecognitionEvent extends Event {
-  resultIndex: number;
-  results: SpeechRecognitionResultList;
-}
-
-interface SpeechRecognitionErrorEvent extends Event {
-  error: string;
-  message: string;
-}
-
-interface SpeechRecognitionResult {
-  isFinal: boolean;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
-}
-
-interface SpeechRecognitionResultList {
-  length: number;
-  [index: number]: SpeechRecognitionResult;
-}
-
-interface SpeechRecognitionInstance extends EventTarget {
-  lang: string;
-  continuous: boolean;
-  interimResults: boolean;
-  maxAlternatives: number;
-  onstart: ((this: SpeechRecognitionInstance, ev: Event) => void) | null;
-  onend: ((this: SpeechRecognitionInstance, ev: Event) => void) | null;
-  onresult: ((this: SpeechRecognitionInstance, ev: SpeechRecognitionEvent) => void) | null;
-  onerror: ((this: SpeechRecognitionInstance, ev: SpeechRecognitionErrorEvent) => void) | null;
-  start: () => void;
-  stop: () => void;
-  abort: () => void;
-}
-
-interface SpeechRecognitionConstructor {
-  new (): SpeechRecognitionInstance;
-}
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
   interface Window {
-    SpeechRecognition?: SpeechRecognitionConstructor;
-    webkitSpeechRecognition?: SpeechRecognitionConstructor;
+    SpeechRecognition?: any;
+    webkitSpeechRecognition?: any;
   }
 }
 
@@ -67,135 +24,158 @@ interface UseBengaliVoiceInputReturn {
   error: string | null;
 }
 
+/**
+ * Bangla voice input.
+ * 1st choice: browser Web Speech API (bn-BD).
+ * Fallback: record with the microphone and transcribe on the server
+ * (used when the browser lacks speech recognition or it fails, e.g. network / iframe).
+ */
 export function useBengaliVoiceInput(options: UseBengaliVoiceInputOptions = {}): UseBengaliVoiceInputReturn {
-  const { onResult, onError, continuous = false } = options;
-  
+  const { continuous = false } = options;
+  const onResultRef = useRef(options.onResult);
+  const onErrorRef = useRef(options.onError);
+  onResultRef.current = options.onResult;
+  onErrorRef.current = options.onError;
+
   const [isListening, setIsListening] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [error, setError] = useState<string | null>(null);
-  const [isSupported, setIsSupported] = useState(false);
-  
-  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
 
-  useEffect(() => {
-    // Check if Web Speech API is supported
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    
-    if (SpeechRecognition) {
-      setIsSupported(true);
-      const recognition = new SpeechRecognition();
-      
-      // Configure for Bengali
-      recognition.lang = 'bn-BD'; // Bengali (Bangladesh)
-      recognition.continuous = continuous;
-      recognition.interimResults = true;
-      recognition.maxAlternatives = 1;
+  const recognitionRef = useRef<any>(null);
+  const useRecorderRef = useRef(false);
+  const recorderRef = useRef<MediaRecorder | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const silenceTimerRef = useRef<number | null>(null);
 
-      recognition.onstart = () => {
-        setIsListening(true);
-        setError(null);
-      };
+  const hasRecorder = typeof window !== 'undefined' && !!navigator.mediaDevices?.getUserMedia && typeof MediaRecorder !== 'undefined';
+  const SR = typeof window !== 'undefined' ? (window.SpeechRecognition || window.webkitSpeechRecognition) : undefined;
+  const isSupported = !!SR || hasRecorder;
 
-      recognition.onend = () => {
+  const reportError = (msg: string) => {
+    setError(msg);
+    onErrorRef.current?.(msg);
+  };
+
+  // ---------- Server transcription fallback ----------
+  const startRecorder = useCallback(async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      streamRef.current = stream;
+      const mime = MediaRecorder.isTypeSupported('audio/webm') ? 'audio/webm'
+        : MediaRecorder.isTypeSupported('audio/mp4') ? 'audio/mp4' : '';
+      const rec = new MediaRecorder(stream, mime ? { mimeType: mime } : undefined);
+      const chunks: Blob[] = [];
+      rec.ondataavailable = (e) => e.data.size && chunks.push(e.data);
+      rec.onstop = async () => {
+        stream.getTracks().forEach((t) => t.stop());
+        if (silenceTimerRef.current) window.clearTimeout(silenceTimerRef.current);
         setIsListening(false);
+        const blob = new Blob(chunks, { type: rec.mimeType || 'audio/webm' });
+        if (blob.size < 1500) { reportError('কোনো কথা শোনা যায়নি। আবার চেষ্টা করুন।'); return; }
+        setTranscript('কথা বুঝছি...');
+        try {
+          const buf = new Uint8Array(await blob.arrayBuffer());
+          let bin = '';
+          for (let i = 0; i < buf.length; i += 0x8000) bin += String.fromCharCode(...buf.subarray(i, i + 0x8000));
+          const format = (rec.mimeType || 'audio/webm').includes('mp4') ? 'mp4' : 'webm';
+          const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/transcribe`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+            },
+            body: JSON.stringify({ audio: btoa(bin), format }),
+          });
+          const data = await res.json();
+          if (!res.ok) throw new Error(data.error || 'কথা বুঝতে সমস্যা হয়েছে');
+          const text = (data.text || '').trim();
+          setTranscript(text);
+          if (text) onResultRef.current?.(text);
+          else reportError('কোনো কথা শোনা যায়নি। আবার চেষ্টা করুন।');
+        } catch (e) {
+          setTranscript('');
+          reportError(e instanceof Error ? e.message : 'কথা বুঝতে সমস্যা হয়েছে');
+        }
       };
-
-      recognition.onresult = (event) => {
-        let finalTranscript = '';
-        let interimTranscript = '';
-
-        for (let i = event.resultIndex; i < event.results.length; i++) {
-          const result = event.results[i];
-          if (result.isFinal) {
-            finalTranscript += result[0].transcript;
-          } else {
-            interimTranscript += result[0].transcript;
-          }
-        }
-
-        const currentTranscript = finalTranscript || interimTranscript;
-        setTranscript(currentTranscript);
-
-        if (finalTranscript && onResult) {
-          onResult(finalTranscript);
-        }
-      };
-
-      recognition.onerror = (event) => {
-        let errorMessage = 'কথা শুনতে সমস্যা হয়েছে';
-        
-        switch (event.error) {
-          case 'no-speech':
-            errorMessage = 'কোনো কথা শোনা যায়নি। আবার চেষ্টা করুন।';
-            break;
-          case 'audio-capture':
-            errorMessage = 'মাইক্রোফোন পাওয়া যায়নি।';
-            break;
-          case 'not-allowed':
-            errorMessage = 'মাইক্রোফোন ব্যবহারের অনুমতি দিন।';
-            break;
-          case 'network':
-            errorMessage = 'ইন্টারনেট সংযোগ পরীক্ষা করুন।';
-            break;
-          case 'aborted':
-            errorMessage = '';
-            break;
-        }
-
-        if (errorMessage) {
-          setError(errorMessage);
-          onError?.(errorMessage);
-        }
-        setIsListening(false);
-      };
-
-      recognitionRef.current = recognition;
-    } else {
-      setIsSupported(false);
-      setError('আপনার ব্রাউজার ভয়েস ইনপুট সাপোর্ট করে না।');
+      recorderRef.current = rec;
+      rec.start();
+      setIsListening(true);
+      setError(null);
+      // auto-stop after 12s
+      silenceTimerRef.current = window.setTimeout(() => rec.state === 'recording' && rec.stop(), 12000);
+    } catch {
+      reportError('মাইক্রোফোন ব্যবহারের অনুমতি দিন।');
+      setIsListening(false);
     }
+  }, []);
 
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.abort();
+  // ---------- Web Speech API ----------
+  useEffect(() => {
+    if (!SR) { useRecorderRef.current = true; return; }
+    const recognition = new SR();
+    recognition.lang = 'bn-BD';
+    recognition.continuous = continuous;
+    recognition.interimResults = true;
+    recognition.maxAlternatives = 1;
+
+    recognition.onstart = () => { setIsListening(true); setError(null); };
+    recognition.onend = () => setIsListening(false);
+    recognition.onresult = (event: any) => {
+      let finalT = '', interimT = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const r = event.results[i];
+        if (r.isFinal) finalT += r[0].transcript; else interimT += r[0].transcript;
       }
+      setTranscript(finalT || interimT);
+      if (finalT) onResultRef.current?.(finalT);
     };
-  }, [continuous, onResult, onError]);
+    recognition.onerror = (event: any) => {
+      setIsListening(false);
+      if (event.error === 'aborted') return;
+      if ((event.error === 'network' || event.error === 'service-not-allowed' || event.error === 'language-not-supported') && hasRecorder) {
+        // Switch permanently to server transcription and start right away
+        useRecorderRef.current = true;
+        startRecorder();
+        return;
+      }
+      const map: Record<string, string> = {
+        'no-speech': 'কোনো কথা শোনা যায়নি। আবার চেষ্টা করুন।',
+        'audio-capture': 'মাইক্রোফোন পাওয়া যায়নি।',
+        'not-allowed': 'মাইক্রোফোন ব্যবহারের অনুমতি দিন।',
+      };
+      reportError(map[event.error] || 'কথা শুনতে সমস্যা হয়েছে');
+    };
+    recognitionRef.current = recognition;
+    return () => { try { recognition.abort(); } catch { /* noop */ } };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [continuous]);
+
+  useEffect(() => () => {
+    streamRef.current?.getTracks().forEach((t) => t.stop());
+  }, []);
 
   const startListening = useCallback(() => {
-    if (recognitionRef.current && !isListening) {
-      setTranscript('');
-      setError(null);
-      try {
-        recognitionRef.current.start();
-      } catch (e) {
-        // Recognition already started
-        console.error('Recognition error:', e);
-      }
+    if (isListening) return;
+    setTranscript('');
+    setError(null);
+    if (useRecorderRef.current || !recognitionRef.current) {
+      if (hasRecorder) startRecorder();
+      else reportError('আপনার ব্রাউজার ভয়েস ইনপুট সাপোর্ট করে না।');
+      return;
     }
-  }, [isListening]);
+    try { recognitionRef.current.start(); }
+    catch { if (hasRecorder) { useRecorderRef.current = true; startRecorder(); } }
+  }, [isListening, hasRecorder, startRecorder]);
 
   const stopListening = useCallback(() => {
-    if (recognitionRef.current && isListening) {
-      recognitionRef.current.stop();
-    }
+    if (recorderRef.current?.state === 'recording') { recorderRef.current.stop(); return; }
+    if (recognitionRef.current && isListening) recognitionRef.current.stop();
   }, [isListening]);
 
   const toggleListening = useCallback(() => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
-    }
+    if (isListening) stopListening(); else startListening();
   }, [isListening, startListening, stopListening]);
 
-  return {
-    isListening,
-    isSupported,
-    transcript,
-    startListening,
-    stopListening,
-    toggleListening,
-    error,
-  };
+  return { isListening, isSupported, transcript, startListening, stopListening, toggleListening, error };
 }

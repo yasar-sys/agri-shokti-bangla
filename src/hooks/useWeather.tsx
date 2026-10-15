@@ -100,9 +100,16 @@ export function useWeather(latitude: number, longitude: number) {
       }
     };
 
-    if (latitude && longitude) {
-      fetchWeather();
-    }
+    if (!latitude || !longitude) return;
+    fetchWeather();
+    // Keep weather live: refresh every 10 minutes and when the app regains focus
+    const id = window.setInterval(fetchWeather, 10 * 60 * 1000);
+    const onVisible = () => document.visibilityState === 'visible' && fetchWeather();
+    document.addEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(id);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [latitude, longitude]);
 
   return weather;
