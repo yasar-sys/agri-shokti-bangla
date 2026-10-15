@@ -210,8 +210,10 @@ export function NASAFarmMap({
 
     // Add markers for each field
     data.forEach((field, index) => {
-      const lat = field.latitude || centerLat + (Math.random() - 0.5) * 0.1;
-      const lng = field.longitude || centerLng + (Math.random() - 0.5) * 0.1;
+      const lat = field.latitude;
+      const lng = field.longitude;
+
+      if (lat == null || lng == null || !Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
       // Get field names with fallbacks
       const fieldName = field.name || field.field_name || `Field ${index + 1}`;
@@ -225,26 +227,28 @@ export function NASAFarmMap({
 
       switch (activeLayer.type) {
         case 'openet':
-          value = field.current_et?.et_value || Math.random() * 8;
+          value = field.current_et?.et_value ?? NaN;
           markerColor = value > 6 ? '#ef4444' : value > 4 ? '#f97316' : '#3b82f6';
           break;
         case 'soil_moisture':
-          value = (field.current_data?.surface_moisture || Math.random()) * 100;
+          value = (field.current_data?.surface_moisture ?? NaN) * 100;
           markerColor = value < 30 ? '#ef4444' : value < 60 ? '#f97316' : '#10b981';
           break;
         case 'ndvi':
-          value = (field.vegetation_indices?.ndvi || Math.random()) * 100;
+          value = (field.vegetation_indices?.ndvi ?? NaN) * 100;
           markerColor = value < 40 ? '#ef4444' : value < 70 ? '#f97316' : '#10b981';
           break;
         case 'drought':
-          value = field.current_data?.drought_index || Math.random();
+          value = field.current_data?.drought_index ?? NaN;
           markerColor = value > 0.7 ? '#ef4444' : value > 0.5 ? '#f97316' : '#10b981';
           break;
         case 'temperature':
-          value = field.current_conditions?.temperature_avg || 25 + Math.random() * 15;
+          value = field.current_conditions?.temperature_avg ?? NaN;
           markerColor = value > 35 ? '#ef4444' : value > 30 ? '#f97316' : '#3b82f6';
           break;
       }
+
+      if (!Number.isFinite(value)) return;
 
       // Create custom marker
       const iconHtml = `
@@ -303,7 +307,7 @@ export function NASAFarmMap({
           <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 12px;">
             <div><strong>স্তর:</strong> ${activeLayer.nameBn}</div>
             <div><strong>মান:</strong> ${value.toFixed(1)}</div>
-            <div><strong>এলাকা:</strong> ${field.area || field.area_acres || 1} একর</div>
+            <div><strong>এলাকা:</strong> ${field.area ?? field.area_acres ?? 'তথ্য নেই'} একর</div>
             <div><strong>অবস্থা:</strong> <span style="color: ${markerColor}">${status}</span></div>
           </div>
         </div>
@@ -317,8 +321,8 @@ export function NASAFarmMap({
     if (selectedLayer === 'overview') {
       // Create a simple heatmap visualization
       const heatPoints = data.map(field => ({
-        lat: field.latitude || centerLat + (Math.random() - 0.5) * 0.1,
-        lng: field.longitude || centerLng + (Math.random() - 0.5) * 0.1,
+        lat: field.latitude,
+        lng: field.longitude,
         intensity: Math.random()
       }));
 

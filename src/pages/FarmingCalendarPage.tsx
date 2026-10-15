@@ -114,24 +114,17 @@ export default function FarmingCalendarPage() {
 
   const tasks = activeCalendar ? localTasks : [];
 
-  const upcomingTasks = [
-    { 
-      month: "কার্তিক", 
-      tasks: [
-        { name: "তৃতীয় সেচ", date: "০৫ কার্তিক", type: "সেচ" },
-        { name: "পটাশ প্রয়োগ", date: "১০ কার্তিক", type: "সার" },
-        { name: "ফুল আসার সময়", date: "১৫ কার্তিক", type: "পর্যবেক্ষণ" },
-      ]
-    },
-    { 
-      month: "অগ্রহায়ণ", 
-      tasks: [
-        { name: "শেষ সেচ", date: "০১ অগ্রহায়ণ", type: "সেচ" },
-        { name: "ফসল কাটার প্রস্তুতি", date: "১৫ অগ্রহায়ণ", type: "ফসল" },
-        { name: "ফসল কাটা", date: "২৫ অগ্রহায়ণ", type: "ফসল" },
-      ]
-    },
-  ];
+  const pendingTasks = activeCalendar ? tasks.filter(task => !task.done).map(task => {
+    const day = Number(task.day.replace(/[০-৯]/g, digit => String('০১২৩৪৫৬৭৮৯'.indexOf(digit))));
+    const due = new Date(activeCalendar.created_at);
+    due.setDate(due.getDate() + Math.max(0, day - 1));
+    return {
+      name: task.task,
+      date: due.toLocaleDateString('bn-BD', { day: 'numeric', month: 'long', year: 'numeric' }),
+      type: task.icon === 'Droplets' ? 'সেচ' : task.icon === 'Leaf' ? 'সার' : task.icon === 'Scissors' ? 'ফসল' : 'পর্যবেক্ষণ',
+    };
+  }) : [];
+  const upcomingTasks = pendingTasks.length ? [{ month: 'আপনার বাকি কাজ', tasks: pendingTasks }] : [];
 
   const handleCreateCalendar = async () => {
     if (!selectedCrop || !landSize) {
@@ -175,7 +168,11 @@ export default function FarmingCalendarPage() {
     updatedTasks[index] = { ...updatedTasks[index], done: !updatedTasks[index].done };
     setLocalTasks(updatedTasks);
     
-    await updateCalendarTasks(activeCalendar.id, updatedTasks);
+    const saved = await updateCalendarTasks(activeCalendar.id, updatedTasks);
+    if (!saved) {
+      setLocalTasks(activeCalendar.tasks);
+      toast({ variant: 'destructive', title: 'সংরক্ষণ হয়নি', description: 'কাজের অবস্থা আপডেট করা যায়নি। আবার চেষ্টা করুন।' });
+    }
   };
 
   const handleDeleteCalendar = async () => {
@@ -241,6 +238,7 @@ export default function FarmingCalendarPage() {
               size="icon" 
               className="text-destructive"
               onClick={handleDeleteCalendar}
+              aria-label="ক্যালেন্ডার মুছুন"
             >
               <Trash2 className="w-5 h-5" />
             </Button>
@@ -321,11 +319,13 @@ export default function FarmingCalendarPage() {
           </h2>
           <div className="space-y-2">
             {tasks.map((item, index) => (
-              <div 
+              <Button
+                variant="ghost"
                 key={index}
                 onClick={() => handleToggleTask(index)}
+                aria-pressed={item.done}
                 className={cn(
-                  "bg-card/80 backdrop-blur-sm border rounded-xl p-3 flex items-center gap-3 cursor-pointer transition-all",
+                  "w-full h-auto min-h-16 text-left whitespace-normal bg-card border rounded-md p-3 flex items-center gap-3 cursor-pointer transition-all",
                   item.done ? "border-secondary/50 opacity-70" : "border-border hover:border-primary/50"
                 )}
               >
@@ -337,7 +337,7 @@ export default function FarmingCalendarPage() {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-medium text-foreground">{item.task}</p>
-                  <p className="text-xs text-muted-foreground">{item.day} তারিখ</p>
+                  <p className="text-xs text-muted-foreground">রোপণের {item.day}তম দিন</p>
                 </div>
                 {item.done ? (
                   <span className="text-xs bg-secondary/20 text-secondary px-2 py-1 rounded-full flex items-center gap-1">
@@ -346,7 +346,7 @@ export default function FarmingCalendarPage() {
                 ) : (
                   <span className="text-xs bg-muted text-muted-foreground px-2 py-1 rounded-full">বাকি</span>
                 )}
-              </div>
+              </Button>
             ))}
           </div>
         </section>

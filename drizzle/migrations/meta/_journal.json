@@ -8,6 +8,13 @@
       "when": 1792072329496,
       "tag": "0000_migration",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792075297510,
+      "tag": "0001_calendar_owner_task_updates",
+      "breakpoints": true
     }
   ]
 }
