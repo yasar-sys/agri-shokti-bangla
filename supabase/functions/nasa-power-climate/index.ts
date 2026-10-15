@@ -6,317 +6,177 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-/**
- * RootSource-inspired NASA POWER API Integration
- * Production-ready climate data from NASA
- */
-
 interface ClimateDataRequest {
   latitude: number;
   longitude: number;
   days?: number;
-  parameters?: string[];
+}
+
+const NASA_FILL = -999;
+const isValid = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v) && v !== NASA_FILL;
+
+const toYmd = (d: Date) => `${d.getUTCFullYear()}-${String(d.getUTCMonth() + 1).padStart(2, '0')}-${String(d.getUTCDate()).padStart(2, '0')}`;
+const toCompact = (d: Date) => toYmd(d).replace(/-/g, '');
+
+type Series = Record<string, number | null>;
+interface ParamSet {
+  T2M: Series; T2M_MAX: Series; T2M_MIN: Series;
+  PRECTOTCORR: Series; RH2M: Series; WS2M: Series;
+  ALLSKY_SFC_SW_DWN: Series; T2MDEW: Series; PS: Series;
+}
+
+const emptySet = (): ParamSet => ({
+  T2M: {}, T2M_MAX: {}, T2M_MIN: {}, PRECTOTCORR: {}, RH2M: {}, WS2M: {}, ALLSKY_SFC_SW_DWN: {}, T2MDEW: {}, PS: {},
+});
+
+async function fetchNasaPower(lat: number, lng: number, startStr: string, endStr: string) {
+  const params = ['T2M', 'T2M_MAX', 'T2M_MIN', 'PRECTOTCORR', 'RH2M', 'WS2M', 'ALLSKY_SFC_SW_DWN', 'T2MDEW', 'PS'];
+  const url = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=${params.join(',')}&community=AG&longitude=${lng}&latitude=${lat}&start=${startStr}&end=${endStr}&format=JSON`;
+  const response = await fetch(url, { headers: { 'User-Agent': 'AgriShokti-Bangla/1.0' }, signal: AbortSignal.timeout(10000) });
+  if (!response.ok) throw new Error(`NASA POWER ${response.status}`);
+  const json = await response.json();
+  const param = json?.properties?.parameter;
+  if (!param) throw new Error('NASA POWER returned no parameters');
+  const out = emptySet();
+  for (const key of params) {
+    const series = param[key] ?? {};
+    for (const [date, raw] of Object.entries(series)) {
+      (out as any)[key][date] = isValid(raw as number) ? (raw as number) : null;
+    }
+  }
+  return { paramData: out, geometry: json.geometry, elevation: param.ELEV ?? null, timezone: param.TZ ?? null };
+}
+
+async function fetchOpenMeteoArchive(lat: number, lng: number, startDate: Date, endDate: Date) {
+  const q = new URLSearchParams({
+    latitude: String(lat), longitude: String(lng),
+    start_date: toYmd(startDate), end_date: toYmd(endDate),
+    daily: 'temperature_2m_mean,temperature_2m_max,temperature_2m_min,precipitation_sum,relative_humidity_2m_mean,wind_speed_10m_max,shortwave_radiation_sum,dew_point_2m_mean,surface_pressure_mean',
+    timezone: 'Asia/Dhaka',
+    wind_speed_unit: 'ms',
+  });
+  const response = await fetch(`https://archive-api.open-meteo.com/v1/archive?${q}`, { signal: AbortSignal.timeout(10000) });
+  if (!response.ok) throw new Error(`Open-Meteo ${response.status}`);
+  const json = await response.json();
+  const daily = json?.daily; if (!daily?.time) throw new Error('Open-Meteo returned no daily');
+  const out = emptySet();
+  daily.time.forEach((isoDate: string, i: number) => {
+    const d = isoDate.replace(/-/g, '');
+    const num = (arr: number[] | undefined) => isValid(arr?.[i] as number) ? (arr![i] as number) : null;
+    out.T2M[d] = num(daily.temperature_2m_mean);
+    out.T2M_MAX[d] = num(daily.temperature_2m_max);
+    out.T2M_MIN[d] = num(daily.temperature_2m_min);
+    out.PRECTOTCORR[d] = num(daily.precipitation_sum);
+    out.RH2M[d] = num(daily.relative_humidity_2m_mean);
+    out.WS2M[d] = num(daily.wind_speed_10m_max);
+    out.ALLSKY_SFC_SW_DWN[d] = num(daily.shortwave_radiation_sum);
+    out.T2MDEW[d] = num(daily.dew_point_2m_mean);
+    const ps = daily.surface_pressure_mean?.[i];
+    out.PS[d] = isValid(ps) ? ps / 10 : null; // hPa -> kPa
+  });
+  return { paramData: out, geometry: { coordinates: [json.longitude ?? lng, json.latitude ?? lat] }, elevation: json.elevation ?? null, timezone: 6 };
+}
+
+function latestValid(series: Series): { value: number | null; date: string | null } {
+  const entries = Object.entries(series).sort(([a], [b]) => a.localeCompare(b));
+  for (let i = entries.length - 1; i >= 0; i--) if (isValid(entries[i][1] as number)) return { value: entries[i][1] as number, date: entries[i][0] };
+  return { value: null, date: null };
+}
+const avg = (s: Series) => { const v = Object.values(s).filter(isValid) as number[]; return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+const sum = (s: Series) => { const v = Object.values(s).filter(isValid) as number[]; return v.length ? v.reduce((a, b) => a + b, 0) : null; };
+function trend(s: Series): string {
+  const v = Object.values(s).filter(isValid) as number[]; if (v.length < 4) return 'stable';
+  const half = Math.floor(v.length / 2);
+  const d = v.slice(half).reduce((a, b) => a + b, 0) / (v.length - half) - v.slice(0, half).reduce((a, b) => a + b, 0) / half;
+  if (d > 1) return 'increasing'; if (d < -1) return 'decreasing'; return 'stable';
+}
+function lastRain(s: Series): string | null {
+  const entries = Object.entries(s).sort(([a], [b]) => a.localeCompare(b));
+  for (let i = entries.length - 1; i >= 0; i--) if (isValid(entries[i][1] as number) && (entries[i][1] as number) > 0.5) return entries[i][0];
+  return null;
+}
+
+function recommendations(p: ParamSet): string[] {
+  const r: string[] = [];
+  const t = latestValid(p.T2M).value; const rain = sum(p.PRECTOTCORR) ?? 0; const h = latestValid(p.RH2M).value;
+  if (t !== null && t > 35) r.push('উচ্চ তাপমাত্রা — ঘন ঘন সেচ দিন ও মালচিং করুন');
+  else if (t !== null && t < 15) r.push('নিম্ন তাপমাত্রা — শীতকালীন ফসলের উপযুক্ত সময়');
+  if (rain < 10) r.push('কম বৃষ্টিপাত — সেচ নিশ্চিত করুন');
+  else if (rain > 200) r.push('অতিরিক্ত বৃষ্টি — নিষ্কাশন পরীক্ষা করুন');
+  if (h !== null && h > 85) r.push('উচ্চ আর্দ্রতা — ছত্রাক রোগের জন্য সতর্ক থাকুন');
+  else if (h !== null && h < 40) r.push('কম আর্দ্রতা — মাটির পানি ধারণ ক্ষমতা বাড়ান');
+  if (!lastRain(p.PRECTOTCORR)) r.push('দীর্ঘদিন বৃষ্টি হয়নি — খরা প্রস্তুতি নিন');
+  return r;
 }
 
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
-  }
-
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
   try {
-    const { latitude, longitude, days = 30, parameters }: ClimateDataRequest = await req.json();
-
-    console.log(`NASA POWER request: lat=${latitude}, lng=${longitude}, days=${days}`);
-
-    // Validate coordinates
-    if (!latitude || !longitude || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
+    const { latitude, longitude, days = 30 }: ClimateDataRequest = await req.json();
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) {
       throw new Error('Invalid coordinates');
     }
+    const endDate = new Date(); const startDate = new Date(); startDate.setUTCDate(endDate.getUTCDate() - days);
 
-    // Calculate date range
-    const endDate = new Date();
-    const startDate = new Date();
-    startDate.setDate(startDate.getDate() - days);
-
-    const formatDate = (date: Date): string => {
-      const year = date.getFullYear();
-      const month = String(date.getMonth() + 1).padStart(2, '0');
-      const day = String(date.getDate()).padStart(2, '0');
-      return `${year}${month}${day}`;
-    };
-
-    const start = formatDate(startDate);
-    const end = formatDate(endDate);
-
-    // Default agricultural parameters
-    const params = parameters || [
-      'T2M',              // Temperature at 2 Meters (°C)
-      'T2M_MAX',          // Max Temperature (°C)
-      'T2M_MIN',          // Min Temperature (°C)
-      'PRECTOTCORR',      // Precipitation (mm/day)
-      'RH2M',             // Relative Humidity (%)
-      'WS2M',             // Wind Speed (m/s)
-      'ALLSKY_SFC_SW_DWN', // Solar Radiation (MJ/m²/day)
-      'T2MDEW',           // Dew Point (°C)
-      'PS',               // Surface Pressure (kPa)
-    ];
-
-    // Call NASA POWER API
-    const nasaUrl = `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=${params.join(',')}&community=AG&longitude=${longitude}&latitude=${latitude}&start=${start}&end=${end}&format=JSON`;
-
-    let paramData;
-    let nasaData;
-    let isSimulated = false;
+    const sources: Array<{ source: string; attribution: string; status: 'ok' | 'failed' | 'empty'; detail?: string }> = [];
+    let paramData: ParamSet | null = null; let geometry: any = null; let elevation: number | null = null; let timezone: number | null = null; let primary = '';
 
     try {
-      console.log('Calling NASA POWER API...');
-      const response = await fetch(nasaUrl, {
-        headers: {
-          'User-Agent': 'AgriShokti-Bangla/1.0'
-        },
-        signal: AbortSignal.timeout(8000) // 8 second timeout
-      });
-
-      if (!response.ok) {
-        throw new Error(`NASA POWER API returned ${response.status}`);
-      }
-
-      nasaData = await response.json();
-      paramData = nasaData.properties.parameter;
-    } catch (apiError) {
-      console.warn('NASA POWER API failed, using smart fallback:', apiError);
-      isSimulated = true;
-      paramData = generateMockClimateData(latitude, longitude, days);
-      nasaData = {
-        geometry: { coordinates: [longitude, latitude] },
-        properties: { parameter: { ELEV: 5, TZ: 6 } }
-      };
+      const nasa = await fetchNasaPower(latitude, longitude, toCompact(startDate), toCompact(endDate));
+      const hasRecent = isValid(latestValid(nasa.paramData.T2M).value as any);
+      sources.push({ source: 'NASA POWER (daily, AG community)', attribution: 'NASA Langley Research Center POWER Project', status: hasRecent ? 'ok' : 'empty', detail: hasRecent ? undefined : 'latest days returned fill value' });
+      if (hasRecent) { paramData = nasa.paramData; geometry = nasa.geometry; elevation = nasa.elevation; timezone = nasa.timezone ?? 6; primary = 'NASA POWER'; }
+    } catch (err) {
+      sources.push({ source: 'NASA POWER (daily, AG community)', attribution: 'NASA Langley Research Center POWER Project', status: 'failed', detail: err instanceof Error ? err.message : String(err) });
     }
 
-    // Process the data
-    const getLatestValue = (dataObj: any): number | null => {
-      if (!dataObj) return null;
-      const values = Object.values(dataObj) as number[];
-      return values[values.length - 1];
-    };
-
-    const calculateAverage = (dataObj: any): number => {
-      if (!dataObj) return 0;
-      const values = Object.values(dataObj) as number[];
-      const validValues = values.filter(v => v !== -999 && v !== null && !isNaN(v));
-      if (validValues.length === 0) return 0;
-      return validValues.reduce((a, b) => a + b, 0) / validValues.length;
-    };
-
-    const calculateSum = (dataObj: any): number => {
-      if (!dataObj) return 0;
-      const values = Object.values(dataObj) as number[];
-      const validValues = values.filter(v => v !== -999 && v !== null && !isNaN(v));
-      return validValues.reduce((a, b) => a + b, 0);
-    };
-
-    const calculateTrend = (dataObj: any): string => {
-      if (!dataObj) return 'stable';
-      const values = Object.values(dataObj) as number[];
-      const validValues = values.filter(v => v !== -999 && v !== null);
-      if (validValues.length < 2) return 'stable';
-
-      const firstHalf = validValues.slice(0, Math.floor(validValues.length / 2));
-      const secondHalf = validValues.slice(Math.floor(validValues.length / 2));
-
-      const firstAvg = firstHalf.reduce((a, b) => a + b, 0) / firstHalf.length;
-      const secondAvg = secondHalf.reduce((a, b) => a + b, 0) / secondHalf.length;
-
-      const diff = secondAvg - firstAvg;
-      if (diff > 1) return 'increasing';
-      if (diff < -1) return 'decreasing';
-      return 'stable';
-    };
-
-    const getLastRainDate = (dataObj: any): string | null => {
-      if (!dataObj) return null;
-      const entries = Object.entries(dataObj) as [string, number][];
-      const reversed = entries.reverse();
-      const lastRain = reversed.find(([_, value]) => value > 0.5); // At least 0.5mm
-      return lastRain ? lastRain[0] : null;
-    };
-
-    // Generate Bengali recommendations based on data
-    const generateRecommendations = (): string[] => {
-      const recommendations: string[] = [];
-      const temp = getLatestValue(paramData.T2M) || 0;
-      const rain = calculateSum(paramData.PRECTOTCORR);
-      const humidity = getLatestValue(paramData.RH2M) || 0;
-      const lastRain = getLastRainDate(paramData.PRECTOTCORR);
-
-      // Temperature-based
-      if (temp > 35) {
-        recommendations.push('🌡️ উচ্চ তাপমাত্রা - ঘন ঘন সেচ দিন এবং মালচিং করুন');
-      } else if (temp < 15) {
-        recommendations.push('❄️ নিম্ন তাপমাত্রা - শীতকালীন ফসল রোপণের উপযুক্ত');
+    if (!paramData) {
+      try {
+        const om = await fetchOpenMeteoArchive(latitude, longitude, startDate, endDate);
+        sources.push({ source: 'Open-Meteo ERA5 Archive', attribution: 'Open-Meteo.com (CC BY 4.0), ECMWF ERA5', status: 'ok' });
+        paramData = om.paramData; geometry = om.geometry; elevation = om.elevation; timezone = om.timezone; primary = 'Open-Meteo ERA5';
+      } catch (err) {
+        sources.push({ source: 'Open-Meteo ERA5 Archive', attribution: 'Open-Meteo.com (CC BY 4.0), ECMWF ERA5', status: 'failed', detail: err instanceof Error ? err.message : String(err) });
       }
+    }
 
-      // Rainfall-based
-      if (rain < 10) {
-        recommendations.push('☀️ কম বৃষ্টিপাত - সেচ ব্যবস্থা নিশ্চিত করুন');
-      } else if (rain > 200) {
-        recommendations.push('🌧️ অতিরিক্ত বৃষ্টি - নিষ্কাশন ব্যবস্থা পরীক্ষা করুন');
-      }
+    if (!paramData) {
+      return new Response(JSON.stringify({ success: false, error: 'All climate providers failed', provenance: { sources, requested_at: new Date().toISOString() } }), { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    }
 
-      // Humidity-based
-      if (humidity > 85) {
-        recommendations.push('💧 উচ্চ আর্দ্রতা - ছত্রাকের জন্য সতর্ক থাকুন');
-      } else if (humidity < 40) {
-        recommendations.push('🏜️ কম আর্দ্রতা - পানি ধারণ ক্ষমতা বাড়ান');
-      }
-
-      if (!lastRain) {
-        recommendations.push('⚠️ দীর্ঘদিন বৃষ্টি হয়নি - খরা প্রস্তুতি নিন');
-      }
-
-      return recommendations;
-    };
-
+    const temp = latestValid(paramData.T2M); const prec = sum(paramData.PRECTOTCORR); const trnd = trend(paramData.T2M);
     const processedData = {
-      temperature: {
-        current: getLatestValue(paramData.T2M),
-        max: getLatestValue(paramData.T2M_MAX),
-        min: getLatestValue(paramData.T2M_MIN),
-        average: calculateAverage(paramData.T2M),
-        trend: calculateTrend(paramData.T2M),
-        trend_bn: calculateTrend(paramData.T2M) === 'increasing' ? 'বৃদ্ধি পাচ্ছে' :
-          calculateTrend(paramData.T2M) === 'decreasing' ? 'হ্রাস পাচ্ছে' : 'স্থিতিশীল'
-      },
-      precipitation: {
-        total: calculateSum(paramData.PRECTOTCORR),
-        average: calculateAverage(paramData.PRECTOTCORR),
-        last_rain_date: getLastRainDate(paramData.PRECTOTCORR),
-        trend: calculateTrend(paramData.PRECTOTCORR)
-      },
-      humidity: {
-        current: getLatestValue(paramData.RH2M),
-        average: calculateAverage(paramData.RH2M)
-      },
-      wind: {
-        current: getLatestValue(paramData.WS2M),
-        average: calculateAverage(paramData.WS2M)
-      },
-      solar: {
-        current: getLatestValue(paramData.ALLSKY_SFC_SW_DWN),
-        average: calculateAverage(paramData.ALLSKY_SFC_SW_DWN)
-      },
-      dewpoint: {
-        current: getLatestValue(paramData.T2MDEW),
-        average: calculateAverage(paramData.T2MDEW)
-      },
-      pressure: {
-        current: getLatestValue(paramData.PS),
-        average: calculateAverage(paramData.PS)
-      },
-      recommendations: generateRecommendations(),
-      raw_data: paramData, // Include full data for charting
+      temperature: { current: temp.value, max: latestValid(paramData.T2M_MAX).value, min: latestValid(paramData.T2M_MIN).value, average: avg(paramData.T2M), trend: trnd, trend_bn: trnd === 'increasing' ? 'বৃদ্ধি পাচ্ছে' : trnd === 'decreasing' ? 'হ্রাস পাচ্ছে' : 'স্থিতিশীল', observation_date: temp.date },
+      precipitation: { total: prec, average: avg(paramData.PRECTOTCORR), last_rain_date: lastRain(paramData.PRECTOTCORR), trend: trend(paramData.PRECTOTCORR) },
+      humidity: { current: latestValid(paramData.RH2M).value, average: avg(paramData.RH2M) },
+      wind: { current: latestValid(paramData.WS2M).value, average: avg(paramData.WS2M) },
+      solar: { current: latestValid(paramData.ALLSKY_SFC_SW_DWN).value, average: avg(paramData.ALLSKY_SFC_SW_DWN) },
+      dewpoint: { current: latestValid(paramData.T2MDEW).value, average: avg(paramData.T2MDEW) },
+      pressure: { current: latestValid(paramData.PS).value, average: avg(paramData.PS) },
+      recommendations: recommendations(paramData),
+      raw_data: paramData,
       metadata: {
-        latitude: nasaData.geometry.coordinates[1],
-        longitude: nasaData.geometry.coordinates[0],
-        elevation: nasaData.properties.parameter.ELEV,
-        timezone: nasaData.properties.parameter.TZ || 6,
-        source: isSimulated ? 'Historical Simulation' : 'NASA POWER API',
-        is_simulated: isSimulated,
-        date_range: { start, end },
-        timestamp: new Date().toISOString()
-      }
+        latitude: geometry?.coordinates?.[1] ?? latitude,
+        longitude: geometry?.coordinates?.[0] ?? longitude,
+        elevation, timezone: timezone ?? 6,
+        source: primary,
+        is_simulated: false,
+        date_range: { start: toYmd(startDate), end: toYmd(endDate) },
+        timestamp: new Date().toISOString(),
+      },
+      provenance: {
+        primary_source: primary,
+        sources,
+        parameters: ['T2M', 'T2M_MAX', 'T2M_MIN', 'PRECTOTCORR', 'RH2M', 'WS2M', 'ALLSKY_SFC_SW_DWN', 'T2MDEW', 'PS'],
+        fill_value: NASA_FILL,
+        requested_at: new Date().toISOString(),
+        notes: 'Fill values from NASA POWER are discarded; wind in m/s, pressure in kPa.',
+      },
     };
 
-    console.log('NASA POWER data processed successfully');
-
-    return new Response(
-      JSON.stringify({
-        success: true,
-        data: processedData
-      }),
-      {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-
+    return new Response(JSON.stringify({ success: true, data: processedData }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   } catch (error: unknown) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
-    console.error('NASA POWER function error:', error);
-
-    return new Response(
-      JSON.stringify({
-        success: false,
-        error: errorMessage,
-        fallback_available: true
-      }),
-      {
-        status: 500,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return new Response(JSON.stringify({ success: false, error: message }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
   }
 });
-
-/**
- * Generates realistic agricultural climate data for Bangladesh region
- * based on coordinates and current season.
- */
-function generateMockClimateData(lat: number, lng: number, days: number) {
-  const isBangladesh = lat > 20 && lat < 27 && lng > 88 && lng < 93;
-  const currentMonth = new Date().getMonth(); // 0-11
-
-  // Seasonal constants for Bangladesh
-  const seasons = [
-    { name: 'Winter', temp: 18, rain: 0.1, humidity: 45 },    // Jan
-    { name: 'Winter', temp: 21, rain: 0.2, humidity: 40 },    // Feb
-    { name: 'Pre-Monsoon', temp: 28, rain: 2.0, humidity: 55 }, // Mar
-    { name: 'Pre-Monsoon', temp: 31, rain: 5.0, humidity: 65 }, // Apr
-    { name: 'Pre-Monsoon', temp: 32, rain: 8.0, humidity: 75 }, // May
-    { name: 'Monsoon', temp: 30, rain: 15.0, humidity: 85 },     // Jun
-    { name: 'Monsoon', temp: 29, rain: 20.0, humidity: 90 },     // Jul
-    { name: 'Monsoon', temp: 29, rain: 18.0, humidity: 88 },     // Aug
-    { name: 'Monsoon', temp: 28, rain: 12.0, humidity: 85 },     // Sep
-    { name: 'Post-Monsoon', temp: 27, rain: 4.0, humidity: 75 }, // Oct
-    { name: 'Winter', temp: 23, rain: 0.5, humidity: 60 },      // Nov
-    { name: 'Winter', temp: 19, rain: 0.1, humidity: 50 },      // Dec
-  ];
-
-  const season = seasons[currentMonth];
-  const paramData: any = {
-    T2M: {},
-    T2M_MAX: {},
-    T2M_MIN: {},
-    PRECTOTCORR: {},
-    RH2M: {},
-    WS2M: {},
-    ALLSKY_SFC_SW_DWN: {},
-    T2MDEW: {},
-    PS: {},
-    ELEV: 5,
-    TZ: 6
-  };
-
-  const now = new Date();
-  for (let i = 0; i < days; i++) {
-    const d = new Date();
-    d.setDate(now.getDate() - i);
-    const dateStr = d.toISOString().split('T')[0].replace(/-/g, '');
-
-    // Add some random variation
-    const varTemp = (Math.random() - 0.5) * 4;
-    const varRain = Math.random() > 0.8 ? Math.random() * 10 : 0;
-    const varHum = (Math.random() - 0.5) * 10;
-
-    paramData.T2M[dateStr] = season.temp + varTemp;
-    paramData.T2M_MAX[dateStr] = season.temp + varTemp + 3;
-    paramData.T2M_MIN[dateStr] = season.temp + varTemp - 3;
-    paramData.PRECTOTCORR[dateStr] = Math.max(0, season.rain + varRain);
-    paramData.RH2M[dateStr] = Math.max(10, Math.min(100, season.humidity + varHum));
-    paramData.WS2M[dateStr] = 3 + Math.random() * 5;
-    paramData.ALLSKY_SFC_SW_DWN[dateStr] = 15 + Math.random() * 10;
-    paramData.T2MDEW[dateStr] = season.temp - 5;
-    paramData.PS[dateStr] = 101;
-  }
-
-  return paramData;
-}
