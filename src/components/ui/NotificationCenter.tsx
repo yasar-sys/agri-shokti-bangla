@@ -17,9 +17,9 @@ const typeConfig: Record<
   NotificationType,
   { icon: typeof Bell; color: string; bg: string; labelKey: string }
 > = {
-  weather: { icon: CloudRain, color: "text-blue-500", bg: "bg-blue-500/10", labelKey: "weatherAlertLabel" },
+  weather: { icon: CloudRain, color: "text-info", bg: "bg-info/10", labelKey: "weatherAlertLabel" },
   market: { icon: TrendingUp, color: "text-secondary", bg: "bg-secondary/10", labelKey: "marketUpdateLabel" },
-  tip: { icon: Lightbulb, color: "text-amber-500", bg: "bg-amber-500/10", labelKey: "farmingTipLabel" },
+  tip: { icon: Lightbulb, color: "text-warning", bg: "bg-warning/10", labelKey: "farmingTipLabel" },
   reminder: { icon: Clock, color: "text-primary", bg: "bg-primary/10", labelKey: "reminderLabel" },
 };
 
@@ -42,20 +42,20 @@ export function NotificationCenter({ className }: { className?: string }) {
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
-        <button
-          aria-label={t("notificationCenter")}
+        <Button
+          variant="ghost" size="icon" aria-label={t("notificationCenter")}
           className={cn(
-            "relative w-10 h-10 rounded-xl bg-muted/40 hover:bg-muted/70 transition-colors flex items-center justify-center",
+            "relative w-12 h-12 rounded-md bg-muted/40 hover:bg-muted/70 transition-colors flex items-center justify-center",
             className
           )}
         >
           <Bell className="w-5 h-5 text-foreground" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center animate-pulse">
+            <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-bold flex items-center justify-center ">
               {unreadCount > 9 ? "9+" : unreadCount}
             </span>
           )}
-        </button>
+        </Button>
       </SheetTrigger>
       <SheetContent side="right" className="w-full sm:max-w-md p-0 flex flex-col">
         <SheetHeader className="p-4 border-b border-border">
@@ -113,16 +113,16 @@ export function NotificationCenter({ className }: { className?: string }) {
                       <p className="text-sm font-semibold text-foreground line-clamp-2">{n.title}</p>
                       <p className="text-xs text-muted-foreground mt-0.5 line-clamp-3">{n.message}</p>
                     </div>
-                    <button
-                      onClick={(e) => {
+                    <Button
+                      variant="ghost" size="icon" onClick={(e) => {
                         e.stopPropagation();
                         dismiss(n.id);
                       }}
-                      className="p-1 rounded-md hover:bg-background/80 h-fit"
+                      className="shrink-0 hover:bg-background/80"
                       aria-label={t("close")}
                     >
                       <X className="w-4 h-4 text-muted-foreground" />
-                    </button>
+                    </Button>
                   </div>
                 );
               })}

@@ -3,6 +3,8 @@ import { Mic, MicOff, Volume2, VolumeX, Loader2, MessageCircle, X, Phone, Refres
 import { cn } from '@/lib/utils';
 import { useBengaliVoiceInput } from '@/hooks/useBengaliVoiceInput';
 import { useElevenLabsTTS } from '@/hooks/useElevenLabsTTS';
+import { Button } from '@/components/ui/button';
+import { Waveform } from '@/components/ui/editorial';
 import { useToast } from '@/hooks/use-toast';
 
 interface VoiceConversationProps {
@@ -219,24 +221,24 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
   const getStatusText = () => {
     switch (status) {
       case 'listening':
-        return '🎤 শুনছি... বাংলায় বলুন';
+        return 'শুনছি... বাংলায় বলুন';
       case 'processing':
-        return '🤔 চিন্তা করছি...';
+        return 'চিন্তা করছি...';
       case 'speaking':
-        return '🔊 উত্তর বলছি...';
+        return 'উত্তর বলছি...';
       default:
-        return '👆 মাইক বাটনে চাপুন';
+        return 'মাইক বাটনে চাপুন';
     }
   };
 
   const getStatusColor = () => {
     switch (status) {
       case 'listening':
-        return 'text-red-500';
+        return 'text-danger';
       case 'processing':
-        return 'text-blue-500';
+        return 'text-info';
       case 'speaking':
-        return 'text-green-500';
+        return 'text-healthy';
       default:
         return 'text-muted-foreground';
     }
@@ -250,12 +252,12 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
   ];
 
   return (
-    <div className="fixed inset-0 z-50 bg-background flex flex-col">
+    <div className="fixed inset-0 z-[70] bg-background flex flex-col safe-area-top">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-border bg-card">
+      <div className="flex items-center justify-between p-4 border-b border-border bg-background">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg">
-            <Phone className="w-6 h-6 text-primary-foreground" />
+          <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
+            <Phone className="w-6 h-6 text-primary" />
           </div>
           <div>
             <h2 className="text-lg font-bold text-foreground">ভয়েস সহায়ক</h2>
@@ -264,20 +266,20 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
         </div>
         <div className="flex items-center gap-2">
           {/* Test TTS Button */}
-          <button
-            onClick={testTTS}
+          <Button
+            variant="ghost" size="icon" aria-label="ভয়েস পরীক্ষা করুন" onClick={testTTS}
             disabled={isSpeaking || ttsLoading}
-            className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors disabled:opacity-50"
+            className="w-12 h-12 rounded-md bg-primary/10 flex items-center justify-center hover:bg-primary/20 transition-colors disabled:opacity-50"
             title="Test TTS"
           >
             <Volume2 className="w-5 h-5 text-primary" />
-          </button>
-          <button
-            onClick={handleClose}
-            className="w-10 h-10 rounded-xl bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
+          </Button>
+          <Button
+            variant="ghost" size="icon" aria-label="ভয়েস বন্ধ করুন" onClick={handleClose}
+            className="w-12 h-12 rounded-md bg-destructive/10 flex items-center justify-center hover:bg-destructive/20 transition-colors"
           >
             <X className="w-5 h-5 text-destructive" />
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -285,7 +287,7 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         {conversationHistory.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full text-center px-6">
-            <div className="w-24 h-24 rounded-full bg-gradient-to-br from-primary/20 to-secondary/20 flex items-center justify-center mb-6">
+            <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center mb-6">
               <MessageCircle className="w-12 h-12 text-primary" />
             </div>
             <h3 className="text-xl font-bold text-foreground mb-2">স্বাগতম!</h3>
@@ -296,14 +298,14 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
             {/* Quick Suggestions */}
             <div className="flex flex-wrap gap-2 justify-center">
               {suggestions.map((suggestion) => (
-                <button
+                <Button
                   key={suggestion}
                   onClick={() => handleSuggestionClick(suggestion)}
                   disabled={isProcessing || isSpeaking}
-                  className="px-4 py-2 rounded-full bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 rounded-md bg-primary/10 text-primary text-sm font-medium hover:bg-primary/20 transition-colors disabled:opacity-50"
                 >
                   {suggestion}
-                </button>
+                </Button>
               ))}
             </div>
           </div>
@@ -319,7 +321,7 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
               >
                 <div
                   className={cn(
-                    "max-w-[85%] rounded-2xl px-4 py-3 shadow-sm",
+                    "max-w-[85%] rounded-md px-4 py-3 shadow-sm",
                     msg.role === 'user'
                       ? 'bg-primary text-primary-foreground rounded-br-sm'
                       : 'bg-card border border-border text-foreground rounded-bl-sm'
@@ -339,7 +341,7 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
         {/* Current Transcript (Live) */}
         {currentTranscript && status === 'listening' && (
           <div className="flex justify-end">
-            <div className="max-w-[85%] rounded-2xl px-4 py-3 bg-primary/50 text-primary-foreground rounded-br-sm animate-pulse">
+            <div className="max-w-[85%] rounded-md px-4 py-3 bg-primary/50 text-primary-foreground rounded-br-sm animate-pulse">
               <p className="text-sm">{currentTranscript}...</p>
             </div>
           </div>
@@ -348,7 +350,7 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
         {/* Processing Indicator */}
         {status === 'processing' && (
           <div className="flex justify-start">
-            <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3">
+            <div className="bg-card border border-border rounded-md rounded-bl-sm px-4 py-3">
               <div className="flex items-center gap-2">
                 <Loader2 className="w-4 h-4 animate-spin text-primary" />
                 <span className="text-sm text-muted-foreground">চিন্তা করছি...</span>
@@ -360,9 +362,9 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
         {/* Speaking Indicator */}
         {status === 'speaking' && (
           <div className="flex justify-start">
-            <div className="bg-card border border-border rounded-2xl rounded-bl-sm px-4 py-3">
+            <div className="bg-card border border-border rounded-md rounded-bl-sm px-4 py-3">
               <div className="flex items-center gap-2">
-                <Volume2 className="w-4 h-4 animate-pulse text-green-500" />
+                <Volume2 className="w-4 h-4 animate-pulse text-healthy" />
                 <span className="text-sm text-muted-foreground">
                   {ttsLoading ? 'অডিও লোড হচ্ছে...' : usingFallback ? 'বলছি (Browser TTS)...' : 'বলছি...'}
                 </span>
@@ -373,53 +375,55 @@ export function VoiceConversation({ isOpen, onClose }: VoiceConversationProps) {
       </div>
 
       {/* Voice Control Area */}
-      <div className="p-6 bg-card border-t border-border">
+      <div className="p-6 bg-background border-t border-border safe-area-bottom">
         {/* Status Text */}
         <p className={cn("text-center text-sm font-medium mb-4", getStatusColor())}>
           {getStatusText()}
         </p>
 
+        <Waveform active={status === "listening" || status === "speaking"} />
+
         {/* Voice Controls */}
         <div className="flex items-center justify-center gap-4">
           {/* Stop Speaking Button */}
           {(isSpeaking || ttsLoading) && (
-            <button
-              onClick={stopSpeaking}
+            <Button
+              variant="ghost" aria-label="অডিও বন্ধ করুন" onClick={stopSpeaking}
               className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
             >
               <VolumeX className="w-6 h-6 text-foreground" />
-            </button>
+            </Button>
           )}
 
           {/* Main Mic Button */}
-          <button
-            onClick={handleMicClick}
+          <Button
+            aria-label="মাইক চালু বা বন্ধ করুন" onClick={handleMicClick}
             disabled={isProcessing || isSpeaking || ttsLoading || !sttSupported}
             className={cn(
-              "w-20 h-20 rounded-full flex items-center justify-center transition-all transform shadow-2xl",
+              "w-24 h-24 rounded-full flex items-center justify-center transition-colors duration-200 shadow-soft",
               status === 'listening'
-                ? "bg-red-500 scale-110 animate-pulse"
-                : "bg-primary hover:scale-105",
+                ? "bg-destructive text-destructive-foreground"
+                : "bg-primary text-primary-foreground",
               "disabled:opacity-50 disabled:cursor-not-allowed"
             )}
           >
             {status === 'listening' ? (
-              <MicOff className="w-8 h-8 text-white" />
+              <MicOff className="w-8 h-8 text-destructive-foreground" />
             ) : status === 'processing' ? (
               <Loader2 className="w-8 h-8 text-primary-foreground animate-spin" />
             ) : (
               <Mic className="w-8 h-8 text-primary-foreground" />
             )}
-          </button>
+          </Button>
 
           {/* Refresh/Clear Button */}
           {conversationHistory.length > 0 && (
-            <button
-              onClick={() => setConversationHistory([])}
+            <Button
+              variant="ghost" aria-label="কথোপকথন মুছুন" onClick={() => setConversationHistory([])}
               className="w-14 h-14 rounded-full bg-muted flex items-center justify-center shadow-lg hover:scale-105 transition-transform"
             >
               <RefreshCw className="w-6 h-6 text-foreground" />
-            </button>
+            </Button>
           )}
         </div>
 
