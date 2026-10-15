@@ -10,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLocation } from '@/hooks/useLocation';
 import { useElevenLabsTTS } from '@/hooks/useElevenLabsTTS';
 import { toast } from 'sonner';
+import { parseFieldZones } from '@/lib/fieldZones';
+import { Textarea } from '@/components/ui/textarea';
 
 const CROP_BN: Record<string, string> = {
   // দানাশস্য
@@ -65,7 +67,7 @@ export default function PrecisionFarmPage() {
 
   // VRF state
   const [vrfCrop, setVrfCrop] = useState('rice');
-  const [meanNdvi, setMeanNdvi] = useState(0.55);
+  const [zoneInput, setZoneInput] = useState('');
   const [areaHa, setAreaHa] = useState(1);
   const [gridSize, setGridSize] = useState(3);
   const [vrfLoading, setVrfLoading] = useState(false);
@@ -86,27 +88,19 @@ export default function PrecisionFarmPage() {
   };
 
   const runVRF = async () => {
+    const zones = parseFieldZones(zoneInput, gridSize, areaHa);
+    if (!zones) return toast.error(`${gridSize * gridSize}টি জোনের প্রকৃত NDVI (-১ থেকে ১) ও সঠিক জমির আকার দিন`);
+    setVrf(null);
     setVrfLoading(true);
     try {
-      const perZone = areaHa / (gridSize * gridSize);
       const { data, error } = await supabase.functions.invoke('vrf-map', {
-        body: { crop: vrfCrop, meanNdvi, gridSize, zones: undefined,
-          // per-zone area override via meta trick: send zones with area
-        },
+        body: { crop: vrfCrop, gridSize, zones },
       });
       if (error) throw error;
-      // scale totals by user area
-      const scaled = { ...data, zones: data.zones.map((z: any) => ({
-        ...z, areaHa: perZone,
-        N_kg_total: Math.round(z.N_kg_ha * perZone * 10) / 10,
-        P_kg_total: Math.round(z.P_kg_ha * perZone * 10) / 10,
-        K_kg_total: Math.round(z.K_kg_ha * perZone * 10) / 10,
-      })) };
-      const t = scaled.zones.reduce((a: any, z: any) => ({
-        N: a.N + z.N_kg_total, P: a.P + z.P_kg_total, K: a.K + z.K_kg_total,
-      }), { N: 0, P: 0, K: 0 });
-      scaled.totals = { ...scaled.totals, ...t, area_ha: areaHa };
-      setVrf(scaled);
+      if (!data?.zones || !data?.totals) throw new Error('Missing zone results');
+      const totals = { N: data.totals.N_kg, P: data.totals.P_kg, K: data.totals.K_kg };
+      const summary = `${data.zones.length}টি জোনে আনুমানিক N ${totals.N} কেজি, P ${totals.P} কেজি, K ${totals.K} কেজি। এটি NDVI-ভিত্তিক প্রাথমিক হিসাব; মাটি পরীক্ষার বিকল্প নয়।`;
+      setVrf({ ...data, totals, summary_bn: summary });
     } catch (e: any) {
       toast.error('VRF ম্যাপ তৈরি ব্যর্থ');
     } finally { setVrfLoading(false); }
@@ -206,10 +200,8 @@ export default function PrecisionFarmPage() {
                 </div>
               </div>
               <div>
-                <Label>গড় NDVI (ড্রোন/স্যাটেলাইট): {meanNdvi.toFixed(2)}</Label>
-                <input type="range" min={0.2} max={0.85} step={0.01} value={meanNdvi}
-                  onChange={(e) => setMeanNdvi(parseFloat(e.target.value))}
-                  className="w-full mt-2 accent-primary" />
+                <Label htmlFor="zoneNdvi">জোনভিত্তিক প্রকৃত NDVI ({gridSize * gridSize}টি)</Label>
+                <Textarea id="zoneNdvi" value={zoneInput} onChange={(e) => setZoneInput(e.target.value)} className="mt-2" />
               </div>
               <div>
                 <Label>গ্রিড সাইজ: {gridSize}×{gridSize}</Label>
@@ -255,15 +247,15 @@ export default function PrecisionFarmPage() {
                 <div className="grid grid-cols-3 gap-2 pt-2 border-t border-border">
                   <div className="text-center">
                     <div className="text-xs text-muted-foreground">নাইট্রোজেন</div>
-                    <div className="text-lg font-bold">{vrf.totals.N} কেজি</div>
+                    <div className="text-lg font-bold">{Number(vrf.totals.N).toFixed(1)} কেজি</div>
                   </div>
                   <div className="text-center">
                     <div className="text-xs text-muted-foreground">ফসফরাস</div>
-                    <div className="text-lg font-bold">{vrf.totals.P} কেজি</div>
+                    <div className="text-lg font-bold">{Number(vrf.totals.P).toFixed(1)} কেজি</div>
                   </div>
                   <div className="text-center">
                     <div className="text-xs text-muted-foreground">পটাশ</div>
-                    <div className="text-lg font-bold">{vrf.totals.K} কেজি</div>
+                    <div className="text-lg font-bold">{Number(vrf.totals.K).toFixed(1)} কেজি</div>
                   </div>
                 </div>
                 <div className="text-center text-xs bg-primary/10 rounded p-2 text-primary font-medium">
@@ -276,7 +268,7 @@ export default function PrecisionFarmPage() {
                     <div key={z.id} className="flex items-center gap-2 text-xs p-2 rounded bg-muted/40">
                       <div className="w-3 h-3 rounded" style={{ backgroundColor: z.color }} />
                       <div className="font-medium w-10">{z.id}</div>
-                      <div className="flex-1">{z.advice_bn}</div>
+                      <div className="flex-1">মাটি পরীক্ষা ও কৃষি কর্মকর্তার পরামর্শে মাত্রা নিশ্চিত করুন</div>
                       <div className="text-muted-foreground">N {z.N_kg_ha} · P {z.P_kg_ha} · K {z.K_kg_ha}</div>
                     </div>
                   ))}
@@ -288,7 +280,7 @@ export default function PrecisionFarmPage() {
 
         <div className="mt-6 p-3 rounded-lg bg-muted/40 text-xs text-muted-foreground flex items-start gap-2">
           <Sprout className="w-4 h-4 text-primary mt-0.5 shrink-0" />
-          <p>সেচ ইঞ্জিন LSTM-অনুরূপ recurrent মডেল ও FAO-56 water balance ব্যবহার করে। VRF ম্যাপ ড্রোন/স্যাটেলাইট NDVI থেকে জোন-ভিত্তিক পুষ্টি ঘাটতি হিসাব করে।</p>
+          <p>সেচের ফল সরলীকৃত মডেলের আনুমানিক হিসাব, সরাসরি মাটির পরিমাপ নয়। প্রদর্শিত পানির পরিমাণ অনুযায়ী সেচ দেওয়ার আগে কৃষি কর্মকর্তার পরামর্শ নিন। সার হিসাবেও মাটি পরীক্ষার ফল প্রয়োজন।</p>
         </div>
       </div>
     </div>

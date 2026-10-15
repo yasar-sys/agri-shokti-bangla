@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/hooks/use-toast";
 import { useUserCalendars, type CalendarTask } from "@/hooks/useUserCalendars";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { cropMonitoring } from "@/lib/cropMonitoring";
 
 const cropOptions = [
   { id: "aman", name: "আমন ধান", emoji: "🌾", duration: 120 },
@@ -52,17 +53,7 @@ const iconMap: Record<string, React.ComponentType<{ className?: string }>> = {
   Sun,
 };
 
-const generateCalendar = (crop: typeof cropOptions[0]): CalendarTask[] => {
-  return [
-    { day: "০১", task: "বীজ বপন/রোপণ", icon: "Sprout", color: "text-secondary", done: false },
-    { day: "০৫", task: "প্রথম সেচ", icon: "Droplets", color: "text-chart-3", done: false },
-    { day: "১০", task: "ইউরিয়া প্রয়োগ (১ম কিস্তি)", icon: "Leaf", color: "text-primary", done: false },
-    { day: "১৫", task: "আগাছা পরিষ্কার", icon: "Scissors", color: "text-chart-2", done: false },
-    { day: "২০", task: "পোকা চেক", icon: "Bug", color: "text-destructive", done: false },
-    { day: "২৫", task: "দ্বিতীয় সেচ", icon: "Droplets", color: "text-chart-3", done: false },
-    { day: "৩০", task: "ইউরিয়া প্রয়োগ (২য় কিস্তি)", icon: "Leaf", color: "text-primary", done: false },
-  ];
-};
+const generateCalendar = (crop: typeof cropOptions[0]): CalendarTask[] => cropMonitoring(crop.duration);
 
 const getEmojiForCrop = (cropName: string): string => {
   const crop = cropOptions.find(c => c.name === cropName);
@@ -127,7 +118,7 @@ export default function FarmingCalendarPage() {
   const upcomingTasks = pendingTasks.length ? [{ month: 'আপনার বাকি কাজ', tasks: pendingTasks }] : [];
 
   const handleCreateCalendar = async () => {
-    if (!selectedCrop || !landSize) {
+    if (!selectedCrop || !Number.isFinite(Number(landSize)) || Number(landSize) <= 0) {
       toast({
         variant: "destructive",
         title: "ত্রুটি",
