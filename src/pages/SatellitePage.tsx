@@ -21,7 +21,7 @@ import { SatelliteSourceSelector, type SatelliteSource } from "@/components/sate
 import { useNASAPowerClimate } from "@/hooks/useNASAPowerClimate";
 import { NASAClimateDetails } from "@/components/satellite/NASAClimateDetails";
 import { NDVITimeSeriesChart } from "@/components/satellite/NDVITimeSeriesChart";
-import { ARCHIVE_START, ARCHIVE_END } from "@/lib/satelliteArchive";
+import { ARCHIVE_START, archiveMaxDate, clampArchiveDate } from "@/lib/satelliteArchive";
 
 type TileLayer = 'satellite' | 'ndvi' | 'soil_moisture' | 'lst' | 'precipitation';
 
@@ -349,7 +349,7 @@ export default function SatellitePage() {
                 onLayerChange={setActiveLayer}
                 comparisonMode={comparisonMode}
                 archiveSource={selectedSatellite}
-                archiveDate={currentDate.toISOString().slice(0, 10)}
+                archiveDate={clampArchiveDate(currentDate.toISOString().slice(0, 10))}
               />
 
 
