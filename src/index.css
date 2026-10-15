@@ -289,3 +289,6 @@
   .service-editorial-item a > div { flex-basis: 100%; }
   .home-introduction { padding: 20px; }
 }
+
+/* Horizontal scroll rows: items keep their natural width instead of squeezing and clipping text on small phones */
+.flex.overflow-x-auto > * { flex-shrink: 0; }
