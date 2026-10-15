@@ -14,3 +14,4 @@
 - Missing NASA/OpenET/Crop-CASMA responses must produce unavailable states, never generated measurements; real providers remain the source of agricultural results.
 - Pest report counts and dominant pests use a pure tested summary of submitted reports, separate from weather-derived risk estimates, to prevent fabricated observations.
 - VRF requests require measured zone inputs and pass real zone areas; calendar monitoring reminders span the selected crop duration without prescribing unverified fertilizer or irrigation dates.
+- Fertilizer verdicts with zero or invalid confidence render as unverified rather than counterfeit, preventing unrelated images from producing false authenticity claims.

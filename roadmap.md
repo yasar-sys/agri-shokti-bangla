@@ -1,9 +1,12 @@
 # AgriShokti visual redesign — first review
 
 ## All-service verification
-- [ ] Audit every registered service route and its visible controls in an authenticated session.
-- [ ] Exercise calculators and representative live-data/service workflows; inspect failed requests and unavailable states.
-- [ ] Correct verified defects and repeat affected flows; report device/provider blockers without claiming full verification.
+- [x] Audit all 40 non-auth registered routes in an authenticated session: no page crashes or desktop overflow; diagnosis correctly redirects without an input image.
+- [x] Exercise land/price conversion, diesel and NPK arithmetic, storage create → reload → delete, live weather and failure state, chat, market AI, irrigation, measured-zone VRF, yield and both image scanners. Live functions returned 200; arithmetic does not certify agronomic recommendations.
+- [x] Correct fabricated pest counts/default weather, fake soil measurements, buyer telephone placeholders, personal machine records/current diesel price, synthetic frontend VRF zones and mismatched summaries; replace crop-independent calendar prescriptions with duration-based monitoring reminders. Repeat affected flows and mobile overflow checks.
+- [ ] Real-device microphone/camera capture/native installation: requires physical device and permission interaction; upload paths and live scanner responses were tested.
+- [ ] Provider acquisition and agronomic validation: NASA/OpenET/Crop-CASMA coverage, irrigation model, NPK rates, yield confidence and visual disease diagnosis require provider data and qualified validation. No claim of certified recommendations.
+- [ ] Privileged admin actions and public posting/commerce mutations: need a designated authorized test account and approved disposable records; no real public offers/posts/prices were modified.
 
 ## Formal interactive refresh
 - [x] Make Home more formal and visually substantial while preserving existing services and real data.
