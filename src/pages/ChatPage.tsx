@@ -334,7 +334,7 @@ export default function ChatPage() {
             <button
               key={index}
               onClick={() => handleSuggestionClick(question)}
-              className="px-4 py-2.5 rounded-2xl bg-card/80 border border-border/50 text-xs text-foreground whitespace-nowrap hover:bg-muted/50 hover:border-secondary/50 transition-all active:scale-95 shadow-soft"
+              className="shrink-0 px-4 py-2.5 rounded-2xl bg-card/80 border border-border/50 text-xs text-foreground whitespace-nowrap hover:bg-muted/50 hover:border-secondary/50 transition-all active:scale-95 shadow-soft"
             >
               {question}
             </button>
