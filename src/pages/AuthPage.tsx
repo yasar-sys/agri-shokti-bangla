@@ -94,6 +94,18 @@ export default function AuthPage() {
     }
   };
 
+  const handleForgot = async () => {
+    if (!email) {
+      toast.error(language === 'en' ? "Enter your email first" : "প্রথমে আপনার ইমেইল লিখুন");
+      return;
+    }
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    });
+    if (error) toast.error(error.message);
+    else toast.success(language === 'en' ? "Password reset link sent to your email" : "পাসওয়ার্ড রিসেট লিংক আপনার ইমেইলে পাঠানো হয়েছে");
+  };
+
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     
@@ -138,8 +150,7 @@ export default function AuthPage() {
         // Navigation will happen via onAuthStateChange
       } else {
         setLoading(false);
-        toast.success(t('accountCreated'));
-        navigate("/portal");
+        toast.success(language === 'en' ? "Check your email to confirm your account" : "অ্যাকাউন্ট নিশ্চিত করতে আপনার ইমেইল দেখুন");
       }
     } catch (err) {
       setLoading(false);
@@ -258,6 +269,9 @@ export default function AuthPage() {
                       </>
                     )}
                   </Button>
+                  <button type="button" onClick={handleForgot} className="w-full text-sm text-primary hover:underline">
+                    {language === 'en' ? "Forgot password?" : "পাসওয়ার্ড ভুলে গেছেন?"}
+                  </button>
                 </form>
               </TabsContent>
 
