@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Progress } from "@/components/ui/progress";
+import { fertilizerVerdict } from "@/lib/fertilizerVerdict";
 
 interface ScanResult {
   isAuthentic: boolean | null;
@@ -120,7 +121,7 @@ export default function FertilizerScanPage() {
       if (error) throw error;
 
       if (data.result) {
-        setResult(data.result);
+        setResult({ ...data.result, isAuthentic: fertilizerVerdict(data.result.isAuthentic, data.result.authenticityConfidence) });
         setStatusText("বিশ্লেষণ সম্পন্ন!");
         
         // Store token usage

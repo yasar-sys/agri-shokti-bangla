@@ -16,10 +16,13 @@ export default function WeatherPage() {
 
   useEffect(() => {
     const fetchForecast = async () => {
+      setForecastLoading(true);
+      setForecast([]);
       try {
         const response = await fetch(
           `https://api.open-meteo.com/v1/forecast?latitude=${location.latitude}&longitude=${location.longitude}&daily=weather_code,temperature_2m_max,temperature_2m_min&timezone=auto&forecast_days=5`
         );
+        if (!response.ok) throw new Error("Forecast unavailable");
         const data = await response.json();
         
         const weatherIcons: Record<number, string> = {
@@ -50,12 +53,6 @@ export default function WeatherPage() {
     }
   }, [location.latitude, location.longitude, location.loading]);
 
-  const soilData = {
-    moisture: 65,
-    ph: 6.5,
-    nitrogen: t('medium'),
-    recommendation: t('soilRecommendation'),
-  };
 
   return (
     <div className="min-h-screen pb-28 relative overflow-hidden bg-background">
@@ -106,6 +103,8 @@ export default function WeatherPage() {
               <div className="flex items-center justify-center py-12">
                 <div className="w-12 h-12 rounded-full border-4 border-chart-3/30 border-t-chart-3 animate-spin" />
               </div>
+            ) : weather.error ? (
+              <p role="alert" className="py-6 text-destructive">{weather.error}</p>
             ) : (
               <>
                 <div className="flex items-start justify-between mb-6">
@@ -155,6 +154,8 @@ export default function WeatherPage() {
           <div className="flex items-center justify-center py-8">
             <Loader2 className="w-6 h-6 text-chart-3 animate-spin" />
           </div>
+        ) : forecast.length === 0 ? (
+          <p role="alert" className="text-sm text-muted-foreground">আবহাওয়ার পূর্বাভাস এখন পাওয়া যাচ্ছে না।</p>
         ) : (
           <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
             {forecast.map((day, index) => (
@@ -187,36 +188,8 @@ export default function WeatherPage() {
           <Sparkles className="w-4 h-4 text-primary" />
           {t('soilData')}
         </h2>
-        <div className="glass-card rounded-3xl p-5 border border-border/50">
-          <div className="grid grid-cols-3 gap-3 mb-5">
-            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-blue-500/10 to-blue-500/5 border border-blue-500/30">
-              <Droplets className="w-6 h-6 text-blue-400 mx-auto mb-2" />
-              <p className="text-[10px] text-muted-foreground uppercase">{t('moisture')}</p>
-              <p className="font-bold text-foreground text-lg">{soilData.moisture}%</p>
-            </div>
-            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 border border-primary/30">
-              <Gauge className="w-6 h-6 text-primary mx-auto mb-2" />
-              <p className="text-[10px] text-muted-foreground uppercase">pH</p>
-              <p className="font-bold text-foreground text-lg">{soilData.ph}</p>
-            </div>
-            <div className="text-center p-4 rounded-2xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/30">
-              <Thermometer className="w-6 h-6 text-secondary mx-auto mb-2" />
-              <p className="text-[10px] text-muted-foreground uppercase">{t('nitrogen')}</p>
-              <p className="font-bold text-foreground text-lg">{soilData.nitrogen}</p>
-            </div>
-          </div>
-
-          <div className="p-4 rounded-2xl bg-gradient-to-br from-secondary/10 to-secondary/5 border border-secondary/30">
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-xl bg-secondary/20 flex items-center justify-center flex-shrink-0">
-                <Zap className="w-5 h-5 text-secondary" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-foreground mb-1">{t('aiAdvice')}</p>
-                <p className="text-xs text-muted-foreground leading-relaxed">{soilData.recommendation}</p>
-              </div>
-            </div>
-          </div>
+        <div className="border-t border-border py-5">
+          <p className="text-sm text-muted-foreground">এই স্থানের পরীক্ষিত মাটির আর্দ্রতা, pH ও নাইট্রোজেনের তথ্য পাওয়া যায়নি। মাটি পরীক্ষা ছাড়া সেচ বা সারের সিদ্ধান্ত নেবেন না।</p>
         </div>
       </section>
     </div>

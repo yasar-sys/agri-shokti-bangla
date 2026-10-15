@@ -33,8 +33,8 @@ const TO_DECIMAL: Record<Unit, number> = {
   katha: 1.65,      // 1 katha = 1.65 decimal
   decimal: 1,       // base unit
   acre: 100,        // 1 acre = 100 decimal
-  sqFeet: 0.00229568, // 1 sq feet = 0.00229568 decimal
-  sqMeter: 0.02471,  // 1 sq meter = 0.02471 decimal
+  sqFeet: 1 / 435.6, // 1 sq feet = 0.00229568 decimal
+  sqMeter: 1 / (435.6 * 0.09290304),  // 1 sq meter = 0.02471 decimal
 };
 
 const unitLabels: Record<Unit, { bn: string; en: string }> = {
@@ -279,7 +279,7 @@ export default function LandCalculatorPage() {
               </div>
               <div className="flex justify-between py-2 border-b border-border/50">
                 <span className="text-muted-foreground">১ কাঠা</span>
-                <span className="text-foreground font-medium">= ১.৬৫ শতক = ৭২০ বর্গফুট</span>
+                <span className="text-foreground font-medium">= ১.৬৫ শতক (স্থানীয় মান ভিন্ন হতে পারে)</span>
               </div>
               <div className="flex justify-between py-2">
                 <span className="text-muted-foreground">১ শতক</span>

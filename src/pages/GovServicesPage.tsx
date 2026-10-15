@@ -11,13 +11,13 @@ const subsidyPrograms = [
   },
   {
     title: "কৃষি কার্ড প্রকল্প",
-    description: "সার ক্রয়ে ১০ টাকা/কেজি ভর্তুকি",
+    description: "কৃষি কার্ডের যোগ্যতা ও চলমান সহায়তার তথ্য",
     link: "https://dae.gov.bd",
     icon: CreditCard,
   },
   {
     title: "কৃষি যান্ত্রিকীকরণ",
-    description: "কৃষি যন্ত্রপাতিতে ৫০-৭০% ভর্তুকি",
+    description: "কৃষি যন্ত্রপাতির চলমান ভর্তুকি ও আবেদন নির্দেশনা",
     link: "https://dae.gov.bd",
     icon: FileText,
   },
@@ -26,13 +26,13 @@ const subsidyPrograms = [
 const loanPrograms = [
   {
     title: "কৃষি ঋণ - বাংলাদেশ ব্যাংক",
-    description: "৪% সুদে কৃষি ঋণ, সর্বোচ্চ ৫ লাখ টাকা",
+    description: "চলমান কৃষি ঋণের সুদ, সীমা ও যোগ্যতা ব্যাংক থেকে নিশ্চিত করুন",
     phone: "16236",
     requirements: "জমির দলিল, NID, কৃষক কার্ড",
   },
   {
     title: "রাজশাহী কৃষি উন্নয়ন ব্যাংক",
-    description: "৫% সুদে শস্য ঋণ, ৩ বছর মেয়াদ",
+    description: "শস্য ঋণের সুদ ও মেয়াদ সংশ্লিষ্ট শাখা থেকে নিশ্চিত করুন",
     phone: "02-8432441",
     requirements: "জমির দলিল, ওয়ারিশ সনদ",
   },
@@ -48,41 +48,14 @@ const insuranceInfo = [
   {
     title: "শস্য বীমা প্রকল্প",
     description: "প্রাকৃতিক দুর্যোগে ক্ষতিপূরণ পান",
-    premium: "প্রিমিয়াম: ২% (সরকার ৫০% দেয়)",
-    coverage: "কভারেজ: সর্বোচ্চ ৮০% ক্ষতি",
+    premium: "প্রিমিয়াম: বীমাকারীর বর্তমান শর্ত অনুযায়ী",
+    coverage: "কভারেজ: বীমার চুক্তি অনুযায়ী",
   },
   {
     title: "গবাদি পশু বীমা",
     description: "গরু, ছাগল, মুরগির মৃত্যুতে ক্ষতিপূরণ",
-    premium: "প্রিমিয়াম: ৩-৫%",
-    coverage: "কভারেজ: বাজার মূল্যের ৯০%",
-  },
-];
-
-const buyerContacts = [
-  {
-    name: "ঢাকা কৃষি পণ্য বাজার",
-    type: "পাইকারি বাজার",
-    phone: "01700-000001",
-    products: "ধান, সবজি, ফল",
-  },
-  {
-    name: "আড়ং কৃষি",
-    type: "অর্গানিক পণ্য",
-    phone: "01700-000002",
-    products: "জৈব সবজি, মধু, মসলা",
-  },
-  {
-    name: "চাষী ডট কম",
-    type: "অনলাইন মার্কেটপ্লেস",
-    phone: "01700-000003",
-    products: "সকল কৃষি পণ্য",
-  },
-  {
-    name: "কৃষক বন্ধু",
-    type: "এগ্রো কোম্পানি",
-    phone: "01700-000004",
-    products: "ধান, গম, ভুট্টা",
+    premium: "প্রিমিয়াম: বীমাকারীর বর্তমান শর্ত অনুযায়ী",
+    coverage: "কভারেজ: বীমার চুক্তি অনুযায়ী",
   },
 ];
 
@@ -162,10 +135,10 @@ export default function GovServicesPage() {
               <h3 className="font-medium text-foreground mb-1">{loan.title}</h3>
               <p className="text-sm text-muted-foreground mb-2">{loan.description}</p>
               <div className="flex items-center gap-4 text-xs">
-                <span className="flex items-center gap-1 text-secondary">
+                <a href={`tel:${loan.phone}`} className="flex items-center gap-1 text-secondary">
                   <Phone className="w-3 h-3" />
                   {loan.phone}
-                </span>
+                </a>
               </div>
               <p className="text-xs text-muted-foreground mt-2">
                 📋 প্রয়োজনীয় কাগজ: {loan.requirements}
@@ -208,25 +181,9 @@ export default function GovServicesPage() {
           <Users className="w-5 h-5 text-chart-4" />
           সরাসরি ক্রেতা যোগাযোগ
         </h2>
-        <div className="grid grid-cols-2 gap-2">
-          {buyerContacts.map((buyer, index) => (
-            <div
-              key={index}
-              className="bg-card border border-border rounded-xl p-3"
-            >
-              <h3 className="font-medium text-foreground text-sm mb-1">{buyer.name}</h3>
-              <p className="text-xs text-muted-foreground mb-2">{buyer.type}</p>
-              <a
-                href={`tel:${buyer.phone}`}
-                className="flex items-center gap-1 text-xs text-secondary"
-              >
-                <Phone className="w-3 h-3" />
-                {buyer.phone}
-              </a>
-              <p className="text-xs text-muted-foreground mt-1">📦 {buyer.products}</p>
-            </div>
-          ))}
-        </div>
+        <Link to="/portal" className="block border border-border rounded-lg p-4 text-primary">
+          কৃষক ও ক্রেতার পোর্টাল <ExternalLink className="inline w-4 h-4 ml-2" />
+        </Link>
       </section>
 
       {/* Helpline */}
@@ -236,7 +193,7 @@ export default function GovServicesPage() {
           <a href="tel:16123" className="text-2xl font-bold text-secondary">
             ১৬১২৩
           </a>
-          <p className="text-xs text-muted-foreground mt-1">২৪ ঘণ্টা বিনামূল্যে সেবা</p>
+          <p className="text-xs text-muted-foreground mt-1">সেবার সময় ও কলচার্জ অপারেটরের কাছে নিশ্চিত করুন</p>
         </div>
       </section>
     </div>
