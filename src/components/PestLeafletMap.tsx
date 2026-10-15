@@ -44,7 +44,7 @@ const PestLeafletMap: React.FC<PestLeafletMapProps> = ({
     markersLayer.current = L.layerGroup().addTo(map.current);
 
     // Add scale control
-    L.control.scale({ position: 'bottomleft', imperial: false }).addTo(map.current);
+    L.control.scale({ position: 'bottomright', imperial: false }).addTo(map.current);
 
     setIsMapReady(true);
 
@@ -351,7 +351,7 @@ const PestLeafletMap: React.FC<PestLeafletMapProps> = ({
       </div>
 
       {/* Stats overlay - Top right instead of top left to avoid overlap */}
-      <div className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-background/95 backdrop-blur-md rounded-lg sm:rounded-xl p-2 sm:p-3 z-[400] border border-border shadow-lg">
+      <div className="absolute top-2 sm:top-4 left-2 sm:left-4 bg-background rounded-lg p-2 sm:p-3 z-[400] border border-border shadow-soft" data-testid="pest-district-count">
         <div className="flex items-center gap-2">
           <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-primary/20 flex items-center justify-center">
             <Bug className="w-3 h-3 sm:w-4 sm:h-4 text-primary" />

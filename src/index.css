@@ -220,6 +220,21 @@
 .app-pages .mobile-container[style*="background"] {
   background: hsl(var(--background)) !important;
 }
-.app-pages .fixed.inset-0[style*="background-image"],
+.app-pages .fixed.inset-0.-z-10[style*="background-image"],
 .app-pages .fixed.inset-0.-z-10 { display: none !important; }
 .app-pages .bg-gradient-to-b.from-black\/60, .app-pages .bg-gradient-to-t.from-black\/80 { background: transparent; }
+
+/* Shared controls must not force service panels outside their grid tracks. */
+.app-pages { min-width: 0; }
+.app-pages .grid > *, .app-pages .flex > * { min-width: 0; }
+.app-pages [role="tablist"] { height: auto; flex-wrap: wrap; gap: 4px; }
+.app-pages [role="tab"] { white-space: normal; min-height: 48px; }
+.app-pages main { overflow-wrap: anywhere; }
+.app-pages .leaflet-container { overflow-wrap: normal; }
+.app-pages > div { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+.dark .leaflet-popup-content-wrapper, .dark .leaflet-popup-tip {
+  background: hsl(var(--popover)) !important; color: hsl(var(--foreground)) !important;
+}
+.dark .leaflet-popup-content [style*="color:"] { color: hsl(var(--foreground)) !important; }
+.leaflet-control-scale-line { background: hsl(var(--card)) !important; color: hsl(var(--foreground)) !important; }
+.leaflet-control-zoom a { width: 48px !important; height: 48px !important; line-height: 48px !important; background: hsl(var(--card)) !important; color: hsl(var(--foreground)) !important; }
